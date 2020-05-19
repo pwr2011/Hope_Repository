@@ -1,0 +1,76 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+typedef pair<int, int> P;
+
+int height[40'005];
+bool hole[40'005];
+bool checked[40'005];
+
+int main() {
+	int N; cin >> N;
+	vector<P> in;
+	for (int n = 0; n < N; n++) {
+		P tmp;
+		cin >> tmp.first >> tmp.second;
+		in.push_back(tmp);
+	}
+	int K; cin >> K;
+	vector<P> ho;
+	for (int k = 0; k < K; k++) {
+		P tmp1, tmp2;
+		cin >> tmp1.first >> tmp1.second >> tmp2.first >> tmp2.second;
+		ho.push_back(tmp1); ho.push_back(tmp2);
+	}
+	P prev_point = in[0];
+	int h = 40'000;
+	int x = 0;
+	for (int n = 1; n < N - 1; n++) {
+		if (prev_point.first == in[n].first) { //높이가 달라짐
+			h = 40'000 - in[n].second;
+		}
+		else {
+			while (in[n].first > x) {
+				height[x++] = h;
+			}
+		}
+		prev_point = in[n];
+	}
+
+	for (int n = 0; n < ho.size(); n += 2) {
+		hole[ho[n].first] = true;
+	}
+	int max_width = in[N - 1].first;
+	height[max_width] = 40'000;
+	//Search start!
+	int water = 0;
+	vector<int> save_h;
+	int limit_h = 40000;
+	for (int x = 0; x < max_width; x++) {
+		while (height[x] == limit_h) x++;
+		while (!hole[x] && limit_h >= height[x] && x<max_width) {
+			save_h.push_back(height[x++]);
+		}
+		if (limit_h < height[x]) {
+			for (int h : save_h) {
+				water += limit_h - h;
+			}
+			limit_h = height[x];
+		}
+		else {
+			limit_h = height[x];
+			for (int cnt = save_h.size()-1; cnt >= 0; cnt--) {
+				if (limit_h < save_h[cnt]) {
+					limit_h = save_h[cnt];
+				}
+				else {
+					water += limit_h - save_h[cnt];
+				}
+			}
+		}
+		save_h.clear();
+		limit_h = height[x];
+		x--;
+	}
+	cout << water;
+}
