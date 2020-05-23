@@ -1,0 +1,49 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+vector<int> NodeBig[103]; //0~99
+vector<int> NodeSmall[103];
+bool checked[103];
+
+int calSize(int n,int c) {
+	int res = 0;
+	if (c == 0) {
+		if (NodeBig[n].size() == 0) { return 0; }
+		else {
+			for (int cur : NodeBig[n]) {
+				if (checked[cur]) continue;
+				res += calSize(cur, c)+1;
+				checked[cur] = true;
+			}
+			return res;
+		}
+	}
+	else {
+		if (NodeSmall[n].size() == 0) { return 0; }
+		for (int cur : NodeSmall[n]) {
+			if (checked[cur]) continue;
+			res += calSize(cur, c)+1;
+			checked[cur] = true;
+		}
+		return res;
+	}
+}
+
+int main() {
+	int N, M; cin >> N >> M;
+	for (int m = 0; m < M; m++) {
+		int A, B; cin >> A >> B;
+		NodeBig[A-1].push_back(B-1); //A>B
+		NodeSmall[B - 1].push_back(A - 1); //A>B
+	}
+	for (int n = 0; n < N; n++) {
+		int cnt = 0;
+		for (int i = 0; i < 103; i++) {
+			checked[i] = false;
+		}
+		cnt += calSize(n, 0);
+		cnt += calSize(n, 1);
+		cout << N-cnt-1 << "\n";
+	}
+}
