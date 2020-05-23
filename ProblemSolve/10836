@@ -1,0 +1,28 @@
+#include<iostream>
+#define MAX_SIZE 705
+using namespace std;
+
+int arr[2*MAX_SIZE];
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int M, N;
+	cin >> M >> N;
+	for (int n = 1; n <= N; n++) {
+		int A, B, C;
+		cin >> A >> B >> C;
+		arr[A+1]++; arr[A + B + 1]++;
+	}
+	for (int n = 1; n <= 2*M-1; n++) {
+		arr[n] = arr[n - 1] + arr[n];
+	}
+	int idx = M;
+	for (int row = 0; row < M; row++) {
+		cout << arr[idx--] + 1<<" ";
+		for (int i = M+1; i <= 2 * M - 1; i++) {
+			cout << arr[i]+1 << " ";
+		}
+		cout << endl;
+	}
+}
