@@ -1,3 +1,8 @@
+/*O(N^2) 
+but using Floyd warshall, this code can be much simple. 
+
+Do check Floyd warshall.*/
+
 #include<iostream>
 #include<vector>
 using namespace std;
