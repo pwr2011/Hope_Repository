@@ -1,5 +1,5 @@
 /*O(N^2) 
-but using Floyd warshall, this code can be much simple. 
+but using Floyd warshall, this code can be much simpler. 
 
 Do check Floyd warshall.*/
 
