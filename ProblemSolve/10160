@@ -1,0 +1,27 @@
+#include<iostream>
+#include<time.h>
+#define ll long long
+#define MOD 1'000'000'009
+using namespace std;
+
+ll N, K;
+ll dp[1'000'005];
+
+ll cal_dp(ll i) {
+	if (dp[i] != 0) return dp[i];
+	dp[i] = ((cal_dp(i-1) * K)%MOD - (cal_dp(i-5) * (ll)2)%MOD + cal_dp(i-7))%MOD;
+	return dp[i];
+}
+
+int main() { 
+	cin >> N >> K;
+	dp[0] = 1;
+	for (int i = 1; i < 5; i++) {
+		dp[i] = dp[i - 1] * K;
+	}
+	dp[5] = dp[4] * K - 2;
+	dp[6] = ((dp[5] * K)%MOD - dp[1]*2)%MOD;
+	ll ans = cal_dp(N);
+	if (ans < 0) ans += MOD;
+	cout << ans;
+}
