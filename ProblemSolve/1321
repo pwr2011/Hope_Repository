@@ -1,0 +1,69 @@
+#include<iostream>
+#include<cmath>
+#define ll long long
+using namespace std;
+ll N;
+
+class segment {
+public:
+	ll size;
+	ll start;
+	ll arr[1048576]; 
+
+	segment(ll size) {
+		this->size = pow(2, (ll)log2(size)+1);
+		start = pow(2, (ll)log2(size)+1);
+	}
+	void Init() {
+		for (ll n = 0; n < N; n++) {
+			cin >> arr[start + n];
+		}
+		for (ll n = N; n < size; n++) {
+			arr[start + n] = 0;
+		}
+		for (ll n = start - 1; n > 0; n--) {
+			arr[n] = arr[n * 2] + arr[n * 2 + 1];
+		}
+	}
+	void update(ll num, ll cnt) {
+		arr[start + num] += cnt;
+		ll idx = start + num;
+		idx /= 2;
+		while (idx != 0) {
+			arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+			idx /= 2;
+		}
+	}
+	ll search(ll nodeL,ll nodeR, ll nodenum,ll sum) {
+		if (nodenum >=start) return nodenum;
+		ll mid = (nodeL + nodeR) / 2;
+		ll leftSum = arr[nodenum * 2];
+		if (leftSum < sum) {
+			return search(mid + 1, nodeR, nodenum * 2 + 1, sum - leftSum);
+		}
+		else {
+			return search(nodeL, mid, nodenum * 2, sum);
+		}
+	}
+};
+
+int main() {
+	cin >> N;
+	segment seg(N);
+	seg.Init();
+	ll M; cin >> M;
+	for (ll m = 0; m < M; m++) {
+		ll c; ll num; cin >> c;
+		switch (c) {
+		case 1:
+			ll cnt;
+			cin >> num >> cnt;
+			seg.update(num-1, cnt);
+			break;
+		case 2:
+			cin >> num;
+			cout << seg.search(0, seg.size - 1, 1, num) - seg.start+1<< "\n";
+			break;
+		}
+	}
+}
