@@ -1,0 +1,409 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <semaphore.h>
+#include <unistd.h>
+#define CFS_time 10
+#define NICE_O_LOAD 1024
+#define INF 9999
+
+typedef struct process{
+        int classNo;
+        int processId;
+        int priority;
+        int burstTime;
+        //below variable just used in CFS scheduler
+        int vruntime;
+        int weight;
+}process;
+
+typedef struct readThreadParams{
+    process * processes;
+    int size;
+}readThreadParams;
+
+typedef struct Node{
+    process saveProcess;
+    struct Node* nextNode;
+    struct Node* prevNode;
+}Node;
+
+struct Node* createNode(process data){
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->saveProcess = data;
+    newNode->nextNode = NULL;
+    newNode->prevNode = NULL;
+    return newNode;
+}
+
+Node* deleteNode(Node* node){
+    if(node->nextNode != node){
+        node->prevNode->nextNode = node->nextNode;
+        node->nextNode->prevNode = node->prevNode;
+        Node* retNode = node->nextNode;
+        free(node);
+        return retNode;
+    }
+    else{
+        free(node);
+        return NULL;
+    }
+}
+
+Node* createLinkedList(void * context){
+    Node* startNode = NULL;
+    Node* curNode = NULL;
+    readThreadParams * readParams = context;
+    for(int i=0;i<readParams->size;i++){
+        if(i==0){
+            startNode = createNode(readParams->processes[i]);
+            curNode = startNode;
+            startNode->nextNode = startNode;
+            startNode->prevNode = startNode;
+        }
+        else{
+            Node* tmp = createNode(readParams->processes[i]);
+            curNode->nextNode = tmp;
+            tmp->prevNode = curNode;
+            tmp->nextNode = startNode;
+            startNode->prevNode = tmp;
+            curNode = tmp;
+        }
+    }
+    return startNode;
+}
+
+sem_t semp1,semp2,semp3,semp4;
+Node* takeNode1, *takeNode2, *takeNode3, *takeNode4;
+void bubbleSorting(void *param, int key);
+
+/* the thread */
+void *runner_RR(void *param); 
+void *runner_priority(void *param);
+void *runner_CFS(void *param);
+void *runner_SJF(void *param);
+void *scheduler_queue (void * param);
+void *test(void *param);
+
+int main(int argc, char *argv[])
+{
+    /* the thread identifier */
+    pthread_t tid[6]; 
+    sem_init(&semp1, 0, 1); sem_init(&semp2,0,1);
+    sem_init(&semp3,0,1); sem_init(&semp4,0,1);
+    /* Classfiy the input information according to classNum  */
+    process totalInput[100];
+    process processes1[100];
+    process processes2[100];
+    process processes3[100];
+    process processes4[100];
+    int input_size=0;
+    int processes1_size=0;
+    int processes2_size=0;
+    int processes3_size=0;
+    int processes4_size=0;
+
+    /* File Input */
+    FILE *fp = fopen("input.txt","r");
+    fscanf(fp,"%d",&input_size);
+    for(int i=0;i<input_size;i++){
+        fscanf(fp,"%d ",&totalInput[i].classNo);
+        fscanf(fp,"%d ",&totalInput[i].processId);
+        fscanf(fp,"%d ",&totalInput[i].priority);
+        fscanf(fp,"%d ",&totalInput[i].burstTime);
+        totalInput[i].vruntime = 0;
+        totalInput[i].weight = 0;
+    }
+    
+    fclose(fp);
+    /* File Input End */
+
+    /*divide input into different array according to classNo */
+    for(int i=0;i<input_size;i++){
+        switch(totalInput[i].classNo){
+            case 1:
+                processes1[processes1_size++] = totalInput[i];
+                break;
+            case 2:
+                processes2[processes2_size++] = totalInput[i];
+                break;
+            case 3:
+                /* case 3 is CFS. So priority means weight of process */
+                totalInput[i].weight = totalInput[i].priority;
+                processes3[processes3_size++] = totalInput[i];
+                break;
+            case 4:
+                processes4[processes4_size++] = totalInput[i];
+                break;
+        }
+    }
+    
+    /* Using structure, i will give the parameter to the thread */
+    readThreadParams par1,par2,par3,par4;
+    par1.processes = processes1; par1.size = processes1_size;
+    par2.processes = processes2; par2.size = processes2_size;
+    par3.processes = processes3; par3.size = processes3_size;
+    par4.processes = processes4; par4.size = processes4_size;
+    /* queue scheduling using thread */
+    pthread_create(&tid[0],NULL, runner_RR, &par1);
+
+    pthread_create(&tid[1],NULL, runner_priority, &par2);
+    pthread_join(tid[1],NULL);
+    
+    pthread_create(&tid[2],NULL, runner_CFS, &par3);
+    
+    pthread_create(&tid[3],NULL,runner_SJF, &par4);
+    pthread_join(tid[3],NULL);
+
+    /* scheduler_queue do the scheduling between the queue */
+    pthread_create(&tid[4],NULL,scheduler_queue,NULL);
+    pthread_join(tid[4],NULL);
+    return 0;
+}
+
+/* All process is managed in an Linked List. */
+/* Each scheduler hand over the selected job */
+/* to the multilevel queue scheduler in the form of takeNode */
+
+/* runer_RR is running until all the process in linked list are processed */
+void *runner_RR(void *context){
+    sem_wait(&semp1);
+    readThreadParams *readParams = context;
+
+    //Create Linked-list using given parameter
+    takeNode1 = createLinkedList(readParams);
+    sem_post(&semp1);
+    while(1){
+        /* All job's time quantum is all same. usleep(1000) */
+        if(takeNode1 == NULL) break;
+        sem_wait(&semp1);
+        if(takeNode1 == NULL) break;
+        takeNode1 = takeNode1->nextNode;
+        sem_post(&semp1);
+        usleep(1000);
+    }
+    
+    pthread_exit(NULL);
+}
+
+/* runner_priority create the linked-list order by priority. And terminated. */
+void *runner_priority(void *context){
+    sem_wait(&semp2);
+    readThreadParams * readParams = context;
+    int total_size = readParams->size;
+
+    //Do bubble sort. And while sorting, queue scheduler can't access the linked-list.
+    bubbleSorting(readParams,0);
+
+    //Create Linked-list
+    takeNode2 = createLinkedList(readParams);
+    sem_post(&semp2);
+    pthread_exit(NULL);
+}
+
+/* runner_CFS is selecting the job according to the vruntime
+vruntime += (NICE_O_LOAD/weight)*CFS_time 
+(CFS_time is updated every time CFS's job is processed)
+
+And it is running until the all linked-list's job is processed */
+void *runner_CFS(void *context){
+    sem_wait(&semp3);
+    readThreadParams *readParams = context;
+    //create Linked-list
+    takeNode3 = createLinkedList(readParams);
+    sem_post(&semp3);
+
+    while(1){
+        if(takeNode3 == NULL) break;
+        sem_wait(&semp3);
+        if(takeNode3 == NULL) break;
+        Node* min_vruntime = takeNode3;
+        Node* tmp = takeNode3->nextNode;
+        while(tmp != takeNode3){
+        //Find the job which has minimum vruntime using linear searching the linked-list
+            if(min_vruntime->saveProcess.vruntime >= tmp->saveProcess.vruntime){
+                if(min_vruntime->saveProcess.vruntime == tmp->saveProcess.vruntime){
+                    if(min_vruntime->saveProcess.weight < tmp->saveProcess.weight){
+                        min_vruntime = tmp;
+                    }
+                }
+                else{
+                    min_vruntime = tmp;
+                }
+            }
+            tmp = tmp->nextNode;
+        }
+        
+        //takeNode3 is minimum vruntime job
+        takeNode3 = min_vruntime;
+        sem_post(&semp3);
+    }
+    pthread_exit(NULL);
+}
+
+/* runner_SJF is selecting the job according to the left time. */
+void *runner_SJF(void * context){
+    sem_wait(&semp4);
+    readThreadParams *readParams = context;
+    bubbleSorting(readParams,2);
+    takeNode4 = createLinkedList(readParams);
+    sem_post(&semp4);
+    pthread_exit(NULL);
+}
+
+void bubbleSorting(void * context,int key){
+    readThreadParams * readParams = context;
+    int total_size = readParams->size;
+    if(key==0){ // key = 0 is sorted by priority
+    for(int i=0;i<total_size;i++){
+        for(int j=i+1;j<total_size;j++){
+            if(readParams->processes[i].priority > readParams->processes[j].priority){
+                //swap the processes
+                process tmp = readParams->processes[i];
+                readParams->processes[i] = readParams->processes[j];
+                readParams->processes[j] = tmp;
+            }
+        }
+    }
+    }
+    else if(key==1){ //key = 1 is sorted by vruntime
+        for(int i=0;i<total_size;i++){
+            for(int j=i+1;j<total_size;j++){
+                if(readParams->processes[i].vruntime > readParams->processes[j].vruntime){
+                    //swap the processes
+                    process tmp = readParams->processes[i];
+                    readParams->processes[i] = readParams->processes[j];
+                    readParams->processes[j] = tmp;
+                }
+            }
+        }
+    }
+    else{ //key = 2 is sorted by burstTime
+        for(int i=0;i<total_size;i++){
+            for(int j=i+1;j<total_size;j++){
+                if(readParams->processes[i].burstTime > readParams->processes[j].burstTime){
+                    //swap the processes
+                    process tmp = readParams->processes[i];
+                    readParams->processes[i] = readParams->processes[j];
+                    readParams->processes[j] = tmp;
+                }
+            }
+        }
+    }
+}
+
+/* All queue scheduler hand over the selected job in the form of takeNode */
+/* And multilevel queue scheduler is scheduling under the policy of SJF */
+void *scheduler_queue (void * context){
+    //queue scheduler is SJF
+    bool flag1=false; bool flag2= false;
+    bool flag3 = false; bool flag4 = false;
+    int PrevExeProcessID=1;
+    while(!flag1 || !flag2 || !flag3 || !flag4){
+
+        // To protect takeNode's values are changed.
+        if(!flag1)sem_wait(&semp1); if(!flag2) sem_wait(&semp2);
+        if(!flag3)sem_wait(&semp3); if(!flag4) sem_wait(&semp4);
+        //Critical Section start
+        if(takeNode1 == NULL) {flag1= true;}
+        if(takeNode2 == NULL) {flag2= true;}
+        if(takeNode3 == NULL) {flag3 = true;}
+        if(takeNode4 == NULL) {flag4 = true;}
+        int LeftTime[4];
+        
+        // Multi-level queue scheduler is SJF
+        // To do so, check the burstTime of each job selected by each queue scheduler.
+        if(!flag1) LeftTime[0]= takeNode1->saveProcess.burstTime;
+        else LeftTime[0] = INF;
+        if(!flag2) LeftTime[1] = takeNode2->saveProcess.burstTime;
+        else LeftTime[1] = INF;
+        if(!flag3) LeftTime[2] = takeNode3->saveProcess.burstTime;
+        else LeftTime[2] = INF;
+        if(!flag4) LeftTime[3] = takeNode4->saveProcess.burstTime;
+        else LeftTime[3] = INF;
+        int min_idx =0;
+        
+        //Choose the minimum left time job
+        if(LeftTime[min_idx]>LeftTime[1]) {min_idx = 1;}
+        if(LeftTime[min_idx]>LeftTime[2]) {min_idx = 2;} 
+        if(LeftTime[min_idx]>LeftTime[3]) {min_idx = 3;}
+
+        switch(min_idx){
+            //Shortest Job is takeNode1
+            case 0:
+                //To print blank
+                if(PrevExeProcessID!=takeNode1->saveProcess.processId) {
+                    printf("\n"); PrevExeProcessID =takeNode1->saveProcess.processId;} 
+                
+                //Processing the Job
+                takeNode1->saveProcess.burstTime--;
+                printf("%d ",takeNode1->saveProcess.processId);
+
+                //If takeNode1's burstTime is 0, terminate the job and takeNode1 is changed.
+                if(takeNode1->saveProcess.burstTime ==0) takeNode1 = deleteNode(takeNode1);
+                break;
+            
+            //Shortest Job is takeNode2
+            case 1:
+                //To print blank
+                if(PrevExeProcessID!=takeNode2->saveProcess.processId) {
+                    printf("\n"); PrevExeProcessID = takeNode2->saveProcess.processId;}
+                
+                //Processing the job
+                takeNode2->saveProcess.burstTime--;
+                printf("%d ", takeNode2->saveProcess.processId);
+
+                //If takeNode2's burstTime is 0, terminate the job and takeNode2 is changed.
+                if(takeNode2->saveProcess.burstTime == 0) {takeNode2 = deleteNode(takeNode2);}
+                break;
+                
+            //Shortest Job is takeNode3
+            case 2:
+                
+                //To print blank
+                if(PrevExeProcessID!=takeNode3->saveProcess.processId) {
+                    printf("\n"); PrevExeProcessID = takeNode3->saveProcess.processId;}
+                
+                //Processing the job
+                takeNode3->saveProcess.burstTime--;
+                printf("%d ",takeNode3->saveProcess.processId);
+
+                //Job's vruntime is updated
+                takeNode3->saveProcess.vruntime += 
+                (NICE_O_LOAD/takeNode3->saveProcess.priority)*CFS_time;
+
+                //If takeNode3's burstTime is 0, terminate the job and takeNode2 is changed.
+                if(takeNode3->saveProcess.burstTime == 0) {takeNode3 = deleteNode(takeNode3);}
+                break;
+
+                
+            //Shortest Job is takeNode4
+            case 3:
+                //To print blank
+                if(PrevExeProcessID!=takeNode4->saveProcess.processId) {
+                    printf("\n"); PrevExeProcessID = takeNode4->saveProcess.processId;}
+
+                //Processing the job
+                takeNode4->saveProcess.burstTime--;
+                printf("%d ",takeNode4->saveProcess.processId);
+
+                //If takeNode4's burstTime is 0, terminate the job and takeNode2 is changed.
+                if(takeNode4->saveProcess.burstTime == 0) {takeNode4 = deleteNode(takeNode4);}
+                break;   
+                         
+            default:
+                break;
+        }
+        
+        if(takeNode1 == NULL) {flag1= true;}
+        if(takeNode2 == NULL) {flag2= true;}
+        if(takeNode3 == NULL) {flag3 = true;}
+        if(takeNode4 == NULL) {flag4 = true;}
+
+        //Critical section ends
+        if(!flag1) sem_post(&semp1); if(!flag2) sem_post(&semp2); 
+        if(!flag3) sem_post(&semp3); if(!flag4) sem_post(&semp4);
+    }
+    pthread_exit(NULL);
+}
