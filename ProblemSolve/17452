@@ -1,0 +1,88 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+#define INF 9999999
+using namespace std;
+
+string in[100'005];
+int pre[2]; int suf[2];
+int pre_idx[2]; int suf_idx[2];
+
+void insertPre(int i,int idx) {
+	if (pre[1] > i) {
+		if (pre[0] > i) {
+			pre[1] = pre[0];
+			pre[0] = i;
+			pre_idx[1] = pre_idx[0];
+			pre_idx[0] = idx;
+		}
+		else {
+			pre[1] = i;
+			pre_idx[1] = idx;
+		}
+	}
+}
+void insertSuf(int i,int idx) {
+	if (suf[1] >= i) {
+		if (suf[0] >= i) {
+			suf[1] = suf[0];
+			suf[0] = i;
+			suf_idx[1] = suf_idx[0];
+			suf_idx[0] = idx;
+		}
+		else {
+			suf[1] = i;
+			suf_idx[1] = idx;
+		}
+	}
+}
+int main() {
+	int N;
+	cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> in[n];
+	}
+	int min_del = INF;
+	for (int i = 0; i < 26; i++) { //i번 문자 찾기
+		pre_idx[0] = INF; suf_idx[0] = INF;
+		pre_idx[1] = INF; suf_idx[1] = INF;
+		pre[0] = INF; suf[0] = INF;
+		pre[1] = INF; suf[1] = INF;
+
+		for (int n = 0; n < N; n++) {// n번째 문자열에 대하여
+			for (int k = 0; k < in[n].size(); k++) {
+				if (in[n][k] - 'a' == i) {
+					int len = k;
+					insertPre(len,n);
+					break;
+				}
+			}
+			for (int k = in[n].size()-1;k>=0; k--) {
+				if (in[n][k] - 'a' == i) {
+					int len = in[n].size() - k-1;
+					insertSuf(len,n);
+					break;
+				}
+			}
+			if (pre_idx[0] != INF && suf_idx[0] != INF) {
+				if (pre_idx[0] == suf_idx[0]) { //고른 두 문자열이 같은거라면
+					if (pre_idx[1] != INF) {
+						min_del = min(min_del, pre[1] + suf[0]);
+					}
+					if (suf_idx[1] != INF) {
+						min_del = min(min_del, pre[0] + suf[1]);
+					}
+				}
+				else {
+					min_del = min(min_del, pre[0] + suf[0]);
+				}
+			}
+		}
+	}
+	if (min_del == INF) {
+		cout << -1;
+	}
+	else {
+		cout << min_del;
+	}
+}
