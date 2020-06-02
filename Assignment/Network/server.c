@@ -8,10 +8,14 @@
 #include <sys/select.h>
 
 #define BUF_SIZE 100
+#define MAX_CLNT 256
+
 void error_handling(char *buf);
 
 int main(int argc, char *argv[])
 {
+	int clnt_cnt=0;
+	int clnt_socks[MAX_CLNT];
 	int serv_sock, clnt_sock;
 	struct sockaddr_in serv_adr, clnt_adr;
 	struct timeval timeout;
@@ -63,6 +67,7 @@ int main(int argc, char *argv[])
 					
 					adr_sz = sizeof(clnt_adr);
 					clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_adr, &adr_sz);
+					clnt_socks[clnt_cnt++]=clnt_sock;
 					FD_SET(clnt_sock, &fds);
 					if(fd_max < clnt_sock)
 						fd_max = clnt_sock;
@@ -73,14 +78,27 @@ int main(int argc, char *argv[])
 					str_len = read(i, buf, BUF_SIZE);
 					if(str_len == 0) // close request!
 					{
+						for(int j=0; j<clnt_cnt; j++)   // remove disconnected client
+						{
+							if (i == clnt_socks[j])
+							{
+								while (j < clnt_cnt - 1)
+								{
+									clnt_socks[j] = clnt_socks[j + 1];
+									j++;
+								}
+							break;
+							}
+						}
+						clnt_cnt--;
 						FD_CLR(i, &fds);
 						close(i);
 						printf("closed client: %d \n", i);
 					}
 					else // echo!
 					{
-						for(int j=3;j<fd_max+1;j++){
-							write(j, buf, str_len);
+						for(int j=0;j<clnt_cnt;j++){
+							write(clnt_socks[j], buf, str_len);
 						}
 					}
 				}
