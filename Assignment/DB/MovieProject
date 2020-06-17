@@ -1,0 +1,394 @@
+import psycopg2 as pg2
+
+conn = pg2.connect("host = localhost dbname = project_movie user = postgres password = cse3207 port = 5432")
+conn.autocommit = True
+cur = conn.cursor()
+def PrintTab(num):
+    for i in range (0,num):
+        print("\t",end='')
+def PrintLine():
+    print("------------------------------------------------------------------------------------")
+def UpdateAvgRate():
+    cur.execute("update movie as m set avgRate = (select avg(rate) from customerRate as c where m.movieID = c.movieID)")
+def PrintMovieObtainTable():
+    PrintLine()
+    cur.execute("select * from movieObtain")
+    result = cur.fetchall()
+    print("<movieObtain Table>")
+    for data in result:
+        print("movieID : " + data[0] + " awardID : " + data[1] + " year : " + data[2])
+
+def PrintActorObtainTable():
+    PrintLine()
+    cur.execute("select * from actorObtain")
+    result = cur.fetchall()
+    print("<actorObtain Table>")
+    for data in result:
+        print("actorID : " + data[0] + " awardID : " + data[1] + " year : " + data[2])
+
+def PrintAwardTable():
+    PrintLine()
+    cur.execute("select * from award")
+    result = cur.fetchall()
+    print("<Award Table>")
+    for data in result:
+        print("awardID : " + data[0] + " awardName : " + data[1])
+
+def PrintDirectorObtainTable():
+    PrintLine()
+    cur.execute("select * from directorObtain")
+    result = cur.fetchall()
+    print("<directorObtain Table>")
+    for data in result:
+        print("directorID : " + data[0] + " awardID : " + data[1] + " year : " + data[2])
+
+def PrintCustomerRateTable():
+    PrintLine()
+    cur.execute("select * from customerRate")
+    result = cur.fetchall()
+    print("<customerRate Table>")
+    for data in result:
+        print("customerID : " + data[0] + " movieID : " + data[1] + " rate : ", end='')
+        print(data[2])
+
+def PrintMovieTable():
+    PrintLine()
+    cur.execute("select * from movie")
+    result = cur.fetchall()
+    print("<movie table>")
+    print("movieID \t movieName \t\t releaseYear Month Date "+"\tpublisherName \t\t avgRate")
+    for data in result:
+        print(data[0] + "\t"+ data[1].ljust(20) +"\t"+ data[2]
+              + "\t" + data[3] + "\t" + data[4] + "\t" + data[5].ljust(25)+"\t",end='')
+        print(data[6])
+
+    PrintLine()
+
+cur.execute("create table director(directorID varchar(20) primary key,directorName varchar(20),dateOfBirth varchar(10), dateOfDeath varchar(10))");
+cur.execute("create table actor(actorID varchar(20) primary key,actorName varchar(30),dateOfBirth varchar(10),dateOfDeath varchar(10),gender varchar(6))");
+cur.execute("create table movie(movieID varchar(20) primary key,movieName varchar(30),releaseYear varchar(4),releaseMonth varchar(4),releaseDate varchar(4),publisherName varchar(30),avgRate numeric(2,1))");
+cur.execute("create table award(awardID varchar(20) primary key,awardName varchar(30))");
+cur.execute("create table genre(genreName varchar(30) primary key)");
+cur.execute("create table movieGenre(movieID varchar(20),genreName varchar(20),foreign key(movieID) references movie,foreign key(genreName) references genre)");
+cur.execute("create table movieObtain(movieID varchar(20),awardID varchar(20),foreign key(movieID) references movie,foreign key(awardID) references award,year varchar(4))");
+cur.execute("create table actorObtain(actorID varchar(20),awardID varchar(20),foreign key(actorID) references actor,foreign key(awardID) references award,year varchar(4))");
+cur.execute("create table directorObtain(directorID varchar(20),awardID varchar(20),foreign key(directorID) references director,foreign key(awardID) references award,year varchar(4))");
+
+cur.execute("create table casting(movieID varchar(20),actorID varchar(20),foreign key(actorID) references actor,foreign key(movieID) references movie,role varchar(30))");
+cur.execute("create table make(movieID varchar(20),directorID varchar(20),foreign key(directorID) references director,foreign key(movieID) references movie)");
+cur.execute("create table customer(customerID varchar(20) primary key,customerName varchar(30),dateOfBirth varchar(20),gender varchar(6))");
+cur.execute("create table customerRate(customerID varchar(20),movieID varchar(20),foreign key(customerID) references customer,foreign key(movieID) references movie,rate numeric(3,2))");
+
+print("Table Created!")
+PrintLine()
+cur.execute("insert into Director values ('director000','Tim Burton','1958.8.25',null)")
+cur.execute("insert into Director values ('director001','David Fincher','1962.8.28',null)")
+cur.execute("insert into Director values ('director002','Christopher Nolan','1970.7.30',null)")
+
+cur.execute("insert into Actor values('actor000','Johnny Depp','1963.6.9',null,'Male')")
+cur.execute("insert into Actor values('actor001','Winona Ryder','1971.10.29',null,'Female')")
+cur.execute("insert into Actor values('actor002','Anne Hathaway','1982.11.12',null,'Female')")
+cur.execute("insert into Actor values('actor003','Christian Bale','1974.1.30',null,'Male')")
+cur.execute("insert into Actor values('actor004','Heath Ledger','1979.4.4','2008.1.22','Male')")
+cur.execute("insert into Actor values('actor005','Jesse Eisenberg','1983.10.5',null,'Male')")
+cur.execute("insert into Actor values('actor006','Andrew Garfield','1983.8.20',null,'Male')")
+cur.execute("insert into Actor values('actor007','Fionn Whitehead','1997.7.18',null,'Male')")
+cur.execute("insert into Actor values('actor008','Tom Hardy','1977.9.15',null,'Male')")
+
+cur.execute("insert into Customer values ('customer000','Bob','1997.11.14','Male')")
+cur.execute("insert into Customer values ('customer001','John','1978.01.23','Male')")
+cur.execute("insert into Customer values ('customer002','Jack','1980.05.04','Male')")
+cur.execute("insert into Customer values ('customer003','Jill','1981.04.17','Female')")
+cur.execute("insert into Customer values ('customer004','Bell','1990.05.14','Female')")
+
+cur.execute("insert into Movie values('movie000','Edward Scissorhands','1991','06','29','20th Century Fox Presents',0)")
+cur.execute("insert into Movie values('movie001','Alice In Wonderland','2010','03','04','Korea Sony Pictures',0)")
+cur.execute("insert into Movie values('movie002','The Social Network','2010','11','18','Korea Sony Pictures',0)")
+cur.execute("insert into Movie values('movie003','The Dark Knight','2008','08','06','Warner Brothers Korea',0)")
+cur.execute("insert into Movie values('movie004','Dunkirk','2017','07','13','Warner Brothers Korea',0)")
+
+cur.execute("insert into genre values('Fantasy')")
+cur.execute("insert into genre values('Romance')")
+cur.execute("insert into genre values('Adventure')")
+cur.execute("insert into genre values('Family')")
+cur.execute("insert into genre values('Drama')")
+cur.execute("insert into genre values('Mystery')")
+cur.execute("insert into genre values('Thriller')")
+cur.execute("insert into genre values('War')")
+cur.execute("insert into genre values('Action')")
+
+cur.execute("insert into Casting values ('movie000','actor000','Main actor')")
+cur.execute("insert into Casting values ('movie000','actor001','Main actor')")
+cur.execute("insert into Casting values ('movie001','actor000','Main actor')")
+cur.execute("insert into Casting values ('movie001','actor002','Main actor')")
+cur.execute("insert into Casting values ('movie002','actor005','Main actor')")
+cur.execute("insert into Casting values ('movie002','actor006','Supporting actor')")
+cur.execute("insert into Casting values ('movie003','actor003','Main actor')")
+cur.execute("insert into Casting values ('movie003','actor004','Main actor')")
+cur.execute("insert into Casting values ('movie004','actor007','Main actor')")
+cur.execute("insert into Casting values ('movie004','actor008','Main actor')")
+
+cur.execute("insert into Make values ('movie000','director000')")
+cur.execute("insert into Make values ('movie001','director000')")
+cur.execute("insert into Make values ('movie002','director001')")
+cur.execute("insert into Make values ('movie003','director002')")
+cur.execute("insert into Make values ('movie004','director002')")
+
+cur.execute("insert into movieGenre values('movie000','Fantasy')")
+cur.execute("insert into movieGenre values('movie000','Romance')")
+cur.execute("insert into movieGenre values('movie001','Fantasy')")
+cur.execute("insert into movieGenre values('movie001','Adventure')")
+cur.execute("insert into movieGenre values('movie001','Family')")
+cur.execute("insert into movieGenre values('movie002','Drama')")
+cur.execute("insert into movieGenre values('movie003','Action')")
+cur.execute("insert into movieGenre values('movie003','Drama')")
+cur.execute("insert into movieGenre values('movie003','Mystery')")
+cur.execute("insert into movieGenre values('movie003','Thriller')")
+cur.execute("insert into movieGenre values('movie004','Action')")
+cur.execute("insert into movieGenre values('movie004','Drama')")
+cur.execute("insert into movieGenre values('movie004','Thriller')")
+cur.execute("insert into movieGenre values('movie004','War')")
+
+print("Initial data inserted!")
+PrintLine()
+# ---------------------------------------Init Completed-------------------------------------------------#
+
+cur.execute("insert into award values('award000','Best supporting actor')")
+cur.execute("insert into actorObtain values('actor001','award000','1994')")
+print("Statement 2.1 : Winona Ryder won the “Best supporting actor” award in 1994")
+print("Translated SQL : insert into award values('award000','Best supporting actor')")
+print("Translated SQL : insert into actorObtain values('actor001','award000','1994')")
+PrintAwardTable()
+PrintActorObtainTable()
+PrintLine()
+
+cur.execute("insert into actorObtain values('actor006','award000','2011')")
+print("Statement 2.2 : Andrew Garfield won the “Best supporting actor” award in 2011")
+print("Translated SQL : insert into actorObtain values('actor006','award000','2011')")
+PrintActorObtainTable()
+PrintLine()
+
+cur.execute("insert into award values('award001','Best main actor')")
+cur.execute("insert into actorObtain values('actor005','award001','2011')")
+print("Statement 2.3 : Jesse Eisenberg won the “Best main actor” award in 2011")
+print("Translated SQL : insert into award values('award001','Best main actor')")
+print("Translated SQL : insert into actorObtain values('actor005','award001','2011')")
+
+PrintAwardTable()
+PrintActorObtainTable()
+PrintLine()
+
+cur.execute("insert into award values('award002','Best villain actor')")
+cur.execute("insert into actorObtain values('actor000','award002','2011')")
+print("Statement 2.4 : Johnny Depp won the “Best villain actor” award in 2011")
+print("Translated SQL : insert into award values('award002','Best villain actor')")
+print("Translated SQL : insert into actorObtain values('actor000','award002','2011')")
+
+PrintAwardTable()
+PrintActorObtainTable()
+
+cur.execute("insert into award values('award003','Best fantasy movie')")
+cur.execute("insert into movieObtain values('movie000','award003','1991')")
+print("------------------------------------------------------------------------------------")
+print("Statement 2.5 : Edward Scissorhands won the “Best fantasy movie” award in 1991")
+print("Translated SQL : insert into award values('award003','Best fantasy movie')")
+print("Translated SQL : insert into movieObtain values('movie000','award003','1991')")
+
+PrintAwardTable()
+PrintMovieObtainTable()
+PrintLine()
+
+cur.execute("insert into award values('award004','Best picture')")
+cur.execute("insert into movieObtain values('movie003','award004','2009')")
+print("Statement 2.6 : The Dark Knight won the “Best picture” award in 2009")
+print("Translated SQL : insert into award values('award004','Best picture')")
+print("Translated SQL : insert into movieObtain values('movie003','award004','2009')")
+PrintAwardTable()
+PrintMovieObtainTable()
+PrintLine()
+
+cur.execute("insert into movieObtain values('movie001','award003','2011')")
+print("Statement 2.7: Alice In Wonderland won the “Best fantasy movie” award in 2011")
+print("Translated SQL : insert into movieObtain values('movie001','award003','2011')")
+PrintMovieObtainTable()
+PrintLine()
+
+cur.execute("insert into award values('award005','Best director')")
+cur.execute("insert into directorObtain values('director001','award005','2011')")
+print("Statement 2.8 : David Fincher won the “Best director” award in 2011")
+print("Translated SQL : insert into award values('award005','Best director')")
+print("Translated SQL : insert into directorObtain values('director001','award005','2011')")
+PrintAwardTable()
+PrintDirectorObtainTable()
+PrintLine()
+
+#--------------statement2 Completed ----------------------------------#
+
+print("Statement 3 : Insert data to the proper tables based on the following statements and update avgRate if necessary.")
+print("Translated SQL : \nupdate movie as m "
+      "\nset avgRate = (select avg(rate) from customerRate as C where m.movieID = C.movieID)\n(avgRate update query)")
+PrintLine()
+
+print("Statement 3.1 : Bob rates 5 to “The Dark Knight”.")
+print("Translated SQL : select movieID from movie where movie.movieName = 'The Dark Knight'")
+print("Translated SQL : insert into customerRate values('customer000','movie003','5')")
+cur.execute("insert into customerRate values('customer000','movie003','5')")
+UpdateAvgRate()
+PrintCustomerRateTable()
+PrintMovieTable()
+
+print("Statement 3.2 : Bell rates 5 to the movies whose director is “Tim Burton”.")
+print("Translated SQL : select * from movie, make where movie.movieID = make.movieID and make.directorID = 'director000'")
+print("Translated SQL : insert into customerRate values('customer001','movie000','5')")
+print("Translated SQL : insert into customerRate values('customer001','movie001','5')")
+cur.execute("insert into customerRate values('customer001','movie000','5')")
+cur.execute("insert into customerRate values('customer001','movie001','5')")
+UpdateAvgRate()
+PrintCustomerRateTable()
+PrintMovieTable()
+
+print("Statement 3.3 : Jill rates 4 to the movies whose main actor is female.")
+print("Translated SQL : select * from casting, actor where casting.actorID = actor.actorID and actor.gender='Female' and casting.role = 'Main actor'")
+print("Translated SQL : insert into customerRate values('customer002','movie000','4')")
+print("Translated SQL : insert into customerRate values('customer002','movie001','4')")
+cur.execute("insert into customerRate values('customer002','movie000','4')")
+cur.execute("insert into customerRate values('customer002','movie001','4')")
+UpdateAvgRate()
+PrintCustomerRateTable()
+PrintMovieTable()
+
+print("Statement 3.4 : Jack rates 4 to the fantasy movies.")
+print("Translated SQL : select * from movieGenre, movie where movieGenre.movieID = movie.movieID and movieGenre.genreName = 'Fantasy'")
+print("Translated SQL : insert into customerRate values('customer003','movie000','4')")
+print("Translated SQL : insert into customerRate values('customer003','movie001','4')")
+cur.execute("insert into customerRate values('customer003','movie000','4')")
+cur.execute("insert into customerRate values('customer003','movie001','4')")
+UpdateAvgRate()
+PrintCustomerRateTable()
+PrintMovieTable()
+
+print("statement 3.5 : John rates 5 to the movies whose director won the “Best director” award")
+print("Translated SQL : select movieID from make, directorObtain where directorObtain.awardID = 'award005' and make.directorID = directorObtain.directorID")
+print("Translated SQL : insert into customerRate values('customer004','movie002','5')")
+cur.execute("insert into customerRate values('customer004','movie002','5')")
+UpdateAvgRate()
+PrintCustomerRateTable()
+PrintMovieTable()
+#--------------------------------statement3 Completed----------------------------------#
+
+print("Statement 4. Select the names of the movies whose actor are dead.")
+print("Translated SQL : \nselect movieName")
+print("from movie, (select * ")
+print("\t\t\tfrom actor natural join casting")
+print("\t\t\twhere actor.dateOfDeath is not null) as T")
+print("where movie.movieID = T.movieID")
+PrintLine()
+cur.execute("select movieName from movie, (select * from actor natural join casting where actor.dateOfDeath is not null)as T where movie.movieID = T.movieID ")
+result = cur.fetchall()
+print("SQL Query Result : ", end='')
+print(result[0][0])
+
+#-----------------------------------statement4 Completed-------------------------#
+
+PrintLine()
+print("Statement 5. Select the names of the directors who cast the same actor more than once.")
+cur.execute("select directorName from director where director.directorID = 'director000'")
+print("Translated SQL1 : \nselect directorID")
+print("from (select directorID,actorID")
+print("\t\tfrom casting natural join make) as T")
+print("group by T.directorID, T.actorID\nhaving count(T.directorID)>1 and count(T.actorID)>1")
+print("Translated SQL2 : select directorName from director where director.directorID = 'director000'")
+PrintLine()
+result = cur.fetchall()
+print("SQL Query Result : ", end='')
+print(result[0][0])
+
+#-----------------------------------statement5 Completed-------------------------#
+
+PrintLine()
+print("Statement 6. Select the names of the movies and the genres, where movies have the common genre.")
+print("Translated SQL : \nselect genreName, movieName")
+print("from movie natural join(select movieID, getCommonGenre.genreName")
+PrintTab(6)
+print("from movieGenre natural join (select genreName")
+PrintTab(14)
+print("from movieGenre")
+PrintTab(14)
+print("group by genreName")
+PrintTab(14)
+print("having count(movieGenre.genreName)>1 )as getCommonGenre")
+PrintTab(6)
+print(")as getMovieID")
+print("order by genreName")
+PrintLine()
+print("SQL Query Result : ")
+cur.execute("select genreName, movieName from movie natural join(select movieID, getCommonGenre.genreName from movieGenre natural join (select genreName from movieGenre group by genreName having count(movieGenre.genreName)>1 )as getCommonGenre) as getMovieID order by genreName")
+result = cur.fetchall()
+for data in result:
+    print("GenreName : " + data[0].ljust(10) + " movieName : "+data[1])
+
+#-----------------------------------statement6 Completed-------------------------#
+
+PrintLine()
+print("Statement 7. Delete the movies whose director or actor did not get any award and delete data from related tables.")
+print("Translated SQL : ")
+print("delete from movie")
+print("where movie.movieID not in(select movieID")
+PrintTab(7)
+print("from directorObtain inner join make on make.directorID = directorObtain.directorID")
+PrintTab(7)
+print("union")
+PrintTab(7)
+print("select movieID")
+PrintTab(7)
+print("from actorObtain inner join casting on actorObtain.actorID = casting.actorID)")
+PrintLine()
+cur.execute("delete from casting where casting.movieID not in( select movieID from directorObtain inner join make on make.directorID = directorObtain.directorID union select movieID from actorObtain inner join casting on actorObtain.actorID = casting.actorID)")
+cur.execute("delete from movieGenre where movieGenre.movieID not in( select movieID from directorObtain inner join make on make.directorID = directorObtain.directorID union select movieID from actorObtain inner join casting on actorObtain.actorID = casting.actorID)")
+cur.execute("delete from make where make.movieID not in( select movieID from directorObtain inner join make on make.directorID = directorObtain.directorID union select movieID from actorObtain inner join casting on actorObtain.actorID = casting.actorID)")
+cur.execute("delete from movieObtain where movieObtain.movieID not in( select movieID from directorObtain inner join make on make.directorID = directorObtain.directorID union select movieID from actorObtain inner join casting on actorObtain.actorID = casting.actorID)")
+cur.execute("delete from customerRate where customerRate.movieID not in( select movieID from directorObtain inner join make on make.directorID = directorObtain.directorID union select movieID from actorObtain inner join casting on actorObtain.actorID = casting.actorID)")
+cur.execute("delete from movie where movie.movieID not in( select movieID from directorObtain inner join make on make.directorID = directorObtain.directorID union select movieID from actorObtain inner join casting on actorObtain.actorID = casting.actorID)")
+
+UpdateAvgRate()
+cur.execute("select * from casting")
+result = cur.fetchall()
+print("<casting table>")
+for data in result:
+    print("movieID : "+data[0] + " actorID : "+data[1]+" role : "+data[2])
+
+cur.execute("select * from movieGenre")
+result = cur.fetchall()
+PrintLine()
+print("<movieGenre table>")
+for data in result:
+    print("movieID : "+data[0] + " GenreName : " + data[1])
+
+PrintLine()
+cur.execute("select * from make")
+result = cur.fetchall()
+print("<make table>")
+for data in result:
+    print("movieID : "+data[0] + " directorID : " + data[1])
+
+PrintMovieObtainTable()
+PrintCustomerRateTable()
+PrintMovieTable()
+
+#-----------------------------------Statement7 Completed---------------------------------------------#
+print("8. Delete all customers and delete data from related tables.")
+print("Translated SQL : delete from customerRate")
+print("Translated SQL : delete from customer")
+print("Translated SQL : update movie set avgRate = NULL")
+cur.execute("delete from customerRate")
+cur.execute("delete from customer")
+cur.execute("update movie set avgRate = NULL")
+PrintCustomerRateTable()
+PrintLine()
+print("<customer>")
+PrintMovieTable()
+
+# #-------------------------------------Statement8 Completed-----------------------------------------#
+print("9. Delete all data and tables")
+cur.execute("drop table customerRate;drop table customer;drop table make;drop table casting;drop table directorObtain;drop table actorObtain;drop table movieObtain;drop table movieGenre;drop table Genre;drop table award;drop table movie;drop table actor;drop table director;")
+print("Translated SQL : drop table customerRate;drop table customer;drop table make;drop table casting;drop table directorObtain;drop table actorObtain;drop table movieObtain;drop table movieGenre;drop table Genre;drop table award;drop table movie;drop table actor;drop table director;")
