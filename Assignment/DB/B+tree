@@ -1,0 +1,205 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<cstdio>
+#pragma warning(disable:4996)
+using namespace std;
+
+typedef pair<int, int> P;
+
+class BPTree {
+public:
+    const char* fileName;
+    int blockSize;
+    int depth;
+    int rootBID;
+    FILE* fp;
+    vector<P> path;
+
+    BPTree(const char* fileName) {
+        this->fileName = fileName;
+    }
+
+    void read_file_info() {
+        int buffer[3];
+        fp = fopen((const char*)fileName, "rb+");
+        fseek(fp, 0, 0);
+        fread(&buffer, sizeof(int), 3, fp);
+        blockSize = buffer[0]; rootBID = buffer[1]; depth = buffer[2];
+    }
+
+    void create(int bsize) {
+        blockSize = bsize;
+        depth = 1;
+        rootBID = 1;
+        fp = fopen((const char*)fileName, "wb");
+        fwrite(&blockSize, sizeof(int), 1, fp);
+        fwrite(&rootBID, sizeof(int), 1, fp);
+        fwrite(&depth, sizeof(int), 1, fp);
+        fclose(fp);
+    }
+
+    //split이 일어날때, 
+    //leaf node는 value를 기준으로 나누고 위로 (key,c' pointer)을 삽입한다
+    //non-leaf node 는 pointer를 기준으로 나눈다. 이때 붕 뜨는 값은 상위로 insert
+    void insert(int key, int val) {
+        //insert data into tree
+        int bid = find_leaf(key);
+        insert_to_node(key, val, bid,depth);
+    }
+
+    void insert_to_node(int key, int val, int bid,int h) { // h is bid's depth
+        //check the full
+        int buffer[4];
+        fseek(fp, 12 + ((bid - 1) * blockSize) + blockSize - 8, 0);
+        fread(buffer, sizeof(int), 1, fp);
+
+        //Leaf node is not full
+        if (buffer[0] == 0) {
+            if (h == depth) { // Leaf node case
+                for (int i = 0; i < blockSize; i += 8) {
+                    fseek(fp, 12 + ((bid - 1) * blockSize) + i, 0);
+                    fread(&buffer, sizeof(int), 1, fp); // read key
+                    if (key == 0) {
+
+                    }
+                }
+            }
+            else { // Non-leaf node case
+                vector<P> tmp;
+                for (int i = 0; i < blockSize; i += 8) {
+
+                }
+            }
+        }
+        //Leaf node is full
+        else {
+            //find empty bid
+            fseek(fp, 0, 2);
+            int newbid = (ftell(fp) - 12) / blockSize + 1;
+
+            //bid block에 있는 모든 값들 저장
+            int tmp_buffer[1000];
+            vector<P> tmp;
+            fseek(fp, 12 + ((bid - 1) * blockSize), 0); //없어도 됨. ftell이 혹시 fp 옮길까봐 적음
+            for (int i = 0; i < blockSize - 4; i += 8) {
+                fread(tmp_buffer, sizeof(int) * 2, 1, fp);
+
+                tmp.push_back(P(tmp_buffer[0], tmp_buffer[1]));
+            }
+            tmp.push_back(P(key, val));
+
+            //정렬 후 블럭 지우기
+            sort(tmp.begin(), tmp.end());
+            clear_block(bid);
+            //file pointer is changed!
+
+            int i;
+            int idx = 0;
+            //bid에 해당하는 leaf node와 newbid에 해당하는 leaf node에 균등하게 분배해야 한다.
+            for (i = 0; i < tmp.size() / 2; i++) {
+                tmp_buffer[idx++] = tmp[i].first;
+                tmp_buffer[idx++] = tmp[i].second;
+            }
+            fseek(fp, 12 + ((bid - 1) * blockSize), 0);
+            fwrite(tmp_buffer, sizeof(int), idx, fp);
+
+            idx = 0;
+            for (; i < tmp.size(); i++) {
+                tmp_buffer[idx++] = tmp[i].first;
+                tmp_buffer[idx++] = tmp[i].second;
+            }
+            fseek(fp, 12 + ((newbid - 1) * blockSize), 0);
+            fwrite(tmp_buffer, sizeof(int), idx, fp);
+
+            //bid와 newbid의 NextBID를 수정하고 newbid의 가장 작은 원소를 부모에 넣기
+
+        }
+    }
+
+    //bid block을 나눈다
+    void split_node(int key, int val, int bid) {
+
+    }
+
+    void print();
+    int* search(int key);
+    int* search(int staratRange, int endRange);
+    //Additional function
+
+    //This function initalize the block and FP
+    void clear_block(int bid) {
+        int buffer[2] = { 0 };
+        fseek(fp, 12 + ((bid - 1) * blockSize), 0);
+        fwrite(buffer, sizeof(int) * 2, blockSize/8, fp);
+        fwrite(buffer, sizeof(int), 1, fp);
+    }
+
+    int find_leaf(int key) {
+        //함수의 전제조건 : 모든 node들은 height가 동일하다
+        int bid = rootBID;
+        if (depth == 1) {
+            return rootBID;
+        }
+        else {
+            int depth_cnt = 1;
+            while (depth_cnt != depth) {
+                //inside the block
+                for (int i = 0; i < blockSize; i += 8) {
+                    fseek(fp, 12 + ((bid - 1) * blockSize) + i, 0);
+                    int buffer[4];
+                    // if touched last pointer
+                    if (i == blockSize - 4) {
+                        fread(buffer, sizeof(int), 1, fp);
+                        path.push_back(P(bid, buffer[0]));
+                        bid = buffer[0]; depth_cnt++;
+                        break;
+                    }
+                    // not touched last pointer
+                    fread(buffer, sizeof(int), 2, fp);
+                    if (buffer[1] > key) {
+                        path.push_back(P(bid, buffer[0]));
+                        bid = buffer[0]; depth_cnt++;
+                        break;
+                    }
+                }
+            }
+            return bid;
+        }
+    }
+};
+
+int main(int argc, char* argv[]) {
+    char command = 'i';
+    //char command = argv[1][0];
+    
+    const char* temp_name = "btree.bin";
+    BPTree* myBPtree = new BPTree(temp_name);
+    //BPTree* myBPtree = new BPTree((const char*)argv[2]);
+    //
+
+    switch (command) {
+    case 'c':
+        //create index file
+        myBPtree->create(36);
+        //myBPtree->create(argv[3]);
+        break;
+    case 'i':
+        //insert record from 
+        myBPtree->read_file_info();
+        myBPtree->insert(6, 4);
+        myBPtree->insert(3, 4);
+        myBPtree->insert(1, 4);
+        myBPtree->insert(9, 4);
+        break;
+    case 's':
+        //search keys in [input file] and print result to [output file]
+        break;
+    case 'r':
+        //search keys in [input file] and print result to outputfile
+        break;
+    case 'p':
+        //print Btree structure to [output file]
+        break;
+    }
+}
