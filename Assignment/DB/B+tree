@@ -2,10 +2,13 @@
 #include<vector>
 #include<algorithm>
 #include<cstdio>
+#define MAX_SIZE 100'000
 #pragma warning(disable:4996)
 using namespace std;
 
 typedef pair<int, int> P;
+
+int init[MAX_SIZE] = { 0 };
 
 class BPTree {
 public:
@@ -15,6 +18,7 @@ public:
     int rootBID;
     FILE* fp;
     vector<P> path;
+    FILE* result;
 
     BPTree(const char* fileName) {
         this->fileName = fileName;
@@ -28,8 +32,50 @@ public:
         blockSize = buffer[0]; rootBID = buffer[1]; depth = buffer[2];
     }
 
+    void range_search(int s,int e) {
+        vector<P> res;
+        int bid = find_leaf(s);
+        bool flag = true;
+        int buffer[4] = { 0 };
+        while (flag && bid!=0) {
+            //read block
+            flag = false;
+            fseek(fp, 12 + ((bid - 1) * blockSize), 0);
+            for (int i = 0; i < blockSize-4; i += 8) {
+                fread(buffer, sizeof(int), 2, fp);
+                if (s <= buffer[0] && e >= buffer[0]) {
+                    res.push_back(P(buffer[0], buffer[1]));
+                    flag = true;
+                }
+            }
+
+            //when we reach at last of the block, read the pointer which points next leaf node
+            fread(buffer, sizeof(int), 1, fp);
+            bid = buffer[0];
+        }
+        
+        //save the result to the output file
+        for (P cur : res) {
+            fprintf(result, "%d,%d\t", cur.first, cur.second);
+        }
+        fprintf(result, "\n");
+    }
+
+    void search(int key) {
+        bool flag = false;
+        int buffer[4] = { 0 };
+        int bid = find_leaf(key);
+        fseek(fp, 12 + ((bid - 1) * blockSize), 0);
+        for (int i = 0; i < blockSize - 4; i += 8) {
+            fread(buffer, sizeof(int), 2, fp);
+            if (buffer[0] == key) {
+                flag = true; break;
+            }
+        } 
+        fprintf(result,"%d,%d\n",buffer[0],buffer[1]);
+    }
+
     void create(int bsize) {
-        int init[9] = { 0 };
         blockSize = bsize;
         depth = 1;
         rootBID = 1;
@@ -37,8 +83,8 @@ public:
         fwrite(&blockSize, sizeof(int), 1, fp);
         fwrite(&rootBID, sizeof(int), 1, fp);
         fwrite(&depth, sizeof(int), 1, fp);
-        
-        fwrite(&init, sizeof(int), 9, fp);
+
+        fwrite(&init, sizeof(int), blockSize/4, fp);
         fclose(fp);
     }
 
@@ -48,6 +94,8 @@ public:
     //leaf경우는 value를 기준으로 2개 block으로 쪼갬
     //Non leaf경우는 포인터를 기준으로 2개로 쪼갬 그리고 위로 c'의 포인터를 넘김
     void insert(int key, int val) {
+        //path는 변경이 되기 때문에 비워줘야 함
+        path.clear();
         //insert data into tree
         int bid = find_leaf(key);
         insert_to_node(key, val, bid,depth);
@@ -134,7 +182,6 @@ public:
                 insert_to_node(upvalue, newbid, parentpid, h - 1);
             }
         }
-        //fclose(fp);
     }
 
     //bid block을 나눈다
@@ -157,7 +204,7 @@ public:
 
             //정렬 후 블럭 지우기
             sort(tmp.begin(), tmp.end());
-            clear_block(bid);
+            clear_block(bid,h);
             //file pointer is changed!
 
             int i;
@@ -210,7 +257,7 @@ public:
 
             //정렬 후 블럭 초기화
             sort(tmp.begin(), tmp.end());
-            clear_block(bid);
+            clear_block(bid,h);
 
             fseek(fp, 12 + ((bid - 1) * blockSize), 0); //seek!!
             fwrite(&tmp_val, sizeof(int), 1, fp);
@@ -244,17 +291,62 @@ public:
         return ret;
     }
 
-    void print();
-    int* search(int key);
-    int* search(int staratRange, int endRange);
-    //Additional function
+    void print(int bid) {
+        fprintf(result, "<0>\n");
+        int buffer = 0;
+        vector<int> pointers;
+        vector<int> val;
+        fseek(fp, 12 + ((bid - 1) * blockSize), 0);
+        for (int i = 0; i < blockSize / 4; i++) {
+            fread(&buffer, sizeof(int), 1, fp);
+            if (buffer == 0) {
+                break;
+            }
+            if (i % 2 == 0) {//this is pointer
+                pointers.push_back(buffer);
+            }
+            else {
+                val.push_back(buffer);
+            }
+        }
+        int i = 0;
+        for (i; i < val.size() - 1; i++) {
+            fprintf(result, "%d,", val[i]);
+        }
+        fprintf(result, "%d\n", val[i]);
+        
+        fprintf(result, "<1>\n");
+        int b = 0;
+        for (b = 0; b < pointers.size();b++) {
+            fseek(fp, 12 + ((pointers[b] - 1) * blockSize), 0);
+            for (int j = 0; j < blockSize / 4; j++) {
+                fread(&buffer, sizeof(int), 1, fp);
+                if (buffer == 0) {
+                    break;
+                }
+                if (j % 2 != 0) {
+                   fprintf(result, "%d", buffer);
+                }
+                else {
+                    if (j != 0) {
+                        fprintf(result, ",");
+                    }
+                }
+            }
+        }
+        fseek(result, -1, 2);
+        fprintf(result, "\n");
+    }
 
     //This function initalize the block and FP
-    void clear_block(int bid) {
-        int buffer[2] = { 0 };
+    void clear_block(int bid,int h) {
         fseek(fp, 12 + ((bid - 1) * blockSize), 0);
-        fwrite(buffer, sizeof(int) * 2, blockSize/8, fp);//수정필요
-        fwrite(buffer, sizeof(int), 1, fp);
+        if (h == depth) { //leaf node의 경우
+            fwrite(&init, sizeof(int), blockSize / 4 - 1, fp);
+        }
+        else {
+            fwrite(&init, sizeof(int), blockSize / 4, fp);
+        }
     }
 
     int find_leaf(int key) {
@@ -297,50 +389,81 @@ public:
     }
 
     int newblock() {//0을 삽입하자
-        int init[9] = { 0 };
         fseek(fp, 0, 2);
         int newbid = (ftell(fp) - 12) / blockSize + 1;
-        fwrite(init, sizeof(int), 9, fp);
+        fwrite(&init, sizeof(int), blockSize/4, fp);
         return newbid;
     }
 };
 
 int main(int argc, char* argv[]) {
-    char command = 'i';
-    //char command = argv[1][0];
+    //char command = 'r';
+    char command = argv[1][0];
     
-    const char* temp_name = "btree.bin";
-    BPTree* myBPtree = new BPTree(temp_name);
-    //BPTree* myBPtree = new BPTree((const char*)argv[2]);
-    //
+    //const char* temp_name = "btree.bin";
+    //BPTree* myBPtree = new BPTree(temp_name);
+    BPTree* myBPtree = new BPTree((const char*)argv[2]);
+    
 
     switch (command) {
     case 'c':
         //create index file
-        myBPtree->create(36);
-        //myBPtree->create(argv[3]);
+        myBPtree->create((int)atoi(argv[3]));
+        //myBPtree->create((36));
+        cout << "create!\n";
         break;
     case 'i':
+    {
         //insert record from 
         myBPtree->read_file_info();
-        myBPtree->insert(6, 4);
-        myBPtree->insert(3, 4);
-        myBPtree->insert(1, 4);
-        myBPtree->insert(9, 4);
-        myBPtree->insert(7, 4);
-        myBPtree->insert(12, 4);
-        myBPtree->insert(337, 4);
-        myBPtree->insert(85, 4);
+        FILE* input = fopen((char*)argv[3], "r");
+        //FILE* input = fopen((char*)"sample_insertion_input.txt", "r");
+        fseek(input, 0, 0);
+        int n1, n2;
+        while (EOF != fscanf(input, "%d,%d", &n1, &n2)) {
+            myBPtree->insert(n1, n2);
+        }
         //leaf is not checked
+        fclose(input);
         break;
+    }
     case 's':
+    {
         //search keys in [input file] and print result to [output file]
+        myBPtree->read_file_info();
+        FILE* input = fopen((char*)argv[3], "r");
+        myBPtree->result = fopen((char*)argv[4], "w");
+        fseek(input, 0, 0);
+        int n1;
+        while (EOF != fscanf(input, "%d", &n1)) {
+            myBPtree->search(n1);
+        }
+        fclose(myBPtree->result);
         break;
+    }
     case 'r':
-        //search keys in [input file] and print result to outputfile
+    {
+        //search keys in [input file] and print result to [outputfile]
+        myBPtree->read_file_info();
+
+        //FILE* input = fopen((char*)"sample_range_search.txt", "r");
+        //myBPtree->result = fopen((char*)"range_output.txt", "w");
+        FILE* input = fopen((char*)argv[3], "r");
+        myBPtree->result = fopen((char*)argv[4], "w");
+        fseek(input, 0, 0);
+        int n1, n2;
+        while (EOF != fscanf(input, "%d,%d", &n1, &n2)) {
+            myBPtree->range_search(n1, n2);
+        }
+        fclose(myBPtree->result);
         break;
+    }
     case 'p':
         //print Btree structure to [output file]
+        myBPtree->read_file_info();
+        myBPtree->result = fopen((char*)argv[3], "w");
+        myBPtree->print(myBPtree->rootBID);
+        fclose(myBPtree->result);
         break;
     }
 }
