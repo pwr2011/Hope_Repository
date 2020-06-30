@@ -36,8 +36,9 @@ public:
         vector<P> res;
         int bid = find_leaf(s);
         bool flag = true;
+        bool start = false;
         int buffer[4] = { 0 };
-        while (flag && bid!=0) {
+        while ((flag  || !start) && bid != 0) {
             //read block
             flag = false;
             fseek(fp, 12 + ((bid - 1) * blockSize), 0);
@@ -45,6 +46,7 @@ public:
                 fread(buffer, sizeof(int), 2, fp);
                 if (s <= buffer[0] && e >= buffer[0]) {
                     res.push_back(P(buffer[0], buffer[1]));
+                    start = true;
                     flag = true;
                 }
             }
@@ -248,7 +250,7 @@ public:
             fseek(fp, 12 + ((bid - 1) * blockSize), 0); //처음에 있는 포인터는 놔둔다
             fread(&tmp_val, sizeof(int), 1, fp);
 
-            for (int i = 0; i <= blockSize - 8; i += 8) { //-8은 read하니 당연한것 byte씩 읽을거야
+            for (int i = 0; i <= blockSize - 8; i += 8) { // < blockSize-4로 해도 됨
                 fread(tmp_buffer, sizeof(int), 2, fp);
                 if (tmp_buffer[0] == 0) break;
                 tmp.push_back(P(tmp_buffer[0], tmp_buffer[1]));
@@ -409,8 +411,7 @@ int main(int argc, char* argv[]) {
     case 'c':
         //create index file
         myBPtree->create((int)atoi(argv[3]));
-        //myBPtree->create((36));
-        cout << "create!\n";
+        //myBPtree->create(52);
         break;
     case 'i':
     {
@@ -461,6 +462,7 @@ int main(int argc, char* argv[]) {
     case 'p':
         //print Btree structure to [output file]
         myBPtree->read_file_info();
+        //myBPtree->result = fopen("print.txt", "w");
         myBPtree->result = fopen((char*)argv[3], "w");
         myBPtree->print(myBPtree->rootBID);
         fclose(myBPtree->result);
