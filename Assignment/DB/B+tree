@@ -471,9 +471,7 @@ int main(int argc, char* argv[]) {
     {
         //search keys in [input file] and print result to [outputfile]
         myBPtree->read_file_info();
-
-        //FILE* input = fopen((char*)"sample_range_search.txt", "r");
-        //myBPtree->result = fopen((char*)"range_output.txt", "w");
+        
         FILE* input = fopen((char*)argv[3], "r");
         myBPtree->result = fopen((char*)argv[4], "w");
         fseek(input, 0, 0);
