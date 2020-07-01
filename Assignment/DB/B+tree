@@ -294,7 +294,53 @@ public:
     }
 
     void print(int bid) {
+        vector<int> pointers;
         fprintf(result, "<0>\n");
+        if (depth == 1) { //print leaf node
+            print_leafnode(bid);
+            fseek(result, -1, 2);
+            fprintf(result, " \n");
+        }
+        else { 
+            pointers = print_nonleafnode(bid);
+            fseek(result, -1, 2);
+            fprintf(result, " \n");
+        }
+        fprintf(result, "<1>\n");
+        int b = 0;
+        if (depth == 2) {
+            for (b = 0; b < pointers.size(); b++) {
+                print_leafnode(pointers[b]);
+            }
+            if (pointers.size() != 0) {
+                fseek(result, -1, 2);
+                fprintf(result, "\n");
+            }
+        }
+        else {
+            for (b = 0; b < pointers.size(); b++) {
+                print_nonleafnode(pointers[b]);
+            }
+            if (pointers.size() != 0) {
+                fseek(result, -1, 2);
+                fprintf(result, "\n");
+            }
+        }
+    }
+
+    void print_leafnode(int bid) {
+        int buffer[2] = { 0 };
+        vector<int> val;
+        fseek(fp, 12 + ((bid - 1) * blockSize), 0);
+        for (int i = 0; i < blockSize / 8; i++) {
+            fread(buffer, sizeof(int), 2, fp);
+            if (buffer[0] != 0) {
+                fprintf(result, "%d,", buffer[0]);
+            }
+            else break;
+        }
+    }
+    vector<int> print_nonleafnode(int bid) {
         int buffer = 0;
         vector<int> pointers;
         vector<int> val;
@@ -312,32 +358,11 @@ public:
             }
         }
         int i = 0;
-        for (i; i < val.size() - 1; i++) {
+        for (i; i < val.size(); i++) {
             fprintf(result, "%d,", val[i]);
         }
-        fprintf(result, "%d\n", val[i]);
-        
-        fprintf(result, "<1>\n");
-        int b = 0;
-        for (b = 0; b < pointers.size();b++) {
-            fseek(fp, 12 + ((pointers[b] - 1) * blockSize), 0);
-            for (int j = 0; j < blockSize / 4; j++) {
-                fread(&buffer, sizeof(int), 1, fp);
-                if (buffer == 0) {
-                    break;
-                }
-                if (j % 2 != 0) {
-                   fprintf(result, "%d", buffer);
-                }
-                else {
-                    if (j != 0) {
-                        fprintf(result, ",");
-                    }
-                }
-            }
-        }
-        fseek(result, -1, 2);
-        fprintf(result, "\n");
+
+        return pointers;
     }
 
     //This function initalize the block and FP
