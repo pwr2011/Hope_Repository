@@ -1,0 +1,47 @@
+#include<iostream>
+#include<algorithm>
+#define MAX_SIZE 1'005
+using namespace std;
+
+int dp[MAX_SIZE][MAX_SIZE][2];
+int card[MAX_SIZE];
+
+int A(int i, int j,int turn) {
+	if (i == j) {
+		if (turn == 0) {
+			return card[i];
+		}
+		else return 0;
+	}
+
+	if (dp[i][j][turn] != 0) {
+		return dp[i][j][turn];
+	}
+	int res = 0;
+	if(turn == 0){
+		res = max(card[i] + A(i + 1, j, turn ^ 1), card[j] + A(i, j - 1, turn ^ 1));
+	}
+	else {
+		res = min(A(i + 1, j, turn ^ 1), A(i, j - 1, turn ^ 1));
+	}
+
+	dp[i][j][turn] = res;
+	return res;
+}
+
+int main() {
+	int T; cin >> T;
+	while (T--) {
+		int N; cin >> N;
+		for (int n = 0; n < N; n++) {
+			cin >> card[n];
+		}
+		cout << A(0, N - 1,0) << "\n";
+		for (int n = 0; n < N; n++) {
+			for (int t = 0; t < N; t++) {
+				dp[n][t][0] = 0;
+				dp[n][t][1] = 0;
+			}
+		}
+	}
+}
