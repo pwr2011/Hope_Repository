@@ -1,0 +1,34 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+
+int arr[1 << 21];
+
+int treesize;
+int result = 0;
+
+int dfs(int num) { //num을 루트로 하는 서브트리에서 리프까지의 거리 return
+	if (num < treesize/2) { //non-leaf node
+		int left = dfs(num * 2);
+		int right = dfs(num * 2 + 1);
+		result += abs(left - right);
+		return arr[num] + max(left, right);
+	}
+	else {
+		return arr[num];
+	}
+}
+
+int main() {
+	int sum = 0;
+	int K; cin >> K;
+	treesize = 1 << (K+ 1);
+	for (int n = 2; n < treesize; n++) {
+		cin >> arr[n];
+		sum += arr[n];
+	}
+	dfs(1);
+
+	cout << result+sum;
+}
