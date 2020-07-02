@@ -1,0 +1,38 @@
+#include<iostream>
+#include<queue>
+#include<vector>
+#include<algorithm>
+#define ll long long
+#define MAX_SIZE 2'505
+using namespace std;
+
+typedef pair<ll, pair<ll, ll> > P;
+vector<pair<ll,ll> >dist[MAX_SIZE];
+ll val[MAX_SIZE];
+ll dp[MAX_SIZE][MAX_SIZE];
+
+int main() {
+	ll N, M; cin >> N >> M;
+	for (ll n = 0; n < N; n++) {
+		cin >> val[n];
+	}
+	for (ll m = 0; m < M; m++) {
+		ll n1, n2, cost; cin >> n1 >> n2 >> cost;
+		dist[n1 - 1].push_back(make_pair(n2 - 1, cost));
+		dist[n2 - 1].push_back(make_pair(n1 - 1, cost));
+	}
+	priority_queue<P>pq;
+	pq.push(P(0, make_pair(0, val[0])));
+	while (!pq.empty()) {
+		P cur = pq.top(); pq.pop();
+		ll cost = -cur.first; ll city = cur.second.first; ll L = cur.second.second;
+		if (dp[city][L] == 1) continue;
+		if (city == N - 1) { cout << cost; break; }
+
+		dp[city][L] = 1;
+		for (auto next : dist[city]) {
+			ll nextL = min(L, val[next.first]);
+			pq.push(P(-(cost + next.second * L), make_pair(next.first, nextL)));
+		}
+	}
+}
