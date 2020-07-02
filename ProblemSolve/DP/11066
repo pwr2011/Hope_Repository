@@ -1,0 +1,40 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int page[505];
+int add_page[505];
+int dp[505][505];
+
+int cal(int s, int e) {
+	int res = 98765432;
+	if (dp[s][e] != 0) return dp[s][e];
+	if (s == e) return 0;
+	for (int k = s; k < e; k++) {
+		res = min(cal(s, k) + cal(k + 1, e) + add_page[e]-add_page[s-1], res);
+	}
+	dp[s][e] = res;
+	return res;
+}
+
+int main() {
+	int T; cin >> T;
+	while (T--) {
+		int K; cin >> K;
+		for (int k = 1; k <= K; k++) {
+			cin >> page[k];
+			if (k > 1) {
+				add_page[k] = page[k]+add_page[k - 1];
+			}
+			else {
+				add_page[1] = page[1];
+			}
+		}
+		for (int k = 0; k <= K; k++) {
+			for (int j = 0; j <= K; j++) {
+				dp[k][j] = 0;
+			}
+		}
+		cout<<cal(1, K)<<"\n";
+	}
+}
