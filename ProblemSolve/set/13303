@@ -1,0 +1,63 @@
+#include<iostream>
+#include<set>
+#include<vector>
+#include<iterator>
+#include<algorithm>
+#define ll long long
+#define MAX 1e12
+using namespace std;
+
+struct pos {
+	ll y, d;
+	bool operator<(const pos& p) const { return y == p.y ? d < p.d : y < p.y; }
+};
+
+struct obs {
+	ll x, yl, yh;
+	bool operator<(const obs& o) const { return x == o.x ? yl < o.yl : x < o.x; }
+};
+set<pos> s;
+
+int main() {
+	ll N; cin >> N;
+	ll s_y, e_x; cin >> s_y >> e_x;
+
+	vector<obs> o;
+	for (ll n = 0; n < N; n++) {
+		ll a, b, c; cin >> a >> b >> c; o.push_back({ a,b,c });
+	}
+	sort(o.begin(), o.end());
+	s.insert({s_y, 0});
+	for (obs cur : o) {
+		if (cur.yl >= (--s.end())->y)continue;
+		auto p = s.lower_bound({cur.yl,-1});
+		vector<pos> arr;
+		ll l = MAX, h = MAX;
+		while (p->y < cur.yh) {
+			arr.push_back(*p);
+			p++;
+			if (p == s.end()) break;
+		}
+		for (pos c_p : arr) {
+			l = min(l, c_p.y - cur.yl + c_p.d);
+			h = min(h, cur.yh - c_p.y + c_p.d);
+		}
+		for (pos c_p : arr) {
+			s.erase(c_p);
+		}
+		s.insert({ cur.yl,l });
+		s.insert({ cur.yh,h });
+	}
+	ll min_dis = MAX;
+	for (pos i : s) {
+		min_dis = min(min_dis, i.d);
+	}
+	vector<ll> res;
+	for (pos i : s) {
+		if (i.d == min_dis) res.push_back(i.y);
+	}
+	cout << min_dis+e_x << "\n" << res.size() << " ";
+	for (ll cur : res) {
+		cout << cur << " ";
+	}
+}
