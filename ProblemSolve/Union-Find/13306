@@ -1,0 +1,56 @@
+#include<iostream>
+#include<string>
+#include<vector>
+#define MAX_N 200'005
+using namespace std;
+
+typedef pair<int, pair<int, int> >P;
+
+int p[MAX_N];
+int init_p[MAX_N];
+P query[2*MAX_N];
+
+int find(int a) {
+	if (p[a] == a) return a;
+	return p[a] = find(p[a]);
+}
+
+int main() {
+	int N, Q; cin >> N >> Q;
+	for (int n = 2; n <= N; n++) {
+		cin >> init_p[n];
+	}
+	for (int i = 1; i <= N; i++) { //초기에는 자기자신이 루트(역으로 쿼리를 입력받음)
+		p[i] = i;
+	}
+
+	for (int i = 0; i < N + Q - 1; i++) {
+		cin >> query[i].first;
+		if (query[i].first == 0) {
+			cin >> query[i].second.first;
+		}
+		else {
+			cin>> query[i].second.first >> query[i].second.second;
+		}
+	}
+
+	vector<string> res;
+	for (int i = N + Q - 2; i >= 0; i--) {
+		if (query[i].first == 0) {
+			p[query[i].second.first] = init_p[query[i].second.first];
+		}
+		else {
+			int a = find(query[i].second.first);
+			int b = find(query[i].second.second);
+			if (a == b) {
+				res.push_back("YES");
+			}
+			else {
+				res.push_back("NO");
+			}
+		}
+	}
+	for (int i = res.size() - 1; i >= 0; i--) {
+		cout << res[i] << "\n";
+	}
+}
