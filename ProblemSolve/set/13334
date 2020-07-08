@@ -1,0 +1,53 @@
+#include<iostream>
+#include<set>
+#include<algorithm>
+#define ll long long
+
+
+using namespace std;
+typedef pair<ll, ll> P;
+
+P person[100'005];
+
+int main() {
+	multiset<ll> s;
+	ll D;
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		ll input1, input2; cin >> input1 >> input2;
+		if (input1 < input2) {
+			person[n].second = input1;
+			person[n].first = input2;
+		}
+		else{
+			person[n].first = input1;
+			person[n].second = input2;
+		}
+		person[n].first += 100'000'000; person[n].second += 100'000'000;
+	}
+	cin >> D;
+	sort(person, person + N);
+	int idx = 0;
+	while (1) {
+		if (idx == N - 1) break;
+		if (person[idx].first <= D) {
+			s.insert(-person[idx].second);//시작시간 insert
+			idx++;
+		}
+		else {
+			break;
+		}
+	}
+	ll max_size = s.size();
+
+	for (int i = idx; i < N; i++) {
+		s.insert(-person[i].second);
+		auto iter = s.upper_bound(-(person[i].first - D));
+		while (iter != s.end()) {
+			auto curr = iter++;
+			s.erase(curr);
+		}
+		max_size = max(max_size, (ll)s.size());
+	}
+	cout << max_size;
+}
