@@ -1,0 +1,24 @@
+#include<iostream>
+using namespace std;
+
+int arr[35];
+int ori[35];
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> arr[n];
+	}
+		int from = 0, value = arr[0], count = 0;
+		while (count < N) {
+			while (ori[from] != 0) { from = (from + 1) % N; }
+			ori[from] = arr[count];
+			from = (from + value) % N;
+			count++;
+			value = arr[count];
+		}
+		cout << N << "\n";
+		for (int n = 0; n < N; n++) {
+			cout << ori[n] << " ";
+		}
+}
