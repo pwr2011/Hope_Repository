@@ -1,0 +1,40 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+bool check[100'005];
+int arr[100'005];
+typedef pair<int, int> P;
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	vector<P> pair;
+	int N, M;
+	cin >> N >> M;
+	for (int n = 1; n <= N; n++) {
+		arr[n] = n;
+	}
+	for (int m = 0; m < M; m++) {
+		int n1, n2; cin >> n1 >> n2;
+		arr[n1]++; arr[n2]--;
+	}
+	bool flag = true;
+	for (int i = 1; i <= N; i++) {
+		if (check[arr[i]] == false) {
+			check[arr[i]] = true;
+		}
+		else {
+			flag = false;
+			break;
+		}
+	}
+	if (flag) {
+		for (int i = 1; i <= N; i++) {
+			cout << arr[i] << " ";
+		}
+	}
+	else {
+		cout << -1;
+	}
+}
