@@ -1,0 +1,80 @@
+#include<iostream>
+#include<queue>
+#include<set>
+
+using namespace std;
+
+typedef pair<int, int> P;
+
+int main() {
+	int A, B; cin >> A >> B;
+	int C, D; cin >> C >> D;
+	
+	bool flag = false;
+	int times = 0;
+	set<P> s;
+	queue<P>q;
+	q.push(P(0, 0));
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int i = 0; i < qsize; i++) {
+			P cur = q.front(); q.pop();
+			//if (s.find(cur) != s.end()) continue;
+			s.insert(cur);
+			if (cur.first == C && cur.second == D) {
+				cout << times; flag = true; break;
+			}
+
+			if (cur.first != A) {
+				if (s.find(P(A, cur.second)) == s.end()) {
+					q.push(P(A, cur.second));
+					s.insert(P(A, cur.second));
+				}
+			}
+			if (cur.second != B) {
+				if (s.find(P(cur.first, B)) == s.end()) {
+					q.push(P(cur.first, B));
+					s.insert(P(cur.first, B));
+				}
+			}
+			if (cur.first != 0) {
+				if (s.find(P(0, cur.second)) == s.end()) {
+					q.push(P(0, cur.second));
+					s.insert(P(0, cur.second));
+				}
+			}
+			if (cur.second != 0) {
+				if (s.find(P(cur.first, 0)) == s.end()) {
+					q.push(P(cur.first, 0));
+					s.insert(P(cur.first, 0));
+				}
+			}
+			if (cur.first + cur.second <= B) {
+				if (s.find(P(0, cur.first + cur.second)) == s.end()) {
+					q.push(P(0, cur.first + cur.second));
+					s.insert(P(0, cur.first + cur.second));
+				}
+			}
+			else {
+				if (s.find(P(cur.first + cur.second - B, B)) == s.end()) {
+					q.push(P(cur.first + cur.second - B, B));
+					s.insert(P(cur.first + cur.second - B, B));
+				}
+			}
+			if (cur.first + cur.second <= A) {
+				if (s.find(P(cur.first + cur.second, 0)) == s.end()) {
+					q.push(P(cur.first + cur.second, 0));
+					s.insert(P(cur.first + cur.second, 0));
+				}
+			}
+			else {
+				if (s.find(P(A, cur.first + cur.second - A)) == s.end()) {
+					q.push(P(A, cur.first + cur.second - A));
+					s.insert(P(A, cur.first + cur.second - A));
+				}
+			}
+		}
+		times++;
+	}
+	if (!flag) { cout << -1; }
+}
