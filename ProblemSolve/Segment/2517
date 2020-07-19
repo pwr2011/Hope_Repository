@@ -1,0 +1,57 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<cmath>
+#define ll long long
+using namespace std;
+
+typedef pair<ll, ll> P;
+
+vector<P> v;
+
+class seg {
+public:
+	ll arr[1048576] = { 0 };
+	ll start;
+
+	seg(ll size) {
+		start = pow(2,ceil(log2(size)));
+	}
+
+	void update(ll idx) {
+		idx += start;
+		arr[idx] = 1;
+		idx /= 2;
+		while (idx >= 1) {
+			arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+			idx /= 2;
+		}
+	}
+	ll sum(ll L, ll R, ll node, ll nodeL, ll nodeR) {
+		if (R<nodeL || L>nodeR) return 0;
+		if (L <= nodeL && nodeR <= R) return arr[node];
+		ll mid = (nodeL + nodeR) / 2;
+		return sum(L,R,node*2,nodeL, mid) + sum(L,R,node*2+1,mid + 1, nodeR);
+	}
+};
+
+int main() {
+	ll res[500'005] = { 0 };
+	ll N; cin >> N;
+	seg* tree = new seg(N);
+	for (int n = 0; n < N; n++) {
+		ll num; cin >> num;
+		v.push_back(P(num,n));
+	}
+	sort(v.begin(), v.end());
+
+	for (P cur : v) {
+		ll idx = cur.second;
+		res[idx] = idx - tree->sum(0, idx, 1, 0, tree->start-1);
+		tree->update(idx);
+	}
+
+	for (int n = 0; n < N; n++) {
+		cout << res[n]+1 << "\n";
+	}
+}
