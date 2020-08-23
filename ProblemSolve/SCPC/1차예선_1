@@ -1,0 +1,47 @@
+#include <iostream>
+#include <algorithm>
+#include<vector>
+#define ll long long
+using namespace std;
+
+int Answer;
+
+int main(int argc, char** argv)
+{
+	int T, test_case;
+
+
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		int N, K; cin >> N >> K;
+		vector<ll> A;
+		vector<ll> B;
+
+		ll tmp;
+		for (int n = 0; n < N; n++) {
+			cin >> tmp; A.push_back(tmp);
+		}
+		for (int n = 0; n < N; n++) {
+			cin >> tmp; B.push_back(tmp);
+		}
+
+		sort(A.begin(), A.end());
+		sort(B.begin(), B.end());
+
+		ll max = 0;
+		int idx = K-1;
+		
+		for (int n = 0; n < K; n++) {
+			max = max < A[n] + B[idx] ? A[n] + B[idx] : max;
+			idx--;
+		}
+
+		Answer = max;
+		
+		cout << "Case #" << test_case + 1 << endl;
+		cout << Answer << endl;
+	}
+
+	return 0;
+}
