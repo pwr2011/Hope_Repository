@@ -1,0 +1,188 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+#define ll long long
+int Answer1, Answer2;
+bool result[3'005][3'005];
+int isLeftL[3'005][3'005];
+int isUpperL[3'005][3'005];
+int xP[3'005];
+int yP[3'005];
+
+int main(int argc, char** argv)
+{
+	int T, test_case;
+
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		ll N, K;
+		int X[3'005] = { 0 }; int Y[3'005] = { 0 };
+		cin >> N >> K;
+		for (ll n = 1; n <= N; n++) {
+			cin >> X[n];
+		}
+		for (ll n = 1; n <= N; n++) {
+			cin >> Y[n];
+		}
+
+		ll sum = 0;
+		ll idx = 1;
+
+		for (ll n = 1; n <= N; n++) {
+			sum += X[n];
+			if (sum <= K) {
+				xP[n] = idx;
+				continue;
+			}
+			else {
+				while (sum > K) {
+					sum -= X[idx];
+					idx++;
+				}
+				xP[n] = idx;
+			}
+		}
+
+		sum = 0; idx = 1;
+		for (ll n = 1; n <= N; n++) {
+			sum += Y[n];
+			if (sum <= K) {
+				yP[n] = idx;
+				continue;
+			}
+			else {
+				while (sum > K) {
+					sum -= Y[idx];
+					idx++;
+				}
+				yP[n] = idx;
+			}
+		}
+
+		result[0][0] = true;
+		isLeftL[0][1] = 1;
+		isUpperL[1][0] = 1;
+
+		//calculation start
+
+		for (int i = 1; i <= N; i++) {
+			bool flag = false; 
+			int start = xP[i]-1;
+			int end = i - 1;
+
+			idx = isUpperL[i - 1][0];
+
+			if (idx >= start && idx!=0) { //L이 있다. 즉 Win
+					flag = true;
+			}
+
+			if (flag) {
+				isUpperL[i][0] = isUpperL[i - 1][0];
+				result[i][0] = true;
+			}
+			else isUpperL[i][0] = i;
+			
+		}
+		for (int j = 1; j <= N; j++) {
+			bool flag = false; // Lose
+
+			int start = yP[j]-1;
+			int end = j - 1;
+
+			int idx = isLeftL[0][j - 1];
+
+			if (idx >= start && idx!=0) { //L이 있다. 즉 Win
+				flag = true;
+			}
+			if (flag) {
+				isLeftL[0][j] = isLeftL[0][j-1];
+				result[0][j] = true;
+			}
+			else isLeftL[0][j] = j;
+		}
+
+
+		for (int i = 1; i <= N; i++) {
+			for (int j = 1; j <= N; j++) {
+
+				bool flag = false; // Lose
+
+				int start = yP[j]-1;
+				int end = j - 1;
+
+				int idx = isLeftL[i][j-1];
+				
+				if (idx >= start) { //L이 있다. 즉 Win
+					if (idx == 0) { //진짜 L이 없는 경우 혹은 0,i일때 L 인경우
+						if (result[i][0]) { //L 없음
+						}
+						else {
+							flag = true;
+						}
+					}
+					else {
+						flag = true;
+					}
+				}
+
+
+				start = xP[i]-1;
+				end = i - 1;
+
+				idx = isUpperL[i-1][j];//잘못 가리킴
+
+
+
+				if (idx >= start) { //L이 있다. 즉 Win
+					if (idx == 0) {
+						if (result[0][j]) {
+
+						}
+						else {
+							flag = true;
+						}
+					}
+					else {
+						flag = true;
+					}
+				}
+			
+				if (flag) { //[i][j] = win
+					isUpperL[i][j] = isUpperL[i - 1][j];
+					isLeftL[i][j] = isLeftL[i][j - 1];
+					result[i][j] = true;
+				}
+				else { //[i][j] = lose
+					isUpperL[i][j] = i;
+					isLeftL[i][j] = j;
+				}
+			}
+		}
+
+		Answer1 = 0;
+		Answer2 = 0;
+
+		for (int i = 0; i <= N; i++) {
+			for (int j = 0; j <= N; j++) {
+				if (result[i][j]) Answer1++;
+				else Answer2++;
+			}
+		}
+
+
+		cout << "Case #" << test_case + 1 << endl;
+		cout << Answer1 <<" "<<Answer2<< endl;
+
+
+		for (int i = 0; i <= N; i++) {
+			for (int j = 0; j <= N; j++) {
+				result[i][j] = 0;
+			}
+		}
+	}
+
+	return 0;
+}
