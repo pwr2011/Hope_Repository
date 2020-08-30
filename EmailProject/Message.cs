@@ -29,7 +29,7 @@ public void ExportToFile(string fullFileName, XstFile xstFile)
 {
     if (ShowHtml)
     {
-        string receiverEmail = String.Join("; ", Recipients.Where(r => r.RecipientType == RecipientType.To)
+        string receiverEmail = String.Join(", ", Recipients.Where(r => r.RecipientType == RecipientType.To)
             .Select(r => r.EmailAddress));
         string senderEmail = Properties.Single(r => r.Description == "SenderEmailAddress").Value;
         string subject = "=?UTF-8?B? " + Convert.ToBase64String(Encoding.UTF8.GetBytes(Subject)) + "?=";
