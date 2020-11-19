@@ -122,100 +122,15 @@ int main(void)
 	std::vector<glm::vec3> normals;
 	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
 
-	// Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
-	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-	static const GLfloat g_vertex_buffer_data[] = {
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f
-	};
-
-	// 0.0~1.0으로 정규화 된 좌표.
-	// vertex좌표와 1:1 mapping
-	static const GLfloat g_uv_buffer_data[] = {
-		0.000059f, 0.000004f,
-		0.000103f, 0.336048f,
-		0.335973f, 0.335903f,
-		1.000023f, 0.000013f,
-		0.667979f, 0.335851f,
-		0.999958f, 0.336064f,
-		0.667979f, 0.335851f,
-		0.336024f, 0.671877f,
-		0.667969f, 0.671889f,
-		1.000023f, 0.000013f,
-		0.668104f, 0.000013f,
-		0.667979f, 0.335851f,
-		0.000059f, 0.000004f,
-		0.335973f, 0.335903f,
-		0.336098f, 0.000071f,
-		0.667979f, 0.335851f,
-		0.335973f, 0.335903f,
-		0.336024f, 0.671877f,
-		1.000004f, 0.671847f,
-		0.999958f, 0.336064f,
-		0.667979f, 0.335851f,
-		0.668104f, 0.000013f,
-		0.335973f, 0.335903f,
-		0.667979f, 0.335851f,
-		0.335973f, 0.335903f,
-		0.668104f, 0.000013f,
-		0.336098f, 0.000071f,
-		0.000103f, 0.336048f,
-		0.000004f, 0.671870f,
-		0.336024f, 0.671877f,
-		0.000103f, 0.336048f,
-		0.336024f, 0.671877f,
-		0.335973f, 0.335903f,
-		0.667969f, 0.671889f,
-		1.000004f, 0.671847f,
-		0.667979f, 0.335851f
-	};
-
-	// VBO, 정점 데이터를 저장해 놓는 집합 버퍼
 	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer); // 정점 버퍼 객체 생성
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer); //정점 버퍼 객체 바인딩
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW); //정점 정보 버퍼에 추가
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
-
-	// uv 좌표 데이터를 버퍼에 저장
 	GLuint uvbuffer;
 	glGenBuffers(1, &uvbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 
 	// projection matrix (시야각, 화면 비율, near 평면, far 평면)
 	ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
