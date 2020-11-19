@@ -1,0 +1,413 @@
+// Include standard headers
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
+#include <iostream>
+
+// Include GLEW
+#include <GL/glew.h>
+
+// Include GLFW
+#include <GLFW/glfw3.h>
+GLFWwindow* window;
+
+// Include GLM
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
+using namespace glm;
+
+#include <common/shader.hpp>
+#include <common/texture.hpp>
+#include <common/objloader.hpp>
+// #include <common/controls.hpp>
+
+glm::mat4 ViewMatrix;
+glm::mat4 ProjectionMatrix;
+glm::mat4 ModelMatrix;
+
+// Initial horizontal angle : toward -Z
+float horizontalAngle = 0.0f;
+// Initial vertical angle : none
+float verticalAngle = 0.0f;
+
+float speed = 3.0f; // 3 units / second
+float mouseSpeed = 5.0f;
+
+bool firstPress = true;
+double xpos_prev = 0.0;
+double ypos_prev = 0.0;
+double xpos = 0.0;
+double ypos = 0.0;
+
+void computeMouseRotates();
+void computeKeyboardTranslates();
+
+int main(void)
+{
+	// Initialise GLFW
+	if (!glfwInit())
+	{
+		fprintf(stderr, "Failed to initialize GLFW\n");
+		getchar();
+		return -1;
+	}
+
+	// 윈도우 기본 설정
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// 새 윈도우 생성
+	window = glfwCreateWindow(1024, 768, "Tutorial 0 - Keyboard and Mouse", NULL, NULL);
+	if (window == NULL) {
+		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+
+	// GLEW초기화
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+
+	// 어떤 키가 눌려있는지 확인할 수 있음
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	// Hide the mouse and enable unlimited mouvement
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Set the mouse at the center of the screen
+	glfwPollEvents();
+	// glfwSetCursorPos(window, 1024/2, 768/2);
+
+	// 배경 색깔 설정
+	glClearColor(0.6f, 0.4f, 0.0f, 0.0f);
+
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+
+	// Cull triangles which normal is not towards the camera
+	glEnable(GL_CULL_FACE);
+
+	// 버퍼에 정점 데이터 전달하는 일련의 과정(정점 shader에 공급하기 위해 사용
+	GLuint VertexArrayID;
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
+
+	// 쉐이더를 로드한다.
+	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader");
+
+	// uniform 변수의 메모리 위치를 가져옴(유니폼 변수는 모든 쉐이더에서 공통적으로 사용하는 변수이다)
+	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+
+	// 텍스처 데이터 생성
+	GLuint Texture = loadBMP_custom("uvtemplate.bmp");
+
+	// 텍스쳐 데이터 활성화
+	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
+
+	// .obj파일을 읽는다.
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec2> uvs;
+	std::vector<glm::vec3> normals;
+	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
+
+	// Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
+	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
+	static const GLfloat g_vertex_buffer_data[] = {
+		-1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		 1.0f, 1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f,-1.0f,
+		 1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f,-1.0f,
+		 1.0f,-1.0f,-1.0f,
+		 1.0f, 1.0f,-1.0f,
+		 1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f,-1.0f,
+		 1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f,-1.0f, 1.0f,
+		 1.0f,-1.0f, 1.0f,
+		 1.0f, 1.0f, 1.0f,
+		 1.0f,-1.0f,-1.0f,
+		 1.0f, 1.0f,-1.0f,
+		 1.0f,-1.0f,-1.0f,
+		 1.0f, 1.0f, 1.0f,
+		 1.0f,-1.0f, 1.0f,
+		 1.0f, 1.0f, 1.0f,
+		 1.0f, 1.0f,-1.0f,
+		-1.0f, 1.0f,-1.0f,
+		 1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		 1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		 1.0f,-1.0f, 1.0f
+	};
+
+	// 0.0~1.0으로 정규화 된 좌표.
+	// vertex좌표와 1:1 mapping
+	static const GLfloat g_uv_buffer_data[] = {
+		0.000059f, 0.000004f,
+		0.000103f, 0.336048f,
+		0.335973f, 0.335903f,
+		1.000023f, 0.000013f,
+		0.667979f, 0.335851f,
+		0.999958f, 0.336064f,
+		0.667979f, 0.335851f,
+		0.336024f, 0.671877f,
+		0.667969f, 0.671889f,
+		1.000023f, 0.000013f,
+		0.668104f, 0.000013f,
+		0.667979f, 0.335851f,
+		0.000059f, 0.000004f,
+		0.335973f, 0.335903f,
+		0.336098f, 0.000071f,
+		0.667979f, 0.335851f,
+		0.335973f, 0.335903f,
+		0.336024f, 0.671877f,
+		1.000004f, 0.671847f,
+		0.999958f, 0.336064f,
+		0.667979f, 0.335851f,
+		0.668104f, 0.000013f,
+		0.335973f, 0.335903f,
+		0.667979f, 0.335851f,
+		0.335973f, 0.335903f,
+		0.668104f, 0.000013f,
+		0.336098f, 0.000071f,
+		0.000103f, 0.336048f,
+		0.000004f, 0.671870f,
+		0.336024f, 0.671877f,
+		0.000103f, 0.336048f,
+		0.336024f, 0.671877f,
+		0.335973f, 0.335903f,
+		0.667969f, 0.671889f,
+		1.000004f, 0.671847f,
+		0.667979f, 0.335851f
+	};
+
+	// VBO, 정점 데이터를 저장해 놓는 집합 버퍼
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer); // 정점 버퍼 객체 생성
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer); //정점 버퍼 객체 바인딩
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW); //정점 정보 버퍼에 추가
+
+
+	// uv 좌표 데이터를 버퍼에 저장
+	GLuint uvbuffer;
+	glGenBuffers(1, &uvbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
+
+	// projection matrix (시야각, 화면 비율, near 평면, far 평면)
+	ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	// Camera matrix
+	ViewMatrix = glm::lookAt(
+		glm::vec3(0.0f, 6.0f, 8.0f),		// Camera is here
+		glm::vec3(0.0f, 0.0f, 0.0f),		// and looks here : at the same position, plus "direction"
+		glm::vec3(0.0f, 1.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
+	);
+	ModelMatrix = glm::mat4(1.0);
+
+	do {
+		// 컬러 버퍼 초기화
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// 쉐이더 프로그램 적용
+		// 랜더링 루프안에서 반복 사용
+		glUseProgram(programID);
+
+		// 마우스 입력을 받는 코드
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		{
+			if (firstPress)
+			{
+				//현재 커서의 위치를 가져옴
+				glfwGetCursorPos(window, &xpos_prev, &ypos_prev);
+				firstPress = false;
+			}
+
+			computeMouseRotates();
+		}
+
+		// 드래그의 끝
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+			firstPress = true;
+
+		computeKeyboardTranslates();
+
+		//MVP계산을 렌더링 루프안에서 실시간으로 실행
+		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		// 쉐이더에 있는 uniform 변수 값 정의
+		//(변수의 메모리 위치, 벡터 개수, 행렬의 전치 여부, 4차원 벡터 데이터 값)
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+		// 텍스쳐
+		// Bind our texture in Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Texture);
+		// Set our "myTextureSampler" sampler to use Texture Unit 0
+		glUniform1i(TextureID, 0);
+
+		// 버퍼 내 데이터 활성화
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
+		glVertexAttribPointer(
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+
+		// 텍스처를 위한 uv좌표 버퍼에 저장
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+		glVertexAttribPointer(
+			1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+			2,                                // size : U+V => 2
+			GL_FLOAT,                         // type
+			GL_FALSE,                         // normalized?
+			0,                                // stride
+			(void*)0                          // array buffer offset
+		);
+
+		// 정점 바탕으로 그리기!!
+		glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
+		//(그리고자 하는 대상, 배열의 시작 인덱스, 렌더링하고자 하는 요소 수)
+
+		//버퍼 내 데이터 비활성화
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+
+		// Swap buffers
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+
+	} // Check if the ESC key was pressed or the window was closed
+	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwWindowShouldClose(window) == 0);
+
+	// Cleanup VBO and shader
+	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &uvbuffer);
+	glDeleteProgram(programID);
+	glDeleteTextures(1, &TextureID);
+	glDeleteVertexArrays(1, &VertexArrayID);
+
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
+
+	return 0;
+}
+
+void computeMouseRotates() {
+
+	// glfwGetTime is called only once, the first time this function is called
+	static double lastTime = glfwGetTime();
+
+	// 프레임 간 시간 계산
+	double currentTime = glfwGetTime();
+	float deltaTime = float(currentTime - lastTime);
+
+	//커서 위치를 기반으로 회전 각도 결정
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	// Compute new orientation
+	// x축 비교
+	if (xpos < xpos_prev)
+		horizontalAngle = -deltaTime * mouseSpeed;
+	else if (xpos > xpos_prev)
+		horizontalAngle = deltaTime * mouseSpeed;
+	else
+		horizontalAngle = 0.0;
+
+	// y축 비교
+	if (ypos < ypos_prev)
+		verticalAngle = -deltaTime * mouseSpeed;
+	else if (ypos > ypos_prev)
+		verticalAngle = deltaTime * mouseSpeed;
+	else
+		verticalAngle = 0.0;
+
+	// 회전 행렬 계산, 적용
+	ModelMatrix *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
+
+	// 현재 커서 위치, 시간 저장
+	xpos_prev = xpos;
+	ypos_prev = ypos;
+
+	// For the next frame, the "last time" will be "now"
+	lastTime = currentTime;
+}
+
+void computeKeyboardTranslates()
+{
+	// glfwGetTime is called only once, the first time this function is called
+	static double lastTime = glfwGetTime();
+
+	// 프레임 간 시간 계산
+	double currentTime = glfwGetTime();
+	float deltaTime = float(currentTime - lastTime);
+
+	// 방향 벡터 정의
+	glm::vec3 right = glm::vec3(1.0f, 0.0f, 0.0f);
+	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	glm::vec3 translateFactor = glm::vec3(0.0f);
+
+	//키보드 입력에 따라 이동 벡터 계산
+	// Move forward
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		translateFactor += up * deltaTime * speed;
+	}
+	// Move backward
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		translateFactor -= up * deltaTime * speed;
+	}
+	// Move right
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		translateFactor += right * deltaTime * speed;
+	}
+	// Move left
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		translateFactor -= right * deltaTime * speed;
+	}
+	// Move up
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+		translateFactor += forward * deltaTime * speed;
+	}
+	// Move down
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+		translateFactor -= forward * deltaTime * speed;
+	}
+
+	//이동 행렬 계산
+	ModelMatrix *= glm::translate(glm::mat4(1.0f), translateFactor);
+
+	// For the next frame, the "last time" will be "now"
+	lastTime = currentTime;
+}
