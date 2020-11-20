@@ -66,9 +66,9 @@ glm::mat4 RotationMatrix4;
 // x,z평면에 위치 시킨 후 동작		
 vec3 gPosition1(0.0f, 0.0f, 1.0f);
 // 첫번째 큐브의 말단에 존재하도록 위치 조정	
-vec3 gPosition2(-4.1f, 0.0f, -0.5f);
+vec3 gPosition2(-2.5f, 0.0f, -3.0f);
 
-vec3 gPosition3(-3.5f, 0.0f, -1.0f);
+vec3 gPosition3(0.0f, 0.0f, -4.0f);
 
 vec3 gPosition4(-1.9f, 0.0f, -1.0f);
 
@@ -219,12 +219,11 @@ int main(void)
 
 		//MVP계산을 렌더링 루프안에서 실시간으로 실행
 		//glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix1;
-		glm::mat4 MVP1 = ProjectionMatrix * ViewMatrix * ModelMatrix1; // Remember, matrix multiplication is the other way around
-		// 쉐이더에 있는 uniform 변수 값 정의
-		//(변수의 메모리 위치, 벡터 개수, 행렬의 전치 여부, 4차원 벡터 데이터 값)
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
-		glUniform1i(ColorCheckID, 0);
-		glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2; // Remember, matrix multiplication is the other way around
+		glm::mat4 MVP1 = ProjectionMatrix * ViewMatrix * ModelMatrix1;
+		
+		glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2; 
+
+		glm::mat4 MVP3 = ProjectionMatrix * ViewMatrix * ModelMatrix3;
 		
 
 		/*
@@ -235,6 +234,11 @@ int main(void)
 		// Set our "myTextureSampler" sampler to use Texture Unit 0
 		glUniform1i(TextureID, 0);
 		*/
+
+		// 쉐이더에 있는 uniform 변수 값 정의
+		//(변수의 메모리 위치, 벡터 개수, 행렬의 전치 여부, 4차원 벡터 데이터 값)
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
+		glUniform1i(ColorCheckID, 0);
 #pragma region 버퍼 내 데이터 활성화1
 		// 버퍼 내 데이터 활성화
 		glEnableVertexAttribArray(0);
@@ -265,7 +269,7 @@ int main(void)
 		);
 		*/
 		// 정점 바탕으로 그리기!!
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // 12*3 indices starting at 0 -> 12 triangles
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 		//(그리고자 하는 대상, 배열의 시작 인덱스, 렌더링하고자 하는 요소 수)
 
 
@@ -285,7 +289,27 @@ int main(void)
 		);
 #pragma endregion
 
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // 12*3 indices starting at 0 -> 12 triangles
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP3[0][0]);
+		glUniform1i(ColorCheckID, 3);
+#pragma region 버퍼 내 데이터 활성화3
+		// 버퍼 내 데이터 활성화
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
+		glVertexAttribPointer(
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+#pragma endregion
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
 		//버퍼 내 데이터 비활성화
 		glDisableVertexAttribArray(0);
@@ -315,22 +339,22 @@ int main(void)
 void calculateModelMatrix() {
 	TranslationMatrix1 = translate(mat4(), gPosition1); // A bit to the left
 	RotationMatrix1 = MouseMatrix* eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
-	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
+	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 1.5f));
 	ModelMatrix1 = glm::mat4(1.0f);
 	ModelMatrix1 *= RotationMatrix1 * TranslationMatrix1 * ScalingMatrix1;
 
 	// 첫번째 큐브의 rotation + 두번째 큐브의 rotation (첫번째 큐브의 rotation에 종속되게 설정)
 	TranslationMatrix2 = translate(mat4(), gPosition2 + gPosition1); // A bit to the leftglm::mat4 
-	ScalingMatrix2 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
-	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, gOrientation2, 0.0f);
+	ScalingMatrix2 = scale(mat4(), vec3(0.1f, 0.1f, 2.0f));
+	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1,0.0f, 0.0f);
 	ModelMatrix2 = glm::mat4(1.0f);
 	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2;
 
 	TranslationMatrix3 = translate(mat4(),gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix3 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
-	RotationMatrix3 = eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, gOrientation2, 0.0f);
+	RotationMatrix3 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1+ gOrientation2, 0.0f, 0.0f);
 	ModelMatrix3 = glm::mat4(1.0f);
-	ModelMatrix3 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2;
+	ModelMatrix3 *= RotationMatrix3 * TranslationMatrix3 * ScalingMatrix3;
 
 }
 
@@ -353,7 +377,7 @@ void digMotion() { //space 누르면 동작
 		// 일정 시간 범위 내에서 증가
 		float timeInterval = currentTime - lastTime;
 		if (timeInterval < 3.0f)
-			gOrientation1 += 3.14159f / 2.0f * deltaTime;
+			gOrientation1 -= 3.14159f / 2.0f * deltaTime;
 		else if (timeInterval >= 3.0f && timeInterval < 5.0f)
 			gOrientation2 -= 3.14159f / 2.0f * deltaTime;
 		else {
@@ -393,9 +417,7 @@ void computeMouseRotates() {
 
 	// 회전 행렬 계산, 적용
 	MouseMatrix *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
-	/*ModelMatrix1 *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
-	ModelMatrix2 *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
-	*/
+
 	// 현재 커서 위치, 시간 저장
 	xpos_prev = xpos;
 	ypos_prev = ypos;
