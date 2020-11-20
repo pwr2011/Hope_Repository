@@ -26,6 +26,7 @@ glm::mat4 ModelMatrix1 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix2 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix3 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix4 = glm::mat4(1.0f);
+glm::mat4 ModelMatrix5 = glm::mat4(1.0f);
 glm::mat4 MouseMatrix = glm::mat4(1.0f);
 
 // Initial horizontal angle : toward -Z
@@ -43,6 +44,8 @@ double xpos = 0.0;
 double ypos = 0.0;
 float gOrientation1 = 0.0f;
 float gOrientation2 = 0.0f; 
+float gOrientation3 = 0.0f;
+
 double lastTime;
 double lastFrameTime;
 
@@ -62,6 +65,10 @@ glm::mat4 RotationMatrix3;
 glm::mat4 TranslationMatrix4;
 glm::mat4 ScalingMatrix4;
 glm::mat4 RotationMatrix4;
+//조종대
+glm::mat4 TranslationMatrix5;
+glm::mat4 ScalingMatrix5;
+glm::mat4 RotationMatrix5;
 
 // x,z평면에 위치 시킨 후 동작		
 vec3 gPosition1(0.0f, 0.0f, 1.0f);
@@ -70,10 +77,15 @@ vec3 gPosition2(-2.5f, 0.0f, -3.0f);
 
 vec3 gPosition3(0.0f, 0.0f, -4.0f);
 
-vec3 gPosition4(-1.9f, 0.0f, -1.0f);
+vec3 gPosition4(0.0f, 0.0f, -4.0f);
 
-vec3 endOfArm2(-2.5f, 0.0f, -4.0f);
+vec3 gPosition5(0.0f, 0.0f, 0.0f);
+
+vec3 endOfArm2(-2.5f, 0.0f, -3.8f);
 vec3 InvendOfArm2(-endOfArm2.x, -endOfArm2.y, -endOfArm2.z);
+
+vec3 endOfArm3(-2.8f, 0.0f, -8.75f);
+vec3 InvendOfArm3(-endOfArm3.x, -endOfArm3.y, -endOfArm3.z);
 
 bool spaceflag = false;
 #pragma endregion
@@ -183,7 +195,7 @@ int main(void)
 	ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 	// Camera matrix
 	ViewMatrix = glm::lookAt(
-		glm::vec3(16.0f, 12.0f, -12.0f),		// Camera is here
+		glm::vec3(16.0f, 32.0f, -20.0f),		// Camera is here
 		glm::vec3(0.0f, 0.0f, 0.0f),		// and looks here : at the same position, plus "direction"
 		glm::vec3(0.0f, 1.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
 	);
@@ -223,10 +235,10 @@ int main(void)
 		//MVP계산을 렌더링 루프안에서 실시간으로 실행
 		//glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix1;
 		glm::mat4 MVP1 = ProjectionMatrix * ViewMatrix * ModelMatrix1;
-		
 		glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2; 
-
 		glm::mat4 MVP3 = ProjectionMatrix * ViewMatrix * ModelMatrix3;
+		glm::mat4 MVP4 = ProjectionMatrix * ViewMatrix * ModelMatrix4;
+		glm::mat4 MVP5 = ProjectionMatrix * ViewMatrix * ModelMatrix5;
 		
 
 		/*
@@ -240,6 +252,8 @@ int main(void)
 
 		// 쉐이더에 있는 uniform 변수 값 정의
 		//(변수의 메모리 위치, 벡터 개수, 행렬의 전치 여부, 4차원 벡터 데이터 값)
+
+		//핸들 1 그리기
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
 		glUniform1i(ColorCheckID, 0);
 #pragma region 버퍼 내 데이터 활성화1
@@ -275,7 +289,7 @@ int main(void)
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 		//(그리고자 하는 대상, 배열의 시작 인덱스, 렌더링하고자 하는 요소 수)
 
-
+		//핸들 2
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]); 
 		glUniform1i(ColorCheckID, 1);
 
@@ -294,10 +308,50 @@ int main(void)
 
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
-
+		//핸들 3
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP3[0][0]);
 		glUniform1i(ColorCheckID, 3);
 #pragma region 버퍼 내 데이터 활성화3
+		// 버퍼 내 데이터 활성화
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
+		glVertexAttribPointer(
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+#pragma endregion
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+		//버켓 그리기
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP4[0][0]);
+		glUniform1i(ColorCheckID, 4);
+#pragma region 버퍼 내 데이터 활성화4
+		// 버퍼 내 데이터 활성화
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
+		glVertexAttribPointer(
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+#pragma endregion
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+		//조종대 그리기
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP5[0][0]);
+		glUniform1i(ColorCheckID, 5);
+#pragma region 조종대 그리기
 		// 버퍼 내 데이터 활성화
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -340,6 +394,7 @@ int main(void)
 }
 
 void calculateModelMatrix() {
+	//핸들 1
 	TranslationMatrix1 = translate(mat4(), gPosition1); // A bit to the left
 	RotationMatrix1 = MouseMatrix* eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
 	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 1.5f));
@@ -347,7 +402,7 @@ void calculateModelMatrix() {
 	ModelMatrix1 = glm::mat4(1.0f);
 	ModelMatrix1 *= RotationMatrix1 * TranslationMatrix1 * ScalingMatrix1;
 
-	// 첫번째 큐브의 rotation + 두번째 큐브의 rotation (첫번째 큐브의 rotation에 종속되게 설정)
+	// 핸들 2
 	TranslationMatrix2 = translate(mat4(), gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix2 = scale(mat4(), vec3(0.1f, 0.1f, 2.0f));
 	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
@@ -355,19 +410,35 @@ void calculateModelMatrix() {
 	ModelMatrix2 = glm::mat4(1.0f);
 	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2; 
 
+	//핸들 3
 	TranslationMatrix3 = translate(mat4(),gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
-	glm::mat4 InvTranslationMatrix3 = translate(mat4(), -(gPosition3 + gPosition2 + gPosition1));
 	ScalingMatrix3 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
-	glm::mat4 subMatrix = translate(mat4(), endOfArm2) * eulerAngleXYZ(0.0f, gOrientation2, 0.0f) * translate(mat4(), InvendOfArm2);
-	RotationMatrix3 = MouseMatrix * subMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+	glm::mat4 subMatrix1 = translate(mat4(), endOfArm2) * eulerAngleXYZ(0.0f, gOrientation2, 0.0f) * translate(mat4(), InvendOfArm2);
+	RotationMatrix3 = MouseMatrix * subMatrix1 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
 
 	ModelMatrix3 = glm::mat4(1.0f);
 	ModelMatrix3 *= RotationMatrix3 * TranslationMatrix3 * ScalingMatrix3;
+	
+	//버켓
+	TranslationMatrix4 = translate(mat4(),gPosition4 + gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
+	ScalingMatrix4 = scale(mat4(), vec3(0.1f, 0.1f, 1.0f));
+	glm::mat4 subMatrix2 = translate(mat4(), endOfArm3) * eulerAngleXYZ(0.0f, gOrientation3, 0.0f) * translate(mat4(), InvendOfArm3);
+	RotationMatrix4 = MouseMatrix  * subMatrix1 * subMatrix2 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
 
+	ModelMatrix4 = glm::mat4(1.0f);
+	ModelMatrix4 *= RotationMatrix4 * TranslationMatrix4 * ScalingMatrix4;
+
+	//조종대
+	TranslationMatrix5 = translate(mat4(), gPosition5); // A bit to the left
+	RotationMatrix5 = MouseMatrix;
+	ScalingMatrix5 = scale(mat4(), vec3(1.0f, 1.0f, 1.0f));
+
+	ModelMatrix5 = glm::mat4(1.0f);
+	ModelMatrix5 *= RotationMatrix5 * TranslationMatrix5 * ScalingMatrix5;
 }
 
 void digMotion() { //space 누르면 동작
-	if ((glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && spaceflag == false) || spaceflag == true) {
+	if ((glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && spaceflag == false) || spaceflag == true) {
 		
 		if (spaceflag == false) {
 			lastTime = glfwGetTime();
@@ -386,8 +457,16 @@ void digMotion() { //space 누르면 동작
 		float timeInterval = currentTime - lastTime;
 		if (timeInterval < 1.0f)
 			gOrientation1 -= 3.14159f / 2.0f * deltaTime;
-		else if (timeInterval >= 1.0f && timeInterval < 2.0f)
+		else if (timeInterval >= 1.0f && timeInterval < 2.0f) //1~2
 			gOrientation2 -= 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 2.0f && timeInterval < 2.5f) //2~2.5
+			gOrientation3 -= 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 2.5f && timeInterval < 3.0f) //2.5~3
+			gOrientation3 += 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 3.0f && timeInterval < 4.0f) //3~4
+			gOrientation2 += 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 4.0f && timeInterval < 5.0f) //4~5
+			gOrientation1 += 3.14159f / 2.0f * deltaTime;
 		else {
 			spaceflag = false;
 		}
