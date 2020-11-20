@@ -26,6 +26,7 @@ glm::mat4 ModelMatrix1 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix2 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix3 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix4 = glm::mat4(1.0f);
+glm::mat4 MouseMatrix = glm::mat4(1.0f);
 
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 0.0f;
@@ -65,7 +66,7 @@ glm::mat4 RotationMatrix4;
 // x,z평면에 위치 시킨 후 동작		
 vec3 gPosition1(0.0f, 0.0f, 1.0f);
 // 첫번째 큐브의 말단에 존재하도록 위치 조정	
-vec3 gPosition2(-1.8f, 0.0f, -0.5f);
+vec3 gPosition2(-4.1f, 0.0f, -0.5f);
 
 vec3 gPosition3(-3.5f, 0.0f, -1.0f);
 
@@ -313,15 +314,15 @@ int main(void)
 
 void calculateModelMatrix() {
 	TranslationMatrix1 = translate(mat4(), gPosition1); // A bit to the left
-	RotationMatrix1 = eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
-	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 1.0f));
+	RotationMatrix1 = MouseMatrix* eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
+	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
 	ModelMatrix1 = glm::mat4(1.0f);
 	ModelMatrix1 *= RotationMatrix1 * TranslationMatrix1 * ScalingMatrix1;
 
 	// 첫번째 큐브의 rotation + 두번째 큐브의 rotation (첫번째 큐브의 rotation에 종속되게 설정)
 	TranslationMatrix2 = translate(mat4(), gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix2 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
-	RotationMatrix2 = eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, gOrientation2, 0.0f);
+	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, gOrientation2, 0.0f);
 	ModelMatrix2 = glm::mat4(1.0f);
 	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2;
 
@@ -391,9 +392,10 @@ void computeMouseRotates() {
 		verticalAngle = 0.0;
 
 	// 회전 행렬 계산, 적용
-	ModelMatrix1 *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
+	MouseMatrix *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
+	/*ModelMatrix1 *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
 	ModelMatrix2 *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
-
+	*/
 	// 현재 커서 위치, 시간 저장
 	xpos_prev = xpos;
 	ypos_prev = ypos;
