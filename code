@@ -41,9 +41,12 @@ double xpos_prev = 0.0;
 double ypos_prev = 0.0;
 double xpos = 0.0;
 double ypos = 0.0;
+float gOrientation1 = 0.0f;
+float gOrientation2 = 0.0f;
 
 void computeMouseRotates();
 void computeKeyboardTranslates(); 
+void digMotion();
 
 glm::vec3 gPosition1(0.0f, 0.0f, 1.0f);
 // 첫번째 큐브의 말단에 존재하도록 위치 조정
@@ -111,7 +114,8 @@ int main(void)
 	glBindVertexArray(VertexArrayID);
 
 	// 쉐이더를 로드한다.
-	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader");
+	GLuint programID = LoadShaders("TransformVertexShader.vertexshader",  "ColorFragmentShader.fragmentshader");
+	//"TextureFragmentShader.fragmentshader", 제거됨
 
 	// uniform 변수의 메모리 위치를 가져옴(유니폼 변수는 모든 쉐이더에서 공통적으로 사용하는 변수이다)
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
@@ -132,6 +136,8 @@ int main(void)
 	glGenBuffers(1, &vertexbuffer);// 정점 버퍼 객체 생성
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer); //정점 버퍼 객체 바인딩
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW); //정점 정보 버퍼에 추가
+
+	GLuint ColorCheckID = glGetUniformLocation(programID, "colorCheck");
 	/*
 	// 텍스쳐를 위한 uv좌표 데이터를 버퍼에 저장
 	GLuint uvbuffer;
@@ -184,13 +190,14 @@ int main(void)
 		computeKeyboardTranslates();
 
 		digMotion();
+
 		//MVP계산을 렌더링 루프안에서 실시간으로 실행
 		//glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix1;
 		glm::mat4 MVP1 = ProjectionMatrix * ViewMatrix * ModelMatrix1; // Remember, matrix multiplication is the other way around
 		// 쉐이더에 있는 uniform 변수 값 정의
 		//(변수의 메모리 위치, 벡터 개수, 행렬의 전치 여부, 4차원 벡터 데이터 값)
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
-
+		glUniform1i(ColorCheckID, 0);
 		glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2; // Remember, matrix multiplication is the other way around
 		
 
@@ -233,7 +240,8 @@ int main(void)
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // 12*3 indices starting at 0 -> 12 triangles
 		//(그리고자 하는 대상, 배열의 시작 인덱스, 렌더링하고자 하는 요소 수)
 
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]); 
+		glUniform1i(ColorCheckID, 1);
 
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -279,8 +287,18 @@ void digMotion() {
 	// 프레임 간 시간 계산
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
-}
+	float timeInterval = currentTime - lastTime;
+	if (timeInterval < 5.0f)
+		gOrientation1 += 3.14159f / 2.0f * deltaTime;
+	else if (timeInterval >= 5.0f && timeInterval < 10.0f)
+		gOrientation2 -= 3.14159f / 2.0f * deltaTime;
 
+	glm::mat4 RotationMatrix1 = eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
+	glm::mat4 RotationMatrix2 = eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, gOrientation2, 0.0f);
+
+	ModelMatrix1 = ModelMatrix1 * RotationMatrix1;
+	ModelMatrix2 = ModelMatrix2 * RotationMatrix2;
+}
 void computeMouseRotates() {
 
 	// glfwGetTime is called only once, the first time this function is called
