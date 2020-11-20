@@ -72,6 +72,9 @@ vec3 gPosition3(0.0f, 0.0f, -4.0f);
 
 vec3 gPosition4(-1.9f, 0.0f, -1.0f);
 
+vec3 endOfArm2(-2.5f, 0.0f, -4.0f);
+vec3 InvendOfArm2(-endOfArm2.x, -endOfArm2.y, -endOfArm2.z);
+
 bool spaceflag = false;
 #pragma endregion
 
@@ -340,19 +343,24 @@ void calculateModelMatrix() {
 	TranslationMatrix1 = translate(mat4(), gPosition1); // A bit to the left
 	RotationMatrix1 = MouseMatrix* eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
 	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 1.5f));
+
 	ModelMatrix1 = glm::mat4(1.0f);
 	ModelMatrix1 *= RotationMatrix1 * TranslationMatrix1 * ScalingMatrix1;
 
 	// 첫번째 큐브의 rotation + 두번째 큐브의 rotation (첫번째 큐브의 rotation에 종속되게 설정)
 	TranslationMatrix2 = translate(mat4(), gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix2 = scale(mat4(), vec3(0.1f, 0.1f, 2.0f));
-	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1,0.0f, 0.0f);
+	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+
 	ModelMatrix2 = glm::mat4(1.0f);
-	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2;
+	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2; 
 
 	TranslationMatrix3 = translate(mat4(),gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
+	glm::mat4 InvTranslationMatrix3 = translate(mat4(), -(gPosition3 + gPosition2 + gPosition1));
 	ScalingMatrix3 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
-	RotationMatrix3 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1+ gOrientation2, 0.0f, 0.0f);
+	glm::mat4 subMatrix = translate(mat4(), endOfArm2) * eulerAngleXYZ(0.0f, gOrientation2, 0.0f) * translate(mat4(), InvendOfArm2);
+	RotationMatrix3 = MouseMatrix * subMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+
 	ModelMatrix3 = glm::mat4(1.0f);
 	ModelMatrix3 *= RotationMatrix3 * TranslationMatrix3 * ScalingMatrix3;
 
@@ -376,9 +384,9 @@ void digMotion() { //space 누르면 동작
 
 		// 일정 시간 범위 내에서 증가
 		float timeInterval = currentTime - lastTime;
-		if (timeInterval < 3.0f)
+		if (timeInterval < 1.0f)
 			gOrientation1 -= 3.14159f / 2.0f * deltaTime;
-		else if (timeInterval >= 3.0f && timeInterval < 5.0f)
+		else if (timeInterval >= 1.0f && timeInterval < 2.0f)
 			gOrientation2 -= 3.14159f / 2.0f * deltaTime;
 		else {
 			spaceflag = false;
