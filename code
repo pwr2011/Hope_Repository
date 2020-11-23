@@ -5,7 +5,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-GLFWwindow * window;
+GLFWwindow* window;
 
 // Include GLM
 #include <glm/glm.hpp>
@@ -27,6 +27,7 @@ glm::mat4 ModelMatrix2 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix3 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix4 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix5 = glm::mat4(1.0f);
+glm::mat4 ModelMatrix6 = glm::mat4(1.0f);
 glm::mat4 MouseMatrix = glm::mat4(1.0f);
 
 // Initial horizontal angle : toward -Z
@@ -43,7 +44,7 @@ double ypos_prev = 0.0;
 double xpos = 0.0;
 double ypos = 0.0;
 float gOrientation1 = 0.0f;
-float gOrientation2 = 0.0f; 
+float gOrientation2 = 0.0f;
 float gOrientation3 = 0.0f;
 
 double lastTime;
@@ -69,6 +70,10 @@ glm::mat4 RotationMatrix4;
 glm::mat4 TranslationMatrix5;
 glm::mat4 ScalingMatrix5;
 glm::mat4 RotationMatrix5;
+//바퀴
+glm::mat4 TranslationMatrix6;
+glm::mat4 ScalingMatrix6;
+glm::mat4 RotationMatrix6;
 
 // x,z평면에 위치 시킨 후 동작		
 vec3 gPosition1(0.0f, 0.0f, 1.0f);
@@ -81,11 +86,25 @@ vec3 gPosition4(0.0f, 0.0f, -4.0f);
 
 vec3 gPosition5(0.0f, 0.0f, 0.0f);
 
+vec3 gPosition6(0.0f, 0.0f, -2.0f);
+
 vec3 endOfArm2(-2.5f, 0.0f, -3.8f);
 vec3 InvendOfArm2(-endOfArm2.x, -endOfArm2.y, -endOfArm2.z);
 
 vec3 endOfArm3(-2.8f, 0.0f, -8.75f);
 vec3 InvendOfArm3(-endOfArm3.x, -endOfArm3.y, -endOfArm3.z);
+
+std::vector<glm::vec3> vertices;
+std::vector<glm::vec2> uvs;
+std::vector<glm::vec3> normals;
+
+GLuint vertexbuffer;
+
+std::vector<glm::vec3> vertices1;
+std::vector<glm::vec2> uvs1;
+std::vector<glm::vec3> normals1;
+
+GLuint vertexbuffer1;
 
 bool spaceflag = false;
 #pragma endregion
@@ -93,7 +112,7 @@ bool spaceflag = false;
 void calculateModelMatrix();
 void computeMouseRotates();
 void digMotion();
-
+void LoadObj();
 int main(void)
 {
 #pragma region Init
@@ -171,18 +190,9 @@ int main(void)
 	// 텍스쳐 데이터 활성화
 	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
-	// .obj파일을 읽는다.
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec2> uvs;
-	std::vector<glm::vec3> normals;
-	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
-
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);// 정점 버퍼 객체 생성
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer); //정점 버퍼 객체 바인딩
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW); //정점 정보 버퍼에 추가
-
-	GLuint ColorCheckID = glGetUniformLocation(programID, "colorCheck");	
+	LoadObj();
+	
+	GLuint ColorCheckID = glGetUniformLocation(programID, "colorCheck");
 
 	/*
 	// 텍스쳐를 위한 uv좌표 데이터를 버퍼에 저장
@@ -202,7 +212,7 @@ int main(void)
 
 	do {
 		calculateModelMatrix();
-		
+
 		// 컬러 버퍼 초기화
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -235,11 +245,12 @@ int main(void)
 		//MVP계산을 렌더링 루프안에서 실시간으로 실행
 		//glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix1;
 		glm::mat4 MVP1 = ProjectionMatrix * ViewMatrix * ModelMatrix1;
-		glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2; 
+		glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2;
 		glm::mat4 MVP3 = ProjectionMatrix * ViewMatrix * ModelMatrix3;
 		glm::mat4 MVP4 = ProjectionMatrix * ViewMatrix * ModelMatrix4;
 		glm::mat4 MVP5 = ProjectionMatrix * ViewMatrix * ModelMatrix5;
-		
+		glm::mat4 MVP6 = ProjectionMatrix * ViewMatrix * ModelMatrix6;
+
 
 		/*
 		// 텍스쳐
@@ -290,7 +301,7 @@ int main(void)
 		//(그리고자 하는 대상, 배열의 시작 인덱스, 렌더링하고자 하는 요소 수)
 
 		//핸들 2
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]); 
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]);
 		glUniform1i(ColorCheckID, 1);
 
 #pragma region 버퍼 내 데이터 활성화2
@@ -368,6 +379,27 @@ int main(void)
 #pragma endregion
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
+		//바퀴
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP6[0][0]);
+		glUniform1i(ColorCheckID, 1);
+
+#pragma region 바퀴
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer1);
+		glVertexAttribPointer(
+			0,		  // attribute. No particular reason for 0, but must match the layout in the shader.
+			3,		  // size
+			GL_FLOAT, // type
+			GL_FALSE, // normalized?
+			0,		  // stride
+			(void*)0 // array buffer offset
+		);
+#pragma endregion
+
+		glDrawArrays(GL_TRIANGLES, 0, vertices1.size());
+
+
+
 		//버퍼 내 데이터 비활성화
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -396,7 +428,7 @@ int main(void)
 void calculateModelMatrix() {
 	//핸들 1
 	TranslationMatrix1 = translate(mat4(), gPosition1); // A bit to the left
-	RotationMatrix1 = MouseMatrix* eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
+	RotationMatrix1 = MouseMatrix * eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
 	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 1.5f));
 
 	ModelMatrix1 = glm::mat4(1.0f);
@@ -408,22 +440,22 @@ void calculateModelMatrix() {
 	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
 
 	ModelMatrix2 = glm::mat4(1.0f);
-	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2; 
+	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * ScalingMatrix2;
 
 	//핸들 3
-	TranslationMatrix3 = translate(mat4(),gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
+	TranslationMatrix3 = translate(mat4(), gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix3 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
 	glm::mat4 subMatrix1 = translate(mat4(), endOfArm2) * eulerAngleXYZ(0.0f, gOrientation2, 0.0f) * translate(mat4(), InvendOfArm2);
 	RotationMatrix3 = MouseMatrix * subMatrix1 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
 
 	ModelMatrix3 = glm::mat4(1.0f);
 	ModelMatrix3 *= RotationMatrix3 * TranslationMatrix3 * ScalingMatrix3;
-	
+
 	//버켓
-	TranslationMatrix4 = translate(mat4(),gPosition4 + gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
+	TranslationMatrix4 = translate(mat4(), gPosition4 + gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix4 = scale(mat4(), vec3(0.1f, 0.1f, 1.0f));
 	glm::mat4 subMatrix2 = translate(mat4(), endOfArm3) * eulerAngleXYZ(0.0f, gOrientation3, 0.0f) * translate(mat4(), InvendOfArm3);
-	RotationMatrix4 = MouseMatrix  * subMatrix1 * subMatrix2 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+	RotationMatrix4 = MouseMatrix * subMatrix1 * subMatrix2 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
 
 	ModelMatrix4 = glm::mat4(1.0f);
 	ModelMatrix4 *= RotationMatrix4 * TranslationMatrix4 * ScalingMatrix4;
@@ -435,11 +467,19 @@ void calculateModelMatrix() {
 
 	ModelMatrix5 = glm::mat4(1.0f);
 	ModelMatrix5 *= RotationMatrix5 * TranslationMatrix5 * ScalingMatrix5;
+
+	//바퀴
+	TranslationMatrix6 = translate(mat4(), gPosition6); // A bit to the left
+	RotationMatrix6 = MouseMatrix;
+	ScalingMatrix6 = scale(mat4(), vec3(0.1f, 0.2f, 0.05f));
+
+	ModelMatrix6 = glm::mat4(1.0f);
+	ModelMatrix6 *= RotationMatrix6 * TranslationMatrix6 * ScalingMatrix6;
 }
 
 void digMotion() { //space 누르면 동작
 	if ((glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && spaceflag == false) || spaceflag == true) {
-		
+
 		if (spaceflag == false) {
 			lastTime = glfwGetTime();
 			lastFrameTime = lastTime;
@@ -511,4 +551,20 @@ void computeMouseRotates() {
 
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
+}
+
+void LoadObj() {
+	// .obj파일을 읽는다.
+	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
+
+	glGenBuffers(1, &vertexbuffer);// 정점 버퍼 객체 생성
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer); //정점 버퍼 객체 바인딩
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW); //정점 정보 버퍼에 추가
+
+	bool res1 = loadOBJ("torus.obj", vertices1, uvs1, normals1);
+
+	glGenBuffers(1, &vertexbuffer1);// 정점 버퍼 객체 생성
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer1); //정점 버퍼 객체 바인딩
+	glBufferData(GL_ARRAY_BUFFER, vertices1.size() * sizeof(glm::vec3), &vertices1[0], GL_STATIC_DRAW); //정점 정보 버퍼에 추가
+
 }
