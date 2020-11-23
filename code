@@ -241,7 +241,7 @@ int main(void)
 	OriginMatrix2 *= translate(mat4(), vec3(-2.5f, 0.0f, -3.4f));
 	InvOriginMatrix2 *= translate(mat4(), vec3(2.5f, 0.0f, 3.4f));
 
-	vec3 p = vec3(-2.5f, 0.0f, -3.4f);
+	vec3 p = vec3(-3.0f, 0.0f, -8.95f);
 	OriginMatrix3 *= translate(mat4(), p);
 	InvOriginMatrix3 *= translate(mat4(), -p);
 	do {
