@@ -242,8 +242,8 @@ int main(void)
 	InvOriginMatrix2 *= translate(mat4(), vec3(2.5f, 0.0f, 3.4f));
 
 	vec3 p = vec3(-2.5f, 0.0f, -3.4f);
-	OriginMatrix3 *= translate(mat4(), vec3(0.05f, 0.0f, 0.05f));
-	InvOriginMatrix3 *= translate(mat4(), vec3(0.05f, 0.0f, 0.05f));
+	OriginMatrix3 *= translate(mat4(), p);
+	InvOriginMatrix3 *= translate(mat4(), -p);
 	do {
 		calculateModelMatrix();
 
@@ -496,7 +496,7 @@ void calculateModelMatrix() {
 	glm::mat4 subMatrix1 = OriginMatrix2 * eulerAngleXYZ(0.0f, gOrientation2, 0.0f) * InvOriginMatrix2;
 	RotationMatrix3 = MouseMatrix * subMatrix1 * OriginMatrix1 * 
 		eulerAngleYXZ(gOrientation1, 0.0f, 0.0f) *
-		InvOriginMatrix1 * eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f);;
+		InvOriginMatrix1 * eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f);
 
 	ModelMatrix3 = glm::mat4(1.0f);
 	ModelMatrix3 *= RotationMatrix3 * TranslationMatrix3 * RotationMatrix * KeyboardMatrix * InvRotationMatrix * ScalingMatrix3;
@@ -504,8 +504,10 @@ void calculateModelMatrix() {
 	//버켓
 	TranslationMatrix4 = translate(mat4(), gPosition4 + gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix4 = scale(mat4(), vec3(0.1f, 0.1f, 1.0f));
-	glm::mat4 subMatrix2 = translate(mat4(), endOfArm3) * eulerAngleXYZ(0.0f, gOrientation3, 0.0f) * translate(mat4(), InvendOfArm3);
-	RotationMatrix4 = MouseMatrix * subMatrix1 * subMatrix2 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+	glm::mat4 subMatrix2 = OriginMatrix3 * eulerAngleXYZ(0.0f, gOrientation3, 0.0f) * InvOriginMatrix3;
+	RotationMatrix4 = MouseMatrix * subMatrix1 * subMatrix2 * OriginMatrix1 *
+		eulerAngleYXZ(gOrientation1, 0.0f, 0.0f) *
+		InvOriginMatrix1 * eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f);
 
 	ModelMatrix4 = glm::mat4(1.0f);
 	ModelMatrix4 *= RotationMatrix4 * TranslationMatrix4 * RotationMatrix * KeyboardMatrix * InvRotationMatrix * ScalingMatrix4;
