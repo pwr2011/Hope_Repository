@@ -21,6 +21,7 @@ using namespace glm;
 #pragma region Variables
 
 glm::mat4 ViewMatrix;
+glm::mat4 View1DMatrix;
 glm::mat4 ProjectionMatrix;
 glm::mat4 ModelMatrix1 = glm::mat4(1.0f);
 glm::mat4 ModelMatrix2 = glm::mat4(1.0f);
@@ -45,6 +46,8 @@ glm::mat4 InvOriginMatrix2 = glm::mat4(1.0f);
 glm::mat4 OriginMatrix3 = glm::mat4(1.0f);
 glm::mat4 InvOriginMatrix3 = glm::mat4(1.0f);
 
+//1인칭 시야를 위한 행렬
+glm::mat4 LookMatrix = glm::mat4(1.0f);
 
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 0.0f;
@@ -123,6 +126,8 @@ std::vector<glm::vec3> normals1;
 GLuint vertexbuffer1;
 
 bool spaceflag = false;
+bool lookflag = true;
+bool digging = false;
 
 // Direction : Spherical coordinates to Cartesian coordinates conversion	
 glm::vec3 right = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -230,14 +235,19 @@ int main(void)
 	ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 	// Camera matrix
 	ViewMatrix = glm::lookAt(
-		glm::vec3(16.0f, 32.0f, -20.0f),		// Camera is here
+		glm::vec3(-30.0f, -40.0f, 30.0f),		// Camera is here
 		glm::vec3(0.0f, 0.0f, 0.0f),		// and looks here : at the same position, plus "direction"
 		glm::vec3(0.0f, 1.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
 	);
+	View1DMatrix = glm::lookAt(
+		glm::vec3(5.0f, 0.0f, 5.0f),		// Camera is here
+		glm::vec3(0.0f, 0.0f, 0.0f),		// and looks here : at the same position, plus "direction"
+		glm::vec3(-1.0f, 0.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
+	);
 
-	OriginMatrix1 *= translate(mat4(),vec3 (-0.05f, 0.0f, -0.05f));
+	OriginMatrix1 *= translate(mat4(), vec3(-0.05f, 0.0f, -0.05f));
 	InvOriginMatrix1 *= translate(mat4(), vec3(0.05f, 0.0f, 0.05f));
-	
+
 	OriginMatrix2 *= translate(mat4(), vec3(-2.5f, 0.0f, -3.4f));
 	InvOriginMatrix2 *= translate(mat4(), vec3(2.5f, 0.0f, 3.4f));
 
@@ -246,6 +256,9 @@ int main(void)
 	InvOriginMatrix3 *= translate(mat4(), -p);
 	do {
 		calculateModelMatrix();
+		if (!digging) {
+			ChangeView();
+		}
 
 		// 컬러 버퍼 초기화
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -475,7 +488,7 @@ void calculateModelMatrix() {
 	glm::mat4 InvRotationMatrix = eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f);
 	//핸들 1
 	TranslationMatrix1 = translate(mat4(), gPosition1); // A bit to the left
-	RotationMatrix1 = MouseMatrix *OriginMatrix* eulerAngleYXZ(gOrientation1, 0.0f, 0.0f)*InvOriginMatrix;
+	RotationMatrix1 = MouseMatrix * OriginMatrix * eulerAngleYXZ(gOrientation1, 0.0f, 0.0f) * InvOriginMatrix;
 	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 1.5f));
 
 	ModelMatrix1 = glm::mat4(1.0f);
@@ -484,8 +497,8 @@ void calculateModelMatrix() {
 	// 핸들 2
 	TranslationMatrix2 = translate(mat4(), gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix2 = scale(mat4(), vec3(0.1f, 0.1f, 2.0f));
-	RotationMatrix2 = MouseMatrix * OriginMatrix1*eulerAngleYXZ(gOrientation1, 0.0f, 0.0f)*
-		InvOriginMatrix1* eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f) ;
+	RotationMatrix2 = MouseMatrix * OriginMatrix1 * eulerAngleYXZ(gOrientation1, 0.0f, 0.0f) *
+		InvOriginMatrix1 * eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f);
 
 	ModelMatrix2 = glm::mat4(1.0f);
 	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * RotationMatrix * KeyboardMatrix * InvRotationMatrix * ScalingMatrix2;
@@ -494,7 +507,7 @@ void calculateModelMatrix() {
 	TranslationMatrix3 = translate(mat4(), gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
 	ScalingMatrix3 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
 	glm::mat4 subMatrix1 = OriginMatrix2 * eulerAngleXYZ(0.0f, gOrientation2, 0.0f) * InvOriginMatrix2;
-	RotationMatrix3 = MouseMatrix * subMatrix1 * OriginMatrix1 * 
+	RotationMatrix3 = MouseMatrix * subMatrix1 * OriginMatrix1 *
 		eulerAngleYXZ(gOrientation1, 0.0f, 0.0f) *
 		InvOriginMatrix1 * eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f);
 
@@ -530,8 +543,8 @@ void calculateModelMatrix() {
 }
 
 void digMotion() { //space 누르면 동작
-	if ((glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && spaceflag == false) || spaceflag == true) {
-
+	if (((glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && spaceflag == false) || spaceflag == true) && lookflag == true) {
+		digging = true;
 		if (spaceflag == false) {
 			lastTime = glfwGetTime();
 			lastFrameTime = lastTime;
@@ -549,18 +562,19 @@ void digMotion() { //space 누르면 동작
 		float timeInterval = currentTime - lastTime;
 		if (timeInterval < 1.0f)
 			gOrientation1 -= 3.14159f / 2.0f * deltaTime;
-		else if (timeInterval >= 1.0f && timeInterval < 2.0f) //1~2
+		else if (timeInterval >= 1.0f && timeInterval < 1.5f) //1~1.5
 			gOrientation2 -= 3.14159f / 2.0f * deltaTime;
-		else if (timeInterval >= 2.0f && timeInterval < 2.5f) //2~2.5
+		else if (timeInterval >= 1.5f && timeInterval < 2.0f) //1.5~2
 			gOrientation3 -= 3.14159f / 2.0f * deltaTime;
-		else if (timeInterval >= 2.5f && timeInterval < 3.0f) //2.5~3
+		else if (timeInterval >= 2.0f && timeInterval < 2.5f) //2~2.5
 			gOrientation3 += 3.14159f / 2.0f * deltaTime;
-		else if (timeInterval >= 3.0f && timeInterval < 4.0f) //3~4
+		else if (timeInterval >= 2.5f && timeInterval < 3.0f) //2.5~3
 			gOrientation2 += 3.14159f / 2.0f * deltaTime;
-		else if (timeInterval >= 4.0f && timeInterval < 5.0f) //4~5
+		else if (timeInterval >= 3.0f && timeInterval < 4.0f) //3~4
 			gOrientation1 += 3.14159f / 2.0f * deltaTime;
 		else {
 			spaceflag = false;
+			digging = false;
 		}
 
 	}
@@ -622,7 +636,21 @@ void LoadObj() {
 }
 
 void ChangeView() {
-
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		if (lookflag == false) {
+			ViewMatrix = glm::lookAt(
+				glm::vec3(-30.0f, -40.0f, 30.0f),		// Camera is here
+				glm::vec3(0.0f, 0.0f, 0.0f),		// and looks here : at the same position, plus "direction"
+				glm::vec3(0.0f, 1.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
+			);
+			lookflag = true;
+		}
+		else { // to 1D!
+			ViewMatrix = View1DMatrix;
+			lookflag = false;
+		}
+	}
+	
 }
 
 void Move() {
@@ -657,6 +685,7 @@ void Move() {
 	InvOriginMatrix2 *= glm::translate(glm::mat4(1.0f), -translateFactor);
 	OriginMatrix3 *= glm::translate(glm::mat4(1.0f), translateFactor);
 	InvOriginMatrix3 *= glm::translate(glm::mat4(1.0f), -translateFactor);
+	View1DMatrix *= glm::translate(glm::mat4(1.0f), translateFactor);
 
 	lastTimeMove = currentTime;
 }
