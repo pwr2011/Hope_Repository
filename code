@@ -1,12 +1,9 @@
 // Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 #include <iostream>
-
-// Include GLEW
 #include <GL/glew.h>
-
-// Include GLFW
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
 
@@ -18,11 +15,23 @@ using namespace glm;
 
 #include <common/shader.hpp>
 #include <common/texture.hpp>
+#include <common/objloader.hpp>
 // #include <common/controls.hpp>
+
+#pragma region Variables
 
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
-glm::mat4 ModelMatrix;
+glm::mat4 ModelMatrix1 = glm::mat4(1.0f);
+glm::mat4 ModelMatrix2 = glm::mat4(1.0f);
+glm::mat4 ModelMatrix3 = glm::mat4(1.0f);
+glm::mat4 ModelMatrix4 = glm::mat4(1.0f);
+glm::mat4 ModelMatrix5 = glm::mat4(1.0f);
+glm::mat4 ModelMatrix6 = glm::mat4(1.0f);
+glm::mat4 MouseMatrix = glm::mat4(1.0f);
+glm::mat4 KeyboardMatrix = glm::mat4(1.0f);
+glm::mat4 TempKeyboardMatrix = glm::mat4(1.0f);
+
 
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 0.0f;
@@ -37,37 +46,115 @@ double xpos_prev = 0.0;
 double ypos_prev = 0.0;
 double xpos = 0.0;
 double ypos = 0.0;
+float gOrientation1 = 0.0f;
+float gOrientation2 = 0.0f;
+float gOrientation3 = 0.0f;
 
+double lastTime;
+double lastFrameTime;
+
+//핸들 1
+glm::mat4 TranslationMatrix1;
+glm::mat4 RotationMatrix1;
+glm::mat4 ScalingMatrix1;
+//핸들 2
+glm::mat4 TranslationMatrix2;
+glm::mat4 ScalingMatrix2;
+glm::mat4 RotationMatrix2;
+//핸들 3
+glm::mat4 TranslationMatrix3;
+glm::mat4 ScalingMatrix3;
+glm::mat4 RotationMatrix3;
+//버킷 
+glm::mat4 TranslationMatrix4;
+glm::mat4 ScalingMatrix4;
+glm::mat4 RotationMatrix4;
+//조종대
+glm::mat4 TranslationMatrix5;
+glm::mat4 ScalingMatrix5;
+glm::mat4 RotationMatrix5;
+//바퀴
+glm::mat4 TranslationMatrix6;
+glm::mat4 ScalingMatrix6;
+glm::mat4 RotationMatrix6;
+
+// x,z평면에 위치 시킨 후 동작		
+vec3 gPosition1(0.0f, 0.0f, 1.0f);
+// 첫번째 큐브의 말단에 존재하도록 위치 조정	
+vec3 gPosition2(-2.5f, 0.0f, -3.0f);
+
+vec3 gPosition3(0.0f, 0.0f, -4.0f);
+
+vec3 gPosition4(0.0f, 0.0f, -4.0f);
+
+vec3 gPosition5(0.0f, 0.0f, 0.0f);
+
+vec3 gPosition6(0.0f, 0.0f, -2.0f);
+
+vec3 endOfArm2(-2.5f, 0.0f, -3.8f);
+vec3 InvendOfArm2(-endOfArm2.x, -endOfArm2.y, -endOfArm2.z);
+
+vec3 endOfArm3(-2.8f, 0.0f, -8.75f);
+vec3 InvendOfArm3(-endOfArm3.x, -endOfArm3.y, -endOfArm3.z);
+
+std::vector<glm::vec3> vertices;
+std::vector<glm::vec2> uvs;
+std::vector<glm::vec3> normals;
+
+GLuint vertexbuffer;
+
+std::vector<glm::vec3> vertices1;
+std::vector<glm::vec2> uvs1;
+std::vector<glm::vec3> normals1;
+
+GLuint vertexbuffer1;
+
+bool spaceflag = false;
+
+// Direction : Spherical coordinates to Cartesian coordinates conversion	
+glm::vec3 right = glm::vec3(1.0f, 0.0f, 0.0f);
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
+
+glm::vec3 translateFactor = glm::vec3(0.0f);
+#pragma endregion
+
+void calculateModelMatrix();
 void computeMouseRotates();
-void computeKeyboardTranslates();
-
-int main( void )
+void digMotion();
+void LoadObj();
+void ChangeView();
+void Move();
+int main(void)
 {
+#pragma region Init
+	//초기화 부분
 	// Initialise GLFW
-	if( !glfwInit() )
+	if (!glfwInit())
 	{
-		fprintf( stderr, "Failed to initialize GLFW\n" );
+		fprintf(stderr, "Failed to initialize GLFW\n");
 		getchar();
 		return -1;
 	}
 
+	// 윈도우 기본 설정
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Tutorial 0 - Keyboard and Mouse", NULL, NULL);
-	if( window == NULL ){
-		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+	// 새 윈도우 생성
+	window = glfwCreateWindow(1024, 768, "Tutorial 0 - Keyboard and Mouse", NULL, NULL);
+	if (window == NULL) {
+		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		getchar();
 		glfwTerminate();
 		return -1;
 	}
-    glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
 
-	// Initialize GLEW
+	// GLEW초기화
 	glewExperimental = true; // Needed for core profile
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "Failed to initialize GLEW\n");
@@ -76,193 +163,151 @@ int main( void )
 		return -1;
 	}
 
-	// Ensure we can capture the escape key being pressed below
+	// 어떤 키가 눌려있는지 확인할 수 있음
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    // Hide the mouse and enable unlimited mouvement
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
-    // Set the mouse at the center of the screen
-    glfwPollEvents();
-    // glfwSetCursorPos(window, 1024/2, 768/2);
+	// Hide the mouse and enable unlimited mouvement
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	// Set the mouse at the center of the screen
+	glfwPollEvents();
+	// glfwSetCursorPos(window, 1024/2, 768/2);
+
+	// 배경 색깔 설정
+	glClearColor(0.6f, 0.4f, 0.0f, 0.0f);
 
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS); 
+	glDepthFunc(GL_LESS);
 
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 
+#pragma endregion
+	// 버퍼에 정점 데이터 전달하는 일련의 과정(정점 shader에 공급하기 위해 사용
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader" );
+	// 쉐이더를 로드한다.
+	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
+	//"TextureFragmentShader.fragmentshader", 제거됨
 
-	// Get a handle for our "MVP" uniform
+	// uniform 변수의 메모리 위치를 가져옴(유니폼 변수는 모든 쉐이더에서 공통적으로 사용하는 변수이다)
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
-	// Load the texture
-	// GLuint Texture = loadDDS("uvtemplate.DDS");
+	// 텍스처 데이터 생성
 	GLuint Texture = loadBMP_custom("uvtemplate.bmp");
 
-	// Get a handle for our "myTextureSampler" uniform
-	GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
+	// 텍스쳐 데이터 활성화
+	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
-	// Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
-	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-	static const GLfloat g_vertex_buffer_data[] = { 
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f,-1.0f,
-		 1.0f,-1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		 1.0f,-1.0f, 1.0f
-	};
+	LoadObj();
+	
+	GLuint ColorCheckID = glGetUniformLocation(programID, "colorCheck");
 
-	// Two UV coordinatesfor each vertex. They were created with Blender.
-	static const GLfloat g_uv_buffer_data[] = { 
-		0.000059f, 0.000004f, 
-		0.000103f, 0.336048f, 
-		0.335973f, 0.335903f, 
-		1.000023f, 0.000013f, 
-		0.667979f, 0.335851f, 
-		0.999958f, 0.336064f, 
-		0.667979f, 0.335851f, 
-		0.336024f, 0.671877f, 
-		0.667969f, 0.671889f, 
-		1.000023f, 0.000013f, 
-		0.668104f, 0.000013f, 
-		0.667979f, 0.335851f, 
-		0.000059f, 0.000004f, 
-		0.335973f, 0.335903f, 
-		0.336098f, 0.000071f, 
-		0.667979f, 0.335851f, 
-		0.335973f, 0.335903f, 
-		0.336024f, 0.671877f, 
-		1.000004f, 0.671847f, 
-		0.999958f, 0.336064f, 
-		0.667979f, 0.335851f, 
-		0.668104f, 0.000013f, 
-		0.335973f, 0.335903f, 
-		0.667979f, 0.335851f, 
-		0.335973f, 0.335903f, 
-		0.668104f, 0.000013f, 
-		0.336098f, 0.000071f, 
-		0.000103f, 0.336048f, 
-		0.000004f, 0.671870f, 
-		0.336024f, 0.671877f, 
-		0.000103f, 0.336048f, 
-		0.336024f, 0.671877f, 
-		0.335973f, 0.335903f, 
-		0.667969f, 0.671889f, 
-		1.000004f, 0.671847f, 
-		0.667979f, 0.335851f
-	};
-
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
+	/*
+	// 텍스쳐를 위한 uv좌표 데이터를 버퍼에 저장
 	GLuint uvbuffer;
 	glGenBuffers(1, &uvbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
-
-	// Projection matrix : 45 degree Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+	*/
+	// projection matrix (시야각, 화면 비율, near 평면, far 평면)
 	ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 	// Camera matrix
 	ViewMatrix = glm::lookAt(
-		glm::vec3(0.0f, 6.0f, 8.0f),		// Camera is here
+		glm::vec3(16.0f, 32.0f, -20.0f),		// Camera is here
 		glm::vec3(0.0f, 0.0f, 0.0f),		// and looks here : at the same position, plus "direction"
 		glm::vec3(0.0f, 1.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
 	);
-	ModelMatrix = glm::mat4(1.0);
 
-	do{
-		// Clear the screen
+	do {
+		calculateModelMatrix();
+
+		// 컬러 버퍼 초기화
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Use our shader
+		// 쉐이더 프로그램 적용
+		// 랜더링 루프안에서 반복 사용
 		glUseProgram(programID);
 
-		// Compute the Model matrix from keyboard and mouse input
+#pragma region MouseMove
+		// 마우스 입력을 받는 코드
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		{
 			if (firstPress)
 			{
+				//현재 커서의 위치를 가져옴
 				glfwGetCursorPos(window, &xpos_prev, &ypos_prev);
 				firstPress = false;
 			}
 
 			computeMouseRotates();
 		}
-		
+
+		// 드래그의 끝
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
 			firstPress = true;
-		
-		computeKeyboardTranslates();
 
-		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+#pragma endregion
+		digMotion();
+		/*if ((glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) ||
+			(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) || 
+			(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) || 
+			(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)) {
 
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+			KeyboardMatrix = TempKeyboardMatrix;
+			TempKeyboardMatrix = KeyboardMatrix;
+		}
+		else {
+			TempKeyboardMatrix = KeyboardMatrix;
+			KeyboardMatrix = glm::mat4(1.0f);
+		}*/
+		Move();
 
+
+		//MVP계산을 렌더링 루프안에서 실시간으로 실행
+		glm::mat4 MVP1 = ProjectionMatrix * ViewMatrix * ModelMatrix1;
+		glm::mat4 MVP2 = ProjectionMatrix * ViewMatrix * ModelMatrix2;
+		glm::mat4 MVP3 = ProjectionMatrix * ViewMatrix * ModelMatrix3;
+		glm::mat4 MVP4 = ProjectionMatrix * ViewMatrix * ModelMatrix4;
+		glm::mat4 MVP5 = ProjectionMatrix * ViewMatrix * ModelMatrix5;
+		glm::mat4 MVP6 = ProjectionMatrix * ViewMatrix * ModelMatrix6;
+
+		/*
+		// 텍스쳐
 		// Bind our texture in Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Texture);
 		// Set our "myTextureSampler" sampler to use Texture Unit 0
 		glUniform1i(TextureID, 0);
+		*/
 
-		// 1rst attribute buffer : vertices
+		// 쉐이더에 있는 uniform 변수 값 정의
+		//(변수의 메모리 위치, 벡터 개수, 행렬의 전치 여부, 4차원 벡터 데이터 값)
+
+		//핸들 1 그리기
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP1[0][0]);
+		glUniform1i(ColorCheckID, 0);
+#pragma region 버퍼 내 데이터 활성화1
+		// 버퍼 내 데이터 활성화
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
 		glVertexAttribPointer(
-			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
 			GL_FLOAT,           // type
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			(void*)0            // array buffer offset
 		);
+#pragma endregion
 
-		// 2nd attribute buffer : UVs
+		/*
+		// 텍스처를 위한 uv좌표 버퍼에 저장
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
 		glVertexAttribPointer(
@@ -273,24 +318,126 @@ int main( void )
 			0,                                // stride
 			(void*)0                          // array buffer offset
 		);
+		*/
+		// 정점 바탕으로 그리기!!
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+		//(그리고자 하는 대상, 배열의 시작 인덱스, 렌더링하고자 하는 요소 수)
 
-		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 12*3); // 12*3 indices starting at 0 -> 12 triangles
+		//핸들 2
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP2[0][0]);
+		glUniform1i(ColorCheckID, 1);
 
+#pragma region 버퍼 내 데이터 활성화2
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(
+			0,		  // attribute. No particular reason for 0, but must match the layout in the shader.
+			3,		  // size
+			GL_FLOAT, // type
+			GL_FALSE, // normalized?
+			0,		  // stride
+			(void*)0 // array buffer offset
+		);
+#pragma endregion
+
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+		//핸들 3
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP3[0][0]);
+		glUniform1i(ColorCheckID, 3);
+#pragma region 버퍼 내 데이터 활성화3
+		// 버퍼 내 데이터 활성화
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
+		glVertexAttribPointer(
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+#pragma endregion
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+		//버켓 그리기
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP4[0][0]);
+		glUniform1i(ColorCheckID, 4);
+#pragma region 버퍼 내 데이터 활성화4
+		// 버퍼 내 데이터 활성화
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
+		glVertexAttribPointer(
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+#pragma endregion
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+		//조종대 그리기
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP5[0][0]);
+		glUniform1i(ColorCheckID, 5);
+#pragma region 조종대 그리기
+		// 버퍼 내 데이터 활성화
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+		// 버퍼 내 데이터 속성 질의
+		glVertexAttribPointer(
+			0,                  // 버퍼 인덱스
+			3,                  // 정점 수
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
+#pragma endregion
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
+		//바퀴
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP6[0][0]);
+		glUniform1i(ColorCheckID, 7);
+
+#pragma region 바퀴
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer1);
+		glVertexAttribPointer(
+			0,		  // attribute. No particular reason for 0, but must match the layout in the shader.
+			3,		  // size
+			GL_FLOAT, // type
+			GL_FALSE, // normalized?
+			0,		  // stride
+			(void*)0 // array buffer offset
+		);
+#pragma endregion
+
+		glDrawArrays(GL_TRIANGLES, 0, vertices1.size());
+
+
+
+		//버퍼 내 데이터 비활성화
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		
+
 	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0 );
+	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwWindowShouldClose(window) == 0);
 
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &uvbuffer);
+	//glDeleteBuffers(1, &uvbuffer);
 	glDeleteProgram(programID);
 	glDeleteTextures(1, &TextureID);
 	glDeleteVertexArrays(1, &VertexArrayID);
@@ -301,19 +448,110 @@ int main( void )
 	return 0;
 }
 
+void calculateModelMatrix() {
+	glm::mat4 RotationMatrix = eulerAngleYXZ(-3.14159f * 0.5f, 0.0f, 0.0f);
+	glm::mat4 InvRotationMatrix = eulerAngleYXZ(3.14159f * 0.5f, 0.0f, 0.0f);
+	//핸들 1
+	TranslationMatrix1 = translate(mat4(), gPosition1); // A bit to the left
+	RotationMatrix1 = MouseMatrix * eulerAngleYXZ(gOrientation1, 0.0f, 0.0f);
+	ScalingMatrix1 = scale(mat4(), vec3(0.1f, 0.1f, 1.5f));
+
+	ModelMatrix1 = glm::mat4(1.0f);
+	ModelMatrix1 *= RotationMatrix1 * TranslationMatrix1 * KeyboardMatrix * ScalingMatrix1;
+
+	// 핸들 2
+	TranslationMatrix2 = translate(mat4(), gPosition2 + gPosition1); // A bit to the leftglm::mat4 
+	ScalingMatrix2 = scale(mat4(), vec3(0.1f, 0.1f, 2.0f));
+	RotationMatrix2 = MouseMatrix * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+
+	ModelMatrix2 = glm::mat4(1.0f);
+	ModelMatrix2 *= RotationMatrix2 * TranslationMatrix2 * RotationMatrix * KeyboardMatrix * InvRotationMatrix* ScalingMatrix2;
+
+	//핸들 3
+	TranslationMatrix3 = translate(mat4(), gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
+	ScalingMatrix3 = scale(mat4(), vec3(0.1f, 0.1f, 3.0f));
+	glm::mat4 subMatrix1 = translate(mat4(), endOfArm2) * eulerAngleXYZ(0.0f, gOrientation2, 0.0f) * translate(mat4(), InvendOfArm2);
+	RotationMatrix3 = MouseMatrix * subMatrix1 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+
+	ModelMatrix3 = glm::mat4(1.0f);
+	ModelMatrix3 *= RotationMatrix3 *TranslationMatrix3* RotationMatrix * KeyboardMatrix * InvRotationMatrix * ScalingMatrix3;
+
+	//버켓
+	TranslationMatrix4 = translate(mat4(), gPosition4 + gPosition3 + gPosition2 + gPosition1); // A bit to the leftglm::mat4 
+	ScalingMatrix4 = scale(mat4(), vec3(0.1f, 0.1f, 1.0f));
+	glm::mat4 subMatrix2 = translate(mat4(), endOfArm3) * eulerAngleXYZ(0.0f, gOrientation3, 0.0f) * translate(mat4(), InvendOfArm3);
+	RotationMatrix4 = MouseMatrix * subMatrix1 * subMatrix2 * eulerAngleYXZ(3.14159f * 0.5f + gOrientation1, 0.0f, 0.0f);
+
+	ModelMatrix4 = glm::mat4(1.0f);
+	ModelMatrix4 *= RotationMatrix4 * TranslationMatrix4 * RotationMatrix * KeyboardMatrix * InvRotationMatrix * ScalingMatrix4;
+
+	//조종대
+	TranslationMatrix5 = translate(mat4(), gPosition5); // A bit to the left
+	RotationMatrix5 = MouseMatrix;
+	ScalingMatrix5 = scale(mat4(), vec3(1.0f, 1.0f, 1.0f));
+
+	ModelMatrix5 = glm::mat4(1.0f);
+	ModelMatrix5 *= RotationMatrix5 *  TranslationMatrix5 * KeyboardMatrix * ScalingMatrix5;
+
+	//바퀴
+	TranslationMatrix6 = translate(mat4(), gPosition6); // A bit to the left
+	RotationMatrix6 = MouseMatrix;
+	ScalingMatrix6 = scale(mat4(), vec3(0.1f, 0.2f, 0.05f));
+
+	ModelMatrix6 = glm::mat4(1.0f);
+	ModelMatrix6 *= RotationMatrix6 *  TranslationMatrix6 * KeyboardMatrix * ScalingMatrix6;
+}
+
+void digMotion() { //space 누르면 동작
+	if ((glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && spaceflag == false) || spaceflag == true) {
+
+		if (spaceflag == false) {
+			lastTime = glfwGetTime();
+			lastFrameTime = lastTime;
+			spaceflag = true;
+		}
+
+		double currentTime = glfwGetTime();
+		float deltaTime = (float)(currentTime - lastFrameTime);
+		lastFrameTime = currentTime;
+		// 중심에 가까울수록 속도가 증가 (진자 운동과 가깝도록 함)
+		//float closeToCenter1 = -(abs(gOrientation1) - 1.3f);
+		//float closeToCenter2 = -(abs(gOrientation2) - 1.3f);
+
+		// 일정 시간 범위 내에서 증가
+		float timeInterval = currentTime - lastTime;
+		if (timeInterval < 1.0f)
+			gOrientation1 -= 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 1.0f && timeInterval < 2.0f) //1~2
+			gOrientation2 -= 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 2.0f && timeInterval < 2.5f) //2~2.5
+			gOrientation3 -= 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 2.5f && timeInterval < 3.0f) //2.5~3
+			gOrientation3 += 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 3.0f && timeInterval < 4.0f) //3~4
+			gOrientation2 += 3.14159f / 2.0f * deltaTime;
+		else if (timeInterval >= 4.0f && timeInterval < 5.0f) //4~5
+			gOrientation1 += 3.14159f / 2.0f * deltaTime;
+		else {
+			spaceflag = false;
+		}
+
+	}
+}
 void computeMouseRotates() {
 
 	// glfwGetTime is called only once, the first time this function is called
 	static double lastTime = glfwGetTime();
 
-	// Compute time difference between current and last frame
+	// 프레임 간 시간 계산
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
 
-	// Get mouse position	
+	//커서 위치를 기반으로 회전 각도 결정
 	glfwGetCursorPos(window, &xpos, &ypos);
 
 	// Compute new orientation
+	// x축 비교
 	if (xpos < xpos_prev)
 		horizontalAngle = -deltaTime * mouseSpeed;
 	else if (xpos > xpos_prev)
@@ -321,6 +559,7 @@ void computeMouseRotates() {
 	else
 		horizontalAngle = 0.0;
 
+	// y축 비교
 	if (ypos < ypos_prev)
 		verticalAngle = -deltaTime * mouseSpeed;
 	else if (ypos > ypos_prev)
@@ -328,8 +567,10 @@ void computeMouseRotates() {
 	else
 		verticalAngle = 0.0;
 
-	ModelMatrix *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
+	// 회전 행렬 계산, 적용
+	MouseMatrix *= glm::eulerAngleYXZ(horizontalAngle, verticalAngle, 0.0f);
 
+	// 현재 커서 위치, 시간 저장
 	xpos_prev = xpos;
 	ypos_prev = ypos;
 
@@ -337,49 +578,49 @@ void computeMouseRotates() {
 	lastTime = currentTime;
 }
 
-void computeKeyboardTranslates()
-{
-	// glfwGetTime is called only once, the first time this function is called
-	static double lastTime = glfwGetTime();
+void LoadObj() {
+	// .obj파일을 읽는다.
+	bool res = loadOBJ("cube.obj", vertices, uvs, normals);
 
-	// Compute time difference between current and last frame
+	glGenBuffers(1, &vertexbuffer);// 정점 버퍼 객체 생성
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer); //정점 버퍼 객체 바인딩
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW); //정점 정보 버퍼에 추가
+
+	bool res1 = loadOBJ("torus.obj", vertices1, uvs1, normals1);
+
+	glGenBuffers(1, &vertexbuffer1);// 정점 버퍼 객체 생성
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer1); //정점 버퍼 객체 바인딩
+	glBufferData(GL_ARRAY_BUFFER, vertices1.size() * sizeof(glm::vec3), &vertices1[0], GL_STATIC_DRAW); //정점 정보 버퍼에 추가
+
+}
+
+void ChangeView() {
+
+}
+
+void Move() {
+	static double lastTimeMove = glfwGetTime();
+
+	// 프레임 간 시간 계산
 	double currentTime = glfwGetTime();
-	float deltaTime = float(currentTime - lastTime);
-
-	// Direction : Spherical coordinates to Cartesian coordinates conversion	
-	glm::vec3 right = glm::vec3(1.0f, 0.0f, 0.0f);
-	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-	glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
-
+	float deltaTime = float(currentTime - lastTimeMove);
 	glm::vec3 translateFactor = glm::vec3(0.0f);
-
 	// Move forward
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		translateFactor += up * deltaTime * speed;
+		translateFactor -= right * deltaTime * speed;
 	}
 	// Move backward
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		translateFactor -= up * deltaTime * speed;
+		translateFactor += right * deltaTime * speed;
 	}
 	// Move right
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		translateFactor += right * deltaTime * speed;
+		translateFactor += up * deltaTime * speed;
 	}
 	// Move left
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		translateFactor -= right * deltaTime * speed;
+		translateFactor -= up * deltaTime * speed;
 	}
-	// Move up
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-		translateFactor += forward * deltaTime * speed;
-	}
-	// Move down
-	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-		translateFactor -= forward * deltaTime * speed;
-	}
-
-	ModelMatrix *= glm::translate(glm::mat4(1.0f), translateFactor);
-
-	// For the next frame, the "last time" will be "now"
-	lastTime = currentTime;
+	KeyboardMatrix *= glm::translate(glm::mat4(1.0f), translateFactor);
+	lastTimeMove = currentTime;
 }
