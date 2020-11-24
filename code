@@ -126,7 +126,7 @@ std::vector<glm::vec3> normals1;
 GLuint vertexbuffer1;
 
 bool spaceflag = false;
-bool lookflag = true;
+bool lookflag = false;
 bool digging = false;
 
 // Direction : Spherical coordinates to Cartesian coordinates conversion	
@@ -224,15 +224,9 @@ int main(void)
 
 	GLuint ColorCheckID = glGetUniformLocation(programID, "colorCheck");
 
-	/*
-	// 텍스쳐를 위한 uv좌표 데이터를 버퍼에 저장
-	GLuint uvbuffer;
-	glGenBuffers(1, &uvbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
-	*/
 	// projection matrix (시야각, 화면 비율, near 평면, far 평면)
 	ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+
 	// Camera matrix
 	ViewMatrix = glm::lookAt(
 		glm::vec3(-30.0f, -40.0f, 30.0f),		// Camera is here
@@ -240,7 +234,7 @@ int main(void)
 		glm::vec3(0.0f, 1.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
 	);
 	View1DMatrix = glm::lookAt(
-		glm::vec3(5.0f, 0.0f, 5.0f),		// Camera is here
+		glm::vec3(5.0f, 0.0f, 3.0f),		// Camera is here
 		glm::vec3(0.0f, 0.0f, 0.0f),		// and looks here : at the same position, plus "direction"
 		glm::vec3(-1.0f, 0.0f, 0.0f)		// Head is up (set to 0,-1,0 to look upside-down)
 	);
@@ -251,14 +245,14 @@ int main(void)
 	OriginMatrix2 *= translate(mat4(), vec3(-2.5f, 0.0f, -3.4f));
 	InvOriginMatrix2 *= translate(mat4(), vec3(2.5f, 0.0f, 3.4f));
 
-	vec3 p = vec3(-3.0f, 0.0f, -8.95f);
-	OriginMatrix3 *= translate(mat4(), p);
-	InvOriginMatrix3 *= translate(mat4(), -p);
+	OriginMatrix3 *= translate(mat4(), vec3(-3.0f, 0.0f, -8.95f));
+	InvOriginMatrix3 *= translate(mat4(), vec3(3.0f, 0.0f, 8.95f));
 	do {
 		calculateModelMatrix();
 		if (!digging) {
 			ChangeView();
 		}
+		Move();
 
 		// 컬러 버퍼 초기화
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -299,7 +293,6 @@ int main(void)
 			TempKeyboardMatrix = KeyboardMatrix;
 			KeyboardMatrix = glm::mat4(1.0f);
 		}*/
-		Move();
 
 
 		//MVP계산을 렌더링 루프안에서 실시간으로 실행
@@ -650,7 +643,10 @@ void ChangeView() {
 			lookflag = false;
 		}
 	}
-	
+	if (lookflag == false) {
+		ViewMatrix = View1DMatrix;
+	}
+
 }
 
 void Move() {
@@ -659,22 +655,28 @@ void Move() {
 	// 프레임 간 시간 계산
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTimeMove);
+	float constant = -1.0f;
 	glm::vec3 translateFactor = glm::vec3(0.0f);
+	glm::vec3 translateFactorView = glm::vec3(0.0f);
 	// Move forward
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		translateFactor -= right * deltaTime * speed;
+		translateFactorView -= right * deltaTime * speed*constant;
 	}
 	// Move backward
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		translateFactor += right * deltaTime * speed;
+		translateFactor += right * deltaTime * speed; 
+		translateFactorView += right * deltaTime * speed * constant;
 	}
 	// Move right
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		translateFactor += up * deltaTime * speed;
+		translateFactorView += up * deltaTime * speed * constant;
 	}
 	// Move left
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
 		translateFactor -= up * deltaTime * speed;
+		translateFactorView -= up * deltaTime * speed * constant;
 	}
 	KeyboardMatrix *= glm::translate(glm::mat4(1.0f), translateFactor);
 	OriginMatrix *= glm::translate(glm::mat4(1.0f), translateFactor);
@@ -685,7 +687,7 @@ void Move() {
 	InvOriginMatrix2 *= glm::translate(glm::mat4(1.0f), -translateFactor);
 	OriginMatrix3 *= glm::translate(glm::mat4(1.0f), translateFactor);
 	InvOriginMatrix3 *= glm::translate(glm::mat4(1.0f), -translateFactor);
-	View1DMatrix *= glm::translate(glm::mat4(1.0f), translateFactor);
+	View1DMatrix *= glm::translate(glm::mat4(1.0f), translateFactorView);
 
 	lastTimeMove = currentTime;
 }
