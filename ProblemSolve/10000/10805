@@ -1,0 +1,69 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int dp[52][52][52][52];
+
+int cut(int h1, int w1, int h2, int w2) {
+	if (dp[h1][w1][h2][w2] != -1) {
+		return dp[h1][w1][h2][w2];
+	}
+	if (h2 == 0 && w2 == 0 && (h1 == w1)) {
+		dp[h1][w1][h2][w2] = 1;
+		return 1;
+	}
+
+	int min = 9999;
+	for (int h_p = 1; h_p < h1; h_p++) {
+		int cnt;
+		if (h2 > h_p) {
+			cnt = cut(h_p, w1 - w2, 0, 0) + cut(h1 - h_p, w1, h2 - h_p, w2);
+		}
+		else if(h2 < h_p){ 
+			cnt = cut(h_p, w1, h2, w2) + cut(h1 - h_p, w1, 0, 0);
+		}
+		else {//h2 == h_p
+			cnt = cut(h_p, w1 - w2, 0, 0) + cut(h1 - h_p, w1, 0, 0);
+		}
+		if (min > cnt) {
+			min = cnt;
+		}
+	}
+
+	for (int w_p = 1; w_p < w1; w_p++) {
+		int cnt;
+		if (w2 > w_p) {
+			cnt = cut(h1, w1 - w_p, h2, w2-w_p) + cut(h1-h2, w_p, 0,0);
+		}
+		else if (w2 < w_p) {
+			cnt = cut(h1, w1-w_p, 0,0) + cut(h1, w_p, h2, w2);
+		}
+		else {//w2 == w_p
+			cnt = cut(h1, w1 - w_p, 0, 0) + cut(h1 - h2, w_p, 0, 0);
+		}
+		if (min > cnt) {
+			min = cnt;
+		}
+	}
+	//최소갯수 반환
+	dp[h1][w1][h2][w2] = min;
+	return min;
+}
+
+
+int main() {
+	for (int i = 0; i < 52; i++) {
+		for (int j = 0; j < 52; j++) {
+			for (int k = 0; k < 52; k++) {
+				for (int l = 0; l < 52; l++) {
+					dp[i][j][k][l] = -1;
+				}
+			}
+		}
+	}
+
+	int h1, h2, w1, w2;
+	cin >> h1 >> w1 >> h2 >> w2;
+
+	cout<<cut(h1, w1, h2, w2);
+}
