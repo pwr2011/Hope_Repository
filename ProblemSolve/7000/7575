@@ -1,0 +1,72 @@
+#include<iostream>
+using namespace std;
+
+typedef pair<int, int> P;
+
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+P arr[105][105];
+P pos[105];
+
+int main() {
+	int A, B;
+	cin >> A >> B;//가로 세로
+	int N, M; cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		int x, y; char dir;
+		cin >> x >> y >> dir;
+		pos[n + 1] = P(x, B-y+1);
+		if (dir == 'W') {
+			arr[B - y + 1][x] = P(n + 1, 1);
+		}
+		else if (dir == 'N') {
+			arr[B - y + 1][x] = P(n + 1, 2);
+		}
+		else if (dir == 'E') {
+			arr[B - y + 1][x] = P(n + 1, 3);
+		}
+		else{
+			arr[B - y + 1][x] = P(n + 1, 4);
+		}
+	}
+	for (int m = 0; m < M; m++) {
+		int num,times;
+		char order;
+		cin >> num >> order >> times;
+		for (int t = 0; t < times; t++) {
+			switch (order) {
+			case 'L':
+				if (--arr[pos[num].second][pos[num].first].second == 0) {
+					arr[pos[num].second][pos[num].first].second = 4;
+				}
+				break;
+			case 'R':
+				if (++arr[pos[num].second][pos[num].first].second == 5) {
+					arr[pos[num].second][pos[num].first].second = 1;
+				}
+				break;
+			case 'F':
+				int cx = pos[num].first;
+				int cy = pos[num].second;
+				int dir = arr[cy][cx].second-1;
+
+				int nx = cx + dx[dir]; int ny = cy + dy[dir];
+				if (nx <= 0 || ny <= 0 || nx > A || ny > B) {
+					cout << "Robot "<<num << " crashes into the wall";
+					return 0;
+				}
+				if (arr[ny][nx] != P(0, 0)) {
+					int hit_robot = arr[ny][nx].first;
+					cout << "Robot " << num << " crashes into robot " << hit_robot;
+					return 0;
+				}
+				arr[ny][nx] = arr[cy][cx];
+				arr[cy][cx] = P(0, 0);
+				pos[num].first = nx;
+				pos[num].second = ny;
+				break;
+			}
+		}
+	}
+	cout << "OK";
+}
