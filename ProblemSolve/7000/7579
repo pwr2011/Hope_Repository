@@ -31,5 +31,6 @@ int main() {
 			min_cost = min(min_cost, i);
 		}
 	}
+	
 	cout << min_cost;
 }
