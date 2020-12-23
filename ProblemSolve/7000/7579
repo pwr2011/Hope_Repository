@@ -1,0 +1,35 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int bytes[105];
+int cost[105];
+int dp[105][10'005];
+
+int main() {
+	int N, M; cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		cin >> bytes[n];
+	}
+	for (int n = 0; n < N; n++) {
+		cin >> cost[n];
+	}
+
+	for (int i = 1; i <= N; i++) {
+		for (int c = 0; c < 10'000; c++) {
+			if (cost[i-1] <= c) {
+				dp[i][c] = max(dp[i - 1][c], dp[i - 1][c - cost[i-1]] + bytes[i-1]);
+			}
+			else {
+				dp[i][c] = dp[i - 1][c];
+			}
+		}
+	}
+	int min_cost = 99999;
+	for (int i = 0; i < 10'005; i++) {
+		if (dp[N][i] >= M) {
+			min_cost = min(min_cost, i);
+		}
+	}
+	cout << min_cost;
+}
