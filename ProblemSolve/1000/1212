@@ -1,0 +1,32 @@
+#include<iostream>
+#include<string>
+#include<bitset>
+using namespace std;
+
+char input[400'000];
+string ans;
+
+int main() {
+	cin >> input;
+	if (input[0] == '0') {
+		cout << 0;
+		return 0;
+	}
+	int i = 0;
+	while (input[i] != '\0') {
+		string tmp = (bitset<3>((int)input[i]).to_string());
+		for (int j = 0; j < tmp.size(); j++) {
+			ans.push_back(tmp[j]);
+		}
+		i++;
+	}
+	bool flag = false;
+	for (int i = 0; i < ans.size(); i++) {
+		if (ans[i] != '0') {
+			flag = true;
+		}
+		if (flag) {
+			cout << ans[i];
+		}
+	}
+}
