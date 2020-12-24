@@ -1,0 +1,15 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+using namespace std;
+
+int main() {
+	vector<int>arr;
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		int tmp; cin >> tmp;
+		arr.push_back(tmp);
+	}
+	sort(arr.begin(), arr.end());
+	cout << arr[0] * arr[arr.size() - 1];
+}
