@@ -1,0 +1,59 @@
+#include<iostream>
+#include<cmath>
+#define ll long long
+using namespace std;
+
+ll A[1'000'005];
+ll B[1'000'005];
+
+class segment {
+public:
+	ll arr[2'048'576];
+	ll idx = 0;
+	ll N;
+	void init(ll N) {
+		this->N = N;
+		idx = pow(2,ceil(log2(N)));
+		for (ll i = idx; i < 2 * idx; i++) {
+			arr[i] = 0;
+		}
+		for (ll i = idx - 1; i > 0; i--) {
+			arr[i] = arr[i * 2] + arr[i * 2 + 1];
+		}
+	}
+	void update(ll i) {
+		i += idx;
+		arr[i] = 1;
+		i /= 2;
+		while (i != 0) {
+			arr[i] = arr[i * 2] + arr[i * 2 + 1];
+			i /= 2;
+		}
+	}
+	ll sum(ll i, ll j, ll nodenum, ll L, ll R) {
+		if (j<L || i>R) { return 0; }
+		else if ( i<=L && R<=j) { return arr[nodenum]; }
+		else {
+			ll mid = (L + R) / 2;
+			return sum(i, j, nodenum * 2, L, mid) + sum(i, j, nodenum * 2 + 1, mid + 1, R);
+		}
+	}
+};
+
+int main() {
+	segment segtree;
+	ll N; cin >> N;
+	for (ll n = 0; n < N; n++) {
+		ll tmp; cin >> tmp;
+		A[tmp] = n;
+	}
+	segtree.init(N);
+
+	ll ans = 0;
+	for (ll n = 0; n < N; n++) {
+		ll tmp; cin >> tmp;
+		ans += segtree.sum(A[tmp], segtree.idx-1, 1, 0, segtree.idx - 1);
+		segtree.update(A[tmp]);
+	}
+	cout << ans;
+}
