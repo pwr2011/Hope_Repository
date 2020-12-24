@@ -1,0 +1,74 @@
+#include<iostream>
+#include<string>
+#include<typeinfo>
+using namespace std;
+
+int conv[256];
+int dp[5005];
+string input;
+
+int cal(int idx) {
+	if (idx > input.size() - 1) {
+		dp[idx] = 1;
+		return 1;
+	}
+	if (dp[idx] != -1) {
+		return dp[idx];
+	}
+	if (idx <= (int)input.size()-2) {
+		//1자리 숫자
+		int num1 = conv[input[idx]];
+
+		//2자리 숫자
+		int num2 = conv[input[idx]] * 10 + conv[input[idx + 1]];
+
+		if (num1 == 0) {
+			dp[idx] = 0;
+			return 0;
+		}
+		else {
+			if (num2 > 26) {
+				dp[idx] = (cal(idx + 1))%1000000;
+				return dp[idx];
+			}
+			else {
+				dp[idx] = (cal(idx + 1) + cal(idx + 2))% 1000000;
+				return dp[idx];
+			}
+		}
+	}
+	else if (idx == input.size() - 1) {
+		//1자리 숫자
+		int num1 = conv[input[idx]];
+		if (num1 == 0) {
+			dp[idx] = 0;
+			return 0;
+		}
+		else {
+			dp[idx] = 1;
+			return 1;
+		}
+	}
+	else {
+		return 1;
+	}
+}
+
+int main() {
+	conv['0'] = 0;
+	conv['1'] = 1;
+	conv['2'] = 2;
+	conv['3'] = 3;
+	conv['4'] = 4;
+	conv['5'] = 5;
+	conv['6'] = 6;
+	conv['7'] = 7;
+	conv['8'] = 8;
+	conv['9'] = 9;
+
+	for (int i = 0; i < 5005; i++) {
+		dp[i] = -1;
+	}
+	cin >> input;
+	cout<<cal(0);
+}
