@@ -1,0 +1,99 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<queue>
+using namespace std;
+struct line {
+	int x1, y1, x2, y2;
+};
+
+line input[5'005];
+vector<int> g[5'005];
+bool visit[5'005];
+bool des[5'005];
+bool ori[5'005];
+int sx, sy, dx, dy;
+queue<int> q;
+
+bool check_cross(line l1, line l2) {
+	int l1_up_x, l1_down_x, l1_up_y, l1_down_y;
+	int l2_up_x, l2_down_x, l2_up_y, l2_down_y;
+	l1_up_x = max(l1.x1, l1.x2);
+	l1_up_y = max(l1.y1, l1.y2);
+	l2_up_x = max(l2.x1, l2.x2);
+	l2_up_y = max(l2.y1, l2.y2);
+	l1_down_x = min(l1.x1, l1.x2);
+	l1_down_y = min(l1.y1, l1.y2);
+	l2_down_x = min(l2.x1, l2.x2);
+	l2_down_y = min(l2.y1, l2.y2);
+
+	//lower 점을 기준으로 비교
+	if (((l1_down_x <= l2_down_x && l2_down_x <= l1_up_x) &&
+		(l2_down_y<= l1_down_y && l1_down_y<=l2_up_y)) ||
+		((l2_down_x<=l1_down_x && l1_down_x<=l2_up_x)&&
+		(l1_down_y<= l2_down_y && l2_down_y<=l1_up_y))) {
+		return true;
+	}
+	return false;
+}
+void check(int i) {
+	line cur = input[i];
+	if ((min(cur.x1, cur.x2) <= sx && sx <= max(cur.x1, cur.x2)) &&
+		(min(cur.y1, cur.y2) <= sy && sy <= max(cur.y1, cur.y2)))
+	{
+		ori[i] = true;
+		q.push(i);
+		visit[i] = true;
+	}
+	if ((min(cur.x1, cur.x2) <= dx && dx <= max(cur.x1, cur.x2)) &&
+		(min(cur.y1, cur.y2) <= dy && dy <= max(cur.y1, cur.y2)))
+	{
+		des[i] = true;
+	}
+}
+
+int bfs() {
+	int cnt = 1;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int i = 0; i < qsize; i++) {
+			int cur = q.front();
+			q.pop();
+			if (des[cur]) {
+				return cnt;
+			}
+			for (int next : g[cur]) {
+				if (!visit[next]) {
+					visit[next] = true;
+					q.push(next);
+				}
+			}
+		}
+		cnt++;
+	}
+}
+
+int main() {
+	int M, N; cin >> M >> N;
+	int K; cin >> K;
+	for (int k = 0; k < K; k++) {
+		int b;
+		cin >> b;
+		b--;
+		cin >> input[b].x1 >> input[b].y1 >>
+			input[b].x2 >> input[b].y2;
+	}
+	cin >> sx >> sy >> dx >> dy;
+
+	for (int i = 0; i < K; i++) {
+		for (int j = i + 1; j < K; j++) {
+			if (check_cross(input[i], input[j])) {
+				g[i].push_back(j);
+				g[j].push_back(i);
+			}
+		}
+		check(i);
+	}
+	
+	cout<<bfs();
+}
