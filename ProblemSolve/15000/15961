@@ -1,0 +1,40 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int cur[3'005];
+int cnt = 1;
+int table[3'000'005];
+int N, D, K, C;
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	cin >> N >> D >> K >> C;
+	for (int n = 0; n < N; n++) {
+		cin >> table[n];
+	}
+	cur[C] = 9'999'999;
+
+	for (int s = 0; s < K-1; s++) {
+		if (cur[table[s]] == 0) {
+			cnt++;
+		}
+		cur[table[s]]++;
+	}
+	int ans = 0;
+	for (int s = 0; s < N; s++) { //k개 시작위치
+		int insert_idx = (s + (K - 1)) % N;
+		if (cur[table[insert_idx]] == 0) {
+			cnt++;
+		}
+		cur[table[insert_idx]]++;
+		ans = max(ans, cnt);
+		if (cur[table[s]] == 1) {
+			cnt--;
+		}
+		cur[table[s]]--;
+	}
+	cout << ans;
+}
