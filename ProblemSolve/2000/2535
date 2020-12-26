@@ -1,0 +1,32 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+typedef pair<int, int> P;
+P arr[1005];
+
+int main() {
+	vector<P> candi;
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		int a, b, c; cin >> a >> b >> c;
+		arr[c] = P(a, b);
+	}
+
+
+	for (int i = 1'000; i >= 0; i--) {
+		if (arr[i] != P(0, 0)) {
+			if (candi.size() == 2) {
+				if ((arr[i].first == candi[0].first) && (arr[i].first == candi[1].first)) {
+					continue;
+				}
+			}
+			candi.push_back(arr[i]);
+			if (candi.size() == 3)break;
+		}
+	}
+	for (P cur : candi) {
+		cout << cur.first << " " << cur.second << "\n";
+	}
+}
