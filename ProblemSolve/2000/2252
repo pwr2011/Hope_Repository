@@ -1,0 +1,56 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+using namespace std;
+
+vector<int> g[32'005];
+vector<int> for_g[32'005];
+int cnt[32'005];
+bool visit[32'005];
+
+void dfs(int i) {
+	cout << i+1 << " ";
+	for (int next : for_g[i]) {
+		cnt[next]--;
+		if (cnt[next] == 0) {
+			dfs(next);
+			visit[next] = true;
+		}
+	}
+}
+
+int main() {
+	int N, M; cin >> N >> M;
+	for (int m = 0; m < M; m++) {
+		int A, B;
+		cin >> A >> B;
+		g[B - 1].push_back(A - 1);
+		for_g[A - 1].push_back(B - 1);
+	}
+
+	queue<int> q;
+
+	for (int i = 0; i < N; i++) {
+		if (g[i].size() == 0) {
+			q.push(i);
+		}
+		cnt[i] = g[i].size();
+	}
+
+	while (!q.empty()) {
+		int cur = q.front();
+		visit[cur] = true;
+		q.pop();
+		cout << cur+1 << " ";
+		for (int n : for_g[cur]) {
+			visit[n] = true;
+			if(cnt[n] == 1)	dfs(n);
+			cnt[n]--;
+		}
+	}
+	for (int i = 0; i < N; i++) {
+		if (visit[i] == false) {
+			cout << i + 1 << " ";
+		 }
+	}
+}
