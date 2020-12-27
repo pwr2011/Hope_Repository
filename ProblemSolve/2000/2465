@@ -1,0 +1,60 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+
+int height[100'005];
+int input[100'005];
+int ans[100'005];
+
+class segment {
+public:
+	int arr[262'144] = { 0 };
+	int idx;
+
+	segment(int n) {
+		idx = pow(2,(int)ceil(log2(n)));
+	}
+	void update(int n) {
+		n += idx;
+		arr[n]++;
+		n /= 2;
+		while (n > 0) {
+			arr[n] = arr[2 * n] + arr[2 * n + 1];
+			n /= 2;
+		}
+	}
+	int sum(int want, int nodenum, int nodeL, int nodeR) {
+		if (nodenum >= idx) return nodenum - idx;
+		int mid = (nodeL + nodeR) / 2;
+		int left_seat =(mid-nodeL+1)- arr[nodenum * 2];
+		if (left_seat >= want) return sum(want, 2 * nodenum, nodeL, mid);
+		else return sum(want - left_seat, 2 * nodenum + 1, mid + 1, nodeR);
+	}
+};
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	int N; cin >> N;
+	segment tree(N);
+	for (int n = 0; n < N; n++) {
+		cin >> height[n];
+	}
+
+	for (int i = 0; i < N; i++) {
+		cin>>input[i];
+	}
+
+	sort(height, height + N);
+
+	for (int i = N - 1; i >= 0; i--) {
+		int pos = tree.sum(input[i]+1, 1, 0, tree.idx - 1);
+		ans[i] = pos;
+		tree.update(ans[i]);
+	}
+
+	for (int i = 0; i < N; i++) {
+		cout << height[ans[i]] << "\n";
+	}
+}
