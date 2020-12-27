@@ -1,0 +1,120 @@
+#include<iostream>
+#include<bitset>
+#include<cmath>
+#include<string>
+#define ll long long
+using namespace std;
+
+ll to_number(string s) {
+	ll mul = 1;
+	ll ans = 0;
+	for (int i = 0; i < s.size(); i++) {
+		ans += (mul * (s[i]-(ll)'0'));
+		mul *= 2;
+	}
+	return ans;
+}
+int main() {
+	ll tmp; cin >> tmp;
+	bitset<70> t(tmp);
+	string A;
+	string B;
+	for (int i = 0; i <= log2(tmp); i++) {
+		if (t[i] == 0) {
+			A.push_back('0');
+			B.push_back('0');
+		}
+		else {
+			A.push_back('1');
+			B.push_back('1');
+		}
+	}
+	
+	bool flag = false;
+	int idx = -1;
+	for (int i = 0; i < A.size(); i++) {
+		if (A[i] == '0') {
+			if (flag) {
+				idx = i;
+				break;
+			}
+		}
+		else {
+			flag = true;
+		}
+	}
+	if (idx == -1) { //1100000000, 1'111'111
+		A.push_back('1');
+		A[A.size() - 2] = '0';
+		int cnt = 0;
+		for (int i = 0; i < A.size() - 1; i++) {
+			if (A[i] == '1') cnt++;
+		}
+		for (int i = 0; i < A.size() - 1; i++) {
+			if (cnt != 0) {
+				A[i] = '1';
+				cnt--;
+			}
+			else {
+				A[i] = '0';
+			}
+		}
+	}
+	else {
+		A[idx] = '1';
+		A[idx - 1] = '0';
+		int cnt = 0;
+		for (int i = 0; i < idx; i++) {
+			if (A[i] == '1') {
+				cnt++;
+			}
+		}
+		for (int i = 0; i < idx; i++) {
+			if (cnt != 0) {
+				A[i] = '1';
+				cnt--;
+			}
+			else {
+				A[i] = '0';
+			}
+		}
+	}
+	idx = -1;
+	flag = false;
+	for (int i = 0; i < B.size(); i++) {
+		if (B[i] == '0') {
+			flag = true;
+		}
+		else {
+			if (flag) {
+				idx = i;
+				break;
+			}
+		}
+	}
+	if (idx == -1) {
+		for (int i = 0; i < B.size(); i++) {
+			B[i] = '0';
+		}
+	}
+	else {
+		int cnt = 0;
+		B[idx] = '0';
+		B[idx - 1] = '1';
+		for (int i = 0; i < idx; i++) {
+			if (B[i] == '1') {
+				cnt++;
+			}
+		}
+		for (int i = idx - 1; i >= 0; i--) {
+			if (cnt != 0) {
+				B[i] = '1';
+				cnt--;
+			}
+			else {
+				B[i] = '0';
+			}
+		}
+	}
+	cout << to_number(B) << " " << to_number(A);
+}
