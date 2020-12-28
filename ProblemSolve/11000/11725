@@ -1,0 +1,39 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+using namespace std;
+
+vector<int> g[100'005];
+bool visit[100'005];
+int parent[100'005];
+
+int main() {
+	int N;
+	cin >> N;
+	for (int n = 0; n < N-1; n++) {
+		int a,b; cin >> a >> b;
+		g[a - 1].push_back(b - 1);
+		g[b - 1].push_back(a - 1);
+	}
+
+	queue<int> q;
+	q.push(0);
+	visit[0] = true;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int k = 0; k < qsize; k++) {
+			int cur = q.front();
+			q.pop();
+			for (int next : g[cur]) {
+				if (!visit[next]) {
+					parent[next] = cur;
+					q.push(next);
+					visit[next] = true;
+				}
+			}
+		}
+	}
+	for (int i = 1; i < N; i++) {
+		cout << parent[i]+1 << "\n";
+	}
+}
