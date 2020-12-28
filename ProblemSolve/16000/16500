@@ -1,0 +1,60 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+#include<stack>
+using namespace std;
+typedef pair<int, int>P;
+string input[105];
+string S;
+int visit[105];
+
+bool comp(int idx, string s) {
+	bool flag = true;
+	for (int len = 0; len < s.size(); len++) {
+		if (S[idx + len] != s[len]) {
+			flag = false; break;
+		}
+	}
+	return flag;
+}
+
+int main() {
+	stack < P> s;
+	s.push(P(0, 0));
+	bool flag = false;
+	cin >> S;
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+	}
+
+	int idx = 0;
+	while (!s.empty()) {
+		P cur = s.top();
+		s.pop();
+		idx = cur.first;
+		int i = max(cur.second, visit[idx]);
+
+		for (i; i < N; i++) {
+			if (input[i].size() <= S.size() - idx) {
+				if (comp(idx, input[i])) {
+					visit[idx] = max(visit[idx], i+1);
+					s.push(P(idx, i+1));
+					idx += input[i].size();
+					if (idx == S.size()) {
+						flag = true;
+						break;
+					}
+					i = -1;
+					continue;
+				}
+			}
+		}
+	}
+	if (flag) {
+		cout << "1";
+	}
+	else {
+		cout << "0";
+	}
+}
