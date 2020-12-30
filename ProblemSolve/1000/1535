@@ -1,0 +1,32 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int life[25];
+int happy[25];
+int N;
+int dp[25][205];
+
+int cal(int idx,int l) {
+	if (dp[idx][l] != -1) return dp[idx][l];
+	if (l>=100) return dp[idx][l] = -999999999;
+	if (idx >= N) return dp[idx][l] = 0;
+	return dp[idx][l] = max(cal(idx + 1, l + life[idx]) + happy[idx], cal(idx + 1, l));
+}
+
+int main() {
+	for (int i = 0; i < 25; i++) {
+		for (int j = 0; j <= 200; j++) {
+			dp[i][j] = -1;
+		}
+	}
+	cin >> N;
+	for (int i = 0; i < N; i++) {
+		cin >> life[i];
+	}
+	for (int i = 0; i < N; i++) {
+		cin >> happy[i];
+	}
+
+	cout << cal(0,0);
+}
