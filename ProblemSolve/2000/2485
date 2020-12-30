@@ -1,0 +1,38 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	vector<int> input;
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		int tmp; cin >> tmp;
+		input.push_back(tmp);
+	}
+	int min_interval = 120'000'000;
+	sort(input.begin(), input.end());
+	for (int i = 1; i < input.size(); i++) {
+		min_interval = min(min_interval, input[i]-input[i-1]);
+	}
+	int start = input[0];
+	int range = input[input.size() - 1] - start;
+	int k = min((int)(range / (input.size() - 1)),min_interval);
+
+	for (k; k > 0; k--) { //k 시작 확인
+		if (range % k == 0) {
+			bool flag = true;
+			for (int cur : input) {
+				if ((cur - start) % k != 0) {
+					flag = false; break;
+				}
+			}
+			if (flag) {
+				break;
+			}
+		}
+	}
+	cout << (((input[input.size()-1]-start) /k )+1)- input.size();
+}
