@@ -1,0 +1,41 @@
+#include<iostream>
+#include<cmath>
+#include<vector>
+using namespace std;
+
+double A, B;
+int comb[20];
+double pow_A[20];
+double pow_B[20];
+double inv_pow_A[20];
+double inv_pow_B[20];
+vector<int> not_prime = { 0,1,4,6,8,9,10,12,14,15,16,18 };
+
+double cal() {
+	double A_probability = 0;
+	double B_probability = 0;
+	for (int i : not_prime) {
+		A_probability += pow_A[i] * inv_pow_A[18 - i] * comb[i];
+		B_probability += pow_B[i] * inv_pow_B[18 - i] * comb[i];
+	}
+	return A_probability * B_probability;
+}
+
+int main() {
+	comb[0] = 1;
+	for (int i = 1; i <= 18; i++) {
+		comb[i] = comb[i - 1] * (18 - i + 1) / i;
+	}
+	cin >> A >> B;
+	A /= 100; B /= 100;
+	pow_A[0] = 1; pow_B[0] = 1;
+	inv_pow_A[0] = 1; inv_pow_B[0] = 1;
+	for (int i = 1; i <= 18; i++) {
+		pow_A[i] = pow_A[i - 1] * A;
+		pow_B[i] = pow_B[i - 1] * B;
+		inv_pow_A[i] = inv_pow_A[i - 1] * (1-A);
+		inv_pow_B[i] = inv_pow_B[i - 1] * (1-B);
+	}
+	cout.precision(15);
+	cout << 1 - cal();
+}
