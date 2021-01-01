@@ -1,0 +1,45 @@
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+#define INF -9'999'999
+using namespace std;
+
+int input[105];
+int dp[105][55][2];
+int N, M;
+
+int cal(int idx, int left, bool flag) {
+	if (dp[idx][left][flag] != -1) return dp[idx][left][flag];
+	if (left == 0) {
+		return dp[idx][left][flag] = 0;
+	}
+	if (idx >= N) {
+		if (flag == true && left == 1) {
+			return dp[idx][left][flag] = 0;
+		}
+		return dp[idx][left][flag] = INF;
+	}
+	if (flag) {
+		return dp[idx][left][flag] =
+			max(cal(idx + 1, left, true) + input[idx], cal(idx + 1, left - 1, false));
+	}
+	else {
+		return dp[idx][left][flag] =
+			max(cal(idx + 1, left, true) + input[idx], cal(idx + 1, left, false));
+	}
+}
+
+int main() {
+	for (int i = 0; i < 105; i++) {
+		for (int j = 0; j < 55; j++) {
+			dp[i][j][0] = -1;
+			dp[i][j][1] = -1;
+		}
+	}
+
+	cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+	}
+	cout<< cal(0, M,false);
+}
