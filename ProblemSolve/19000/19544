@@ -1,0 +1,81 @@
+#include<iostream>
+#include<vector>
+#include<cmath>
+#define MOD 1'000'000'007
+#define ll long long
+using namespace std;
+
+ll fact[505];
+ll input[505][505];
+vector<ll> sum[505];
+bool visit[505];
+
+int main() {
+	vector<ll>res;
+	fact[0] = 1; fact[1] = 1;
+	for (int i = 2; i < 505; i++) {
+		fact[i] = (fact[i - 1] * i) % MOD;
+	}
+	ll N; cin >> N;
+	for (int i = 0; i < N; i++) {
+		ll cnt = 0;
+		for (int j = 0; j < N; j++) {
+			cin >> input[i][j];
+			if (input[i][j] == 1) {
+				cnt++;
+			}
+		}
+		sum[cnt].push_back(i);
+	}
+
+	ll ans = 1;
+
+	for (int n = 0; n < N; n++) {
+		if (visit[n]) continue;
+		vector<ll> candi;
+		for (int i = 0; i < N; i++) {
+			if (i == n) continue;
+			if (input[n][i] == 1) {
+				candi.push_back(i);
+			}
+		}
+		if (candi.size() > 0) {
+			bool flag = true;
+			for (ll cur : candi) {
+				for (int i = 0; i < N; i++) {
+					if (input[n][i] != input[cur][i]) {
+						flag = false; break;
+					}
+				}
+				if (!flag) { break; }
+			}
+			if (flag) {
+				int cnt = 0;
+				for (ll up : sum[candi.size() + 2]) {
+					for (int i = 0; i < N; i++) {
+						if ((input[up][i] != input[n][i]) && (i != up)) {
+							break;
+						}
+						if (i == N - 1) {
+							visit[up] = true;
+							cnt++;
+						}
+					}
+				}
+				ll tmp = 1;
+				ll mul = (ll)candi.size() + 1;
+				for (int i = 0; i < cnt; i++) {
+					tmp *= mul;
+					tmp %= MOD;
+				}
+				ans *= (fact[candi.size()] * tmp)%MOD;
+
+				ans %= MOD;
+				for (ll cur : candi) {
+					visit[cur] = true;
+				}
+			}
+		}
+	}
+	cout << ans;
+}
