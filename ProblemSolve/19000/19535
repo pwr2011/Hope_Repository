@@ -1,0 +1,76 @@
+#include<iostream>
+#include<vector>
+#define ll long long
+using namespace std;
+
+vector<ll> g[300'005];
+vector<ll> multi;
+ll multi_size[300'005]; //연결점에서 길이 2 이상인 줄기 개수
+bool visit[300'005];
+ll combi[300'005];
+ll D = 0; ll G = 0;
+
+ll dfs2(ll next, ll conti) {
+	if (visit[next] && conti == 1) return 0;
+	return g[next].size() - 1;
+}
+
+void dfs(ll c,ll conti) {
+	visit[c] = true;
+	conti++;
+	if (g[c].size() > 2) { //여러개가 지나감
+		multi.push_back(c);
+		for (ll next : g[c]) {
+			multi_size[c] += dfs2(next,conti);
+		}
+		if (conti >= 3) {
+			D++;
+		}
+		conti = 0;
+	}
+	else {
+		if (conti >= 3) {
+			D++;
+		}
+	}
+	for (ll next : g[c]) {
+		if (visit[next]) continue;
+		dfs(next, conti);
+	}
+	return;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	combi[3] = 1;
+	combi[4] = 4;
+	for (ll i = 5; i <= 300'002; i++) {
+		combi[i] = combi[i - 1] * i / (i - 3);
+	}
+
+	ll N; cin >> N;
+	for (ll n = 0; n < N - 1; n++) {
+		ll a, b; cin >> a >> b;
+		g[a].push_back(b);
+		g[b].push_back(a);
+	}
+	ll start = 0;
+	for (; start <= N; start++) {
+		if (g[start].size() == 1) break;
+	}
+	dfs(start,-1);
+	for (ll c : multi) {
+		D += (multi_size[c] * (g[c].size() - 1));
+		G += (combi[g[c].size()]);
+	}
+	if (D > 3*G) {
+		cout << "D";
+	}
+	else if (D < 3*G) {
+		cout << "G";
+	}
+	else {
+		cout << "DUDUDUNGA";
+	}
+}
