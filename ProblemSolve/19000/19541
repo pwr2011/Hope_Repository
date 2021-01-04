@@ -1,0 +1,77 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+using namespace std;
+
+typedef pair<int, int> P;
+
+int N, M;
+vector<int> group[100'005];
+vector<int> join[100'005];
+vector<int> final_state;
+vector<int> ans;
+bool visit[100'005];
+
+int main() {
+	cin.tie(NULL); ios::sync_with_stdio(false);
+	cin >> N >> M;
+	for (int m = 0; m < M; m++) {
+		int cnt; cin >> cnt;
+		for (int c = 0; c < cnt; c++) {
+			int tmp; cin >> tmp;
+			group[m].push_back(tmp - 1);
+			join[tmp - 1].push_back(m);
+		}
+	}
+	for (int n = 0; n < N; n++) {
+		int tmp; cin >> tmp;
+		final_state.push_back(tmp);
+		ans.push_back(tmp);
+	}
+	for (int m = M - 1; m >= 0; m--) {
+		bool flag = false;
+		for (int cur : group[m]) {
+			if (ans[cur] == 0) {
+				flag = true;
+				break;
+			}
+		}
+		if (flag) {
+			for (int cur : group[m]) {
+				ans[cur] = 0;
+			}
+		}
+	}
+	vector<int>tmp = ans;
+
+	for (int m = 0; m < M; m++) {
+		bool flag = false;
+		for (int person : group[m]) {
+			if (ans[person] == 1) {
+				flag = true; break;
+			}
+		}
+		if (flag) {
+			for (int person : group[m]) {
+				ans[person] = 1;
+			}
+		}
+	}
+
+	bool flag_ans = true;
+	for (int i = 0; i < ans.size(); i++) {
+		if (ans[i] != final_state[i]) {
+			flag_ans = false;
+			break;
+		}
+	}
+	if (flag_ans) {
+		cout << "YES\n";
+		for (int cur : tmp) {
+			cout << cur << " ";
+		}
+	}
+	else {
+		cout << "NO";
+	}
+}
