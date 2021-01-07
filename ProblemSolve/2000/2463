@@ -1,0 +1,72 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define ll long long
+#define MOD 1'000'000'000
+using namespace std;
+
+typedef pair<ll, ll> P;
+ll N, M;
+vector<P> g[100'005];
+vector<pair<int, P>> order;
+ll p[100'005];
+ll size_arr[100'005];
+ll cummulated;
+ll total_edge;
+
+bool desc(pair<int, P> x, pair<int, P> y) {
+	return x.first > y.first;
+}
+
+int parent(int x) {
+	if (p[x] == -1) return x;
+	else return p[x] = parent(p[x]);
+}
+
+ll join(ll w, ll x, ll y) {
+	ll ret = 0;
+	x = parent(x);
+	y = parent(y);
+	if (x != y) {
+		if (size_arr[x] > size_arr[y]) {
+			ret = (size_arr[x] * size_arr[y] * total_edge) % MOD;
+			size_arr[x] += size_arr[y];
+			p[y] = x;
+		}
+		else {
+			ret = (size_arr[x] * size_arr[y] * total_edge) % MOD;
+			size_arr[y] += size_arr[x];
+			p[x] = y;
+		}
+		total_edge -= w;
+		return ret;
+	}
+	else {
+		total_edge -= w;
+		return ret;
+	}
+}
+
+int main() {
+
+	cin >> N >> M;
+
+	for (int i = 0; i < N; i++) {
+		p[i] = -1;
+		size_arr[i] = 1;
+	}
+	for (ll m = 0; m < M; m++) {
+		ll x, y, w; cin >> x >> y >> w;
+		total_edge += w;
+		order.push_back(make_pair(w, P(x, y)));
+	}
+	ll ans = 0;
+	sort(order.begin(), order.end(),desc);
+
+	for (int i = 0; i < order.size(); i++) {
+		auto cur = order[i];
+		ans += join(cur.first, cur.second.first, cur.second.second);
+		ans %= MOD;
+	}
+	cout << ans;
+}
