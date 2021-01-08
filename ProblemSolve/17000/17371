@@ -1,0 +1,43 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+typedef pair<double, double> P;
+
+P arr[1'005];
+P ans;
+double ans_dis = 9'999'999;
+
+double dist(P x, P y) {
+	return sqrt(pow(x.first - y.first, 2) + pow(x.second - y.second, 2));
+}
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> arr[n].first >> arr[n].second;
+	}
+	if (N == 1) {
+		cout << arr[0].first << " " << arr[0].second;
+		return 0;
+	}
+	for (int i = 0; i < N; i++) {
+		double max_dis = 0;
+		P temp1;
+		P temp2;
+		for (int j = 0; j < N; j++) {
+			if (i == j) continue;
+			max_dis = max(max_dis, dist(arr[i], arr[j]));
+			if (max_dis == dist(arr[i], arr[j])) {
+				temp1 = arr[i];
+				temp2 = arr[j];
+			}
+		}
+		if (ans_dis > max_dis) {
+			ans_dis = max_dis;
+			ans = temp1;
+		}
+	}
+	cout.precision(10);
+	cout << ans.first << " " << ans.second;
+}
