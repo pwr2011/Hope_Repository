@@ -1,0 +1,52 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+double dp[7][7][7][1'005];
+
+double cal(int i, int j, int k) {
+	if ((i == j) && (j == k)) return 10000 + i * 1000;
+	else if ((i == j) || (i == k) || (j == k)) {
+		if (i == j) return 1000 + i * 100;
+		else if (i == k) return 1000 + i * 100;
+		else return 1000 + j * 100;
+	}
+	else {
+		return max(i, max(j, k))*100;
+	}
+}
+
+double solve(int i, int j, int k, int n) {
+	if (dp[i][j][k][n] > 0) return dp[i][j][k][n];
+	double cur = cal(i, j, k);
+	if (n == 0) return dp[i][j][k][0] = cur;
+	double expect = 0;
+	for (int t = 1; t <= 6; t++) {
+		expect += solve(j, k, t, n - 1);
+	}
+	expect /= 6;
+	return dp[i][j][k][n] = max(expect, cur);
+}
+
+int main() {
+	for (int i = 0; i < 7; i++) {
+		for (int j = 0; j < 7; j++) {
+			for (int k = 0; k < 7; k++) {
+				for (int t = 0; t < 1'005; t++) {
+					dp[i][j][k][t] = -1;
+				}
+			}
+		}
+	}
+	int N; cin >> N;
+	double ans = 0;
+	for (int i = 1; i <= 6; i++) {
+		for (int j = 1; j <= 6; j++) {
+			for (int k = 1; k <= 6; k++) {
+				ans += solve(i, j, k, N - 3);
+			}
+		}
+	}
+	cout.precision(15);
+	cout << ans / 216;
+}
