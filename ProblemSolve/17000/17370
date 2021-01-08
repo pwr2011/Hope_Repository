@@ -1,0 +1,53 @@
+#include<iostream>
+#define ll long long
+#define MAX_HEIGHT 1000
+using namespace std;
+
+ll dx0[] = { -1,0,0 };
+ll dy0[] = { 1,1,-1 };
+ll dx1[] = { 0,1,0 };
+ll dy1[] = { -1,-1,1 };
+
+bool visit[100 * MAX_HEIGHT];
+ll N;
+
+ll conv(ll x, ll y) {
+	return x * MAX_HEIGHT + y;
+}
+
+ll dfs(ll left, ll x, ll y,ll prev) {
+	ll cnt = 0;
+	ll conversed = conv(x, y);
+	if (visit[conversed]) {
+		if (left == 0) {
+			return 1;
+		}
+		else return 0;
+	}
+	if (left == 0) return 0;
+	visit[conversed] = true;
+	if (y % 2 == 0) {
+		for (ll i = 0; i < 3; i++) {
+			ll n_x = x + dx0[i];
+			ll n_y = y + dy0[i];
+			if (prev == conv(n_x, n_y))continue;
+			cnt +=dfs(left - 1, n_x, n_y,conversed);
+		}
+	}
+	else {
+		for (ll i = 0; i < 3; i++) {
+			ll n_x = x + dx1[i];
+			ll n_y = y + dy1[i];
+			if (prev == conv(n_x, n_y))continue;
+			cnt += dfs(left - 1, n_x, n_y, conversed);
+		}
+	}
+	visit[conversed] = false;
+	return cnt;
+}
+
+int main() {
+	cin >> N;
+	visit[conv(50, 501)] = true;
+	cout<<dfs(N, 50, 500, conv(50,501));
+}
