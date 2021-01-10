@@ -1,0 +1,30 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+vector<ll> p[100'005];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		ll pos, color; cin >> pos >> color;
+		p[color].push_back(pos);
+	}
+	ll ans = 0;
+	for (int i = 0; i <= N; i++) {
+		if (p[i].size() <= 1) continue;
+		sort(p[i].begin(), p[i].end());
+		ans += p[i][1] - p[i][0];
+		ans += p[i][p[i].size() - 1] - p[i][p[i].size() - 2];
+		for (int j = 1; j < p[i].size() - 1; j++) {
+			ll left = p[i][j] - p[i][j - 1];
+			ll right = p[i][j + 1] - p[i][j];
+			ans += min(left, right);
+		}
+	}
+	cout << ans;
+}
