@@ -1,0 +1,81 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<algorithm>
+#define INF 999'999'999
+#define ll long long 
+using namespace std;
+typedef pair<ll, ll> P;
+
+vector<P> g[4'005];
+bool W_visit[2][4'005];
+bool F_visit[4'005];
+ll W_time[2][4'005];
+ll F_time[4'005];
+
+void W(ll s) {
+	priority_queue<pair<ll, P>>pq;
+	pq.push(make_pair(0, P(1, 0))); //dis, node, order
+	
+	while (!pq.empty()) {
+		auto cur = pq.top(); pq.pop();
+		ll order = cur.second.second;
+		ll node = cur.second.first; 
+		ll dis = cur.first;
+		if (W_visit[order][node]) continue;
+		W_visit[order][node] = true;
+		W_time[order][node] = -dis;
+		for (P n : g[node]) {
+			ll next = n.first; ll cost = n.second;
+			if (order == 0) {
+				pq.push(make_pair(dis - cost/2, P(next, (order + 1) % 2)));
+			}
+			else {
+				pq.push(make_pair(dis -cost * 2, P(next, (order + 1) % 2)));
+			}
+		}
+	}
+}
+
+void F(ll s) {
+	priority_queue<pair<ll, ll>>pq;
+	pq.push(make_pair(0, s)); //dis, node
+
+	while (!pq.empty()) {
+		auto cur = pq.top(); pq.pop();
+		ll node = cur.second;
+		ll dis = cur.first;
+		if (F_visit[node]) continue;
+		F_visit[node] = true;
+		F_time[node] = -dis;
+		for (P n : g[node]) {
+			ll next = n.first; ll cost = n.second;
+			pq.push(make_pair(dis - cost, next));
+		}
+	}
+}
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	ll N, M; cin >> N >> M;
+	for (ll m = 0; m < M; m++) {
+		ll a, b, d; cin >> a >> b >> d;
+		g[a].push_back(P(b, 4* d));
+		g[b].push_back(P(a, 4 * d));
+	}
+
+	for (int i = 0; i <= N; i++) {
+		W_time[0][i] = INF;
+		W_time[1][i] = INF;
+		F_time[i] = INF;
+	}
+	W(1);
+	F(1);
+	ll cnt = 0;
+	for (ll i = 2; i <= N; i++) {
+		ll tmp_w_time = min(W_time[0][i], W_time[1][i]);
+		if (tmp_w_time > F_time[i]) cnt++;
+	}
+	cout << cnt;
+}
