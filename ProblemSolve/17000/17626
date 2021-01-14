@@ -1,0 +1,25 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+
+int dp[50'005];
+
+int cal(int n) {
+	if (dp[n] != -1) return dp[n];
+	int min_ans = 9999999;
+	for (int i = (int)sqrt(n); i >= 1; i--) {
+		min_ans = min(min_ans,cal(n - (int)pow(i, 2))+1);
+	}
+	return dp[n] = min_ans;
+}
+
+int main() {
+	for (int i = 0; i < 50'005; i++) {
+		dp[i] = -1;
+	}
+	dp[0] = 0;
+	dp[1] = 1;
+	int N; cin >> N;
+	cout << cal(N);
+}
