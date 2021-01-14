@@ -1,0 +1,33 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+int dp[800'005];
+int input[5'005];
+
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	int W, N; cin >> W >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+	}
+
+	for (int i = 0; i < N; i++) {
+		for (int j = i + 1; j < N; j++) {
+			int sum = input[i] + input[j];
+			if (W - sum > 0) {
+				if (dp[W - sum]) {
+					cout << "YES";
+					return 0;
+				}
+			}
+		}
+		for (int j = 0; j < i; j++) {
+			if(input[i]+input[j]<W)
+			dp[input[i]+input[j]] = 1;
+		}
+	}
+	cout << "NO";
+	return 0;
+}
