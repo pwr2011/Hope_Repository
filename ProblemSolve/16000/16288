@@ -1,0 +1,45 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int last[105];
+int last_idx = 0;
+
+bool check(int cur) {
+	int max_val = 0;
+	int idx = -1;
+	for (int i = 0; i < last_idx; i++) {
+		if (last[i] < cur) {
+			max_val = max(max_val, last[i]);
+			if (max_val == last[i]) idx = i;
+		}
+	}
+	if (idx == -1) {
+		return false;
+	}
+	else {
+		last[idx] = cur;
+		return true;
+	}
+}
+
+int main() {
+	for (int i = 0; i < 105; i++) {
+		last[i] = -1;
+	}
+	int N, K; cin >> N >> K;
+	for (int n = 0; n < N; n++) {
+		int t; cin >> t;
+		if (!check(t)) {
+			if (last_idx < K) {
+				last[last_idx++] = t;
+			}
+			else {
+				cout << "NO";
+				return 0;
+			}
+		}
+	}
+	cout << "YES";
+	return 0;
+}
