@@ -1,0 +1,36 @@
+#include<iostream>
+#include<vector>
+#define ll long long
+using namespace std;
+
+int price[20];
+
+vector<int> sell;
+vector<int> buy;
+
+int main() {
+	ll N, W;
+	cin >> N >> W;
+	for (int n = 0; n < N; n++) {
+		cin >> price[n];
+	}
+	ll money = W;
+	ll coin = 0;
+	if (price[0] < price[1]) {
+		ll cnt = money / price[0];
+		money -= (cnt * price[0]);
+		coin += cnt;
+	}
+	for (int d = 1; d < N-1; d++) {
+		if (price[d - 1] <= price[d] && price[d] >= price[d + 1]) {
+			money += coin * price[d];
+			coin = 0;
+		}
+		else if (price[d - 1] >= price[d] && price[d] <= price[d + 1]) {
+			ll cnt = money / price[d];
+			money -= (cnt * price[d]);
+			coin += cnt;
+		}
+	}
+	cout << money + price[N - 1] * coin;
+}
