@@ -1,0 +1,59 @@
+#include<iostream>
+#include<algorithm>
+#include<cmath>
+#define INF 9'999'999
+#define ll long long
+using namespace std;
+
+ll input[100'005];
+ll arr[524'288]; ll N;
+ll start;
+void init(ll N) {
+	start = pow(2, ceil(log2(N)));
+	for (ll i = start; i < N + start; i++) {
+		arr[i] = i-start;
+	}
+	for (ll i = N + start; i < 2 * start; i++) {
+		arr[i] = N;
+	}
+ 	for (ll i = start - 1; i > 0; i--) {
+		if (input[arr[2 * i]] > input[arr[2 * i + 1]]) {
+			arr[i] = arr[2 * i + 1];
+		}
+		else {
+			arr[i] =arr[2 * i];
+		}
+	}
+}
+
+ll find_min(ll L, ll R, ll nodenum = 1, ll nodeL =0, ll nodeR=start-1) {
+	if (R<nodeL || L>nodeR) return N;
+	if (L<=nodeL && nodeR <= R) return arr[nodenum];
+	ll mid = (nodeL + nodeR) / 2;
+	ll left_idx = find_min(L, R, nodenum * 2, nodeL, mid);
+	ll right_idx = find_min(L, R, nodenum * 2 + 1, mid + 1, nodeR);
+	return ( input[left_idx]>input[right_idx])
+		? right_idx : left_idx;
+}
+
+ll cal(ll s, ll e) {
+	ll min_idx = find_min(s, e);
+	ll max_profit = (e - s + 1) * input[min_idx];
+	if (min_idx - 1 >= s) {
+		max_profit = max(cal(s, min_idx - 1), max_profit);
+	}
+	if (min_idx + 1 <= e) {
+		max_profit = max(cal(min_idx + 1, e), max_profit);
+	}
+	return max_profit;
+}
+
+int main() {
+	 cin >> N;
+	for (ll n = 0; n < N; n++) {
+		cin >> input[n];
+	}
+	input[N] = INF;
+	init(N);
+	cout << cal(0, N - 1);
+}
