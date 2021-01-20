@@ -1,0 +1,63 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+#define INF 9'999'999
+using namespace std;
+
+int dp[25][25][40'005];
+int map[25][25]; 
+int sum[25][25];
+int N;
+int total;
+
+int solve(int y, int x, int young) {
+	if (dp[y][x][young] != -1) return dp[y][x][young];
+	if (x == N + 1) {
+		int bro = abs(total - young);
+		return dp[y][x][young] = abs(bro - young);
+	}
+	int ans = INF;
+	for (int i = 1; i <=y; i++) {
+		int Young = sum[1][x] - sum[i][x];
+		ans = min(solve(i, x + 1, young + Young),ans);
+	}
+	return dp[y][x][young] = ans;
+}
+
+int main() {
+	cin >> N;
+	for (int i = 0; i <= N+1; i++) {
+		for (int j = 0; j <= N+1; j++) {
+			for (int k = 0; k < 40'005; k++) {
+				dp[i][j][k] = -1;
+			}
+		}
+	}
+	for (int i = 1; i <= N; i++) {
+		for (int j = 1; j <= N; j++) {
+			cin >> map[i][j];
+			total += map[i][j];
+		}
+	}
+	for (int col = 1; col <= N; col++) {
+		for (int row = N; row >= 1; row--) {
+			sum[row][col] = sum[row + 1][col] + map[row][col];
+		}
+	}
+	int ans = solve(N + 1, 1, 0);
+	cout << ans << "\n";
+
+	int y = N + 1;
+	int young = 0;
+	for (int x = 1; x <= N; x++) {
+		for (int i = 1; i <= y; i++) {
+			int Young = sum[1][x] - sum[i][x];
+			if (dp[i][x + 1][young + Young] == ans) {
+				cout << N-(i - 1) << " ";
+				y = i;
+				young += Young;
+				break;
+			}
+		}
+	}
+}
