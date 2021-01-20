@@ -1,0 +1,72 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<queue>
+using namespace std;
+typedef pair<int, int> P;
+
+vector<int> arr;
+int map[105][105];
+int N;
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+
+bool bfs(int s, int e) {
+	if (map[0][0]<arr[s] || map[0][0] > arr[e]) {
+		return false;
+	}
+	//초기화?
+	bool visit[105][105] = { false, };
+	visit[0][0] = true;
+	queue<P> q;
+	q.push(P(0, 0));
+	while (!q.empty()) {
+		P cur = q.front();	q.pop();
+		for (int d = 0; d < 4; d++) {
+			P next; 
+			next.first = cur.first + dy[d];
+			next.second = cur.second + dx[d];
+			if (next.first < 0 || next.second < 0 || next.first >= N || next.second >= N) {
+				continue;
+			}
+			if (map[next.second][next.first] < arr[s] ||
+				map[next.second][next.first] > arr[e]) {
+				continue;
+			}
+			if (next.first == N - 1 && next.second == N - 1) {
+				return true;
+			}
+			if (!visit[next.second][next.first]) {
+				q.push(next);
+				visit[next.second][next.first] = true;
+			}
+		}
+	}
+	return false;
+}
+
+int main() {
+	cin >> N;
+	for (int row = 0; row < N; row++) {
+		for (int col = 0; col < N; col++) {
+			cin>>map[row][col];
+			arr.push_back(map[row][col]);
+		}
+	}
+	sort(arr.begin(), arr.end());
+	arr.erase(unique(arr.begin(), arr.end()), arr.end());
+	
+	int min_diff = 999;
+	int s = 0;
+	int e = 0;
+	while (e < arr.size()) {
+		if (bfs(s, e)) {
+			min_diff = min(min_diff, arr[e] - arr[s]);
+			s++;
+		}
+		else {
+			e++;
+		}
+	}
+	cout << min_diff;
+}
