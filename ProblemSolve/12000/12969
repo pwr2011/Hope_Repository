@@ -1,6 +1,5 @@
 #include<iostream>
 #include<string>
-#define INF 9'999'999
 #define ll long long
 using namespace std;
 
