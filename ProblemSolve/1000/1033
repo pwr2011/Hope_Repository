@@ -1,0 +1,42 @@
+#include<iostream>
+#include<vector>
+#define ll long long
+using namespace std;
+typedef pair<ll, ll> P;
+
+vector<pair<ll, P>>g[12];
+ll val[12];
+
+ll gcd(ll a, ll b) {
+	return b == 0 ? a : gcd(b,a % b);
+}
+
+void dfs(ll c, ll p) {
+	for (auto next : g[c]) {
+		if (next.first == p) continue;
+		val[next.first] = val[c] * next.second.second / next.second.first;
+		dfs(next.first, c);
+	}
+	return;
+}
+
+int main() {
+	ll lcm = 1;
+	ll N; cin >> N;
+	for (ll n = 0; n < N - 1; n++) {
+		ll a, b, p, q; cin >> a >> b >> p >> q;
+		g[a].push_back(make_pair(b, P(p, q)));
+		g[b].push_back(make_pair(a, P(q, p)));
+		lcm *= p * q / gcd(p, q);
+	}
+	val[0] = lcm;
+	dfs(0, -1);
+
+	ll GCD = lcm;
+	for (ll i = 1; i < N; i++) {
+		GCD = gcd(GCD, val[i]);
+	}
+	for (ll i = 0; i < N; i++) {
+		cout << val[i] / GCD<<" ";
+	}
+}
