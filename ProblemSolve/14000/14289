@@ -1,0 +1,57 @@
+#include<iostream>
+#include<cmath>
+#define ll long long
+#define MOD 1'000'000'007
+using namespace std;
+
+ll matrix[34][52][52];
+ll tmp[52][52];
+ll ans[52][52];
+
+int main() {
+	ll N, M; cin >> N >> M;
+	for (ll m = 0; m < M; m++) {
+		ll a, b; cin >> a >> b;
+		matrix[0][a - 1][b - 1] = 1;
+		matrix[0][b - 1][a - 1] = 1;
+	}
+	ll D; cin >> D;
+	for (ll i = 1; i <= 33; i++) {
+		for (ll row = 0; row < N; row++) {
+			for (ll col = 0; col < N; col++) {
+				ll sum = 0;
+				for (ll t = 0; t < N; t++) {
+					sum += matrix[i-1][row][t] * matrix[i - 1][t][col];
+					sum %= MOD;
+				}
+				matrix[i][row][col] = sum;
+			}
+		}
+	}
+	for (int i = 0; i < N; i++) {
+		tmp[i][i] = 1;
+		ans[i][i] = 1;
+	}
+
+	while (D > 0) {
+		int num = (int)floor(log2(D));
+		for (ll row = 0; row < N; row++) {
+			for (ll col = 0; col < N; col++) {
+				ll sum = 0;
+				for (ll t = 0; t < N; t++) {
+					sum += matrix[num][row][t] * tmp[t][col];
+					sum %= MOD;
+				}
+				ans[row][col] = sum;
+			}
+		}
+
+		for (ll row = 0; row < N; row++) {
+			for (ll col = 0; col < N; col++) {
+				tmp[row][col] = ans[row][col];
+			}
+		}
+		D -= pow(2,num);
+	}
+	cout << ans[0][0];
+}
