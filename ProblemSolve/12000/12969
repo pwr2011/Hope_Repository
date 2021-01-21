@@ -1,0 +1,49 @@
+#include<iostream>
+#include<string>
+#define INF 9'999'999
+#define ll long long
+using namespace std;
+
+char ans[35];
+bool dp[32][32][32][455];
+int N, K;
+
+bool solve(ll a, ll b, ll c, ll left) {
+	
+	if (dp[a][b][c][left]) return false;
+	if (a + b + c == N) {
+		if (left == 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	if (dp[a][b][c][left]) return false;
+	dp[a][b][c][left] = true;
+
+	
+	ans[a + b + c] = 'A';
+	if (solve(a + 1, b, c, left)) return true;
+
+	ans[a + b + c] = 'B';
+	if (solve(a, b+1, c, left-a)) return true;
+
+	ans[a + b + c] = 'C';
+	if (solve(a, b, c+1, left-(a+b))) return true;
+
+	return false;
+}
+
+int main() {
+	
+	cin >> N >> K;
+	
+	if (solve(0, 0, 0, K)) {
+		cout << ans;
+	}
+	else {
+		cout << -1;
+	}
+}
