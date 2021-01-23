@@ -1,0 +1,55 @@
+#include<iostream>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+int dp[102];
+
+int to_number(char a, char b) {
+	return (int)b * 10 + (int)a;
+}
+int main() {
+	for (int i = 0; i < 25; i++) {
+		int coin_ten = 0;
+		coin_ten += i % 10; coin_ten += (i - (i % 10)) / 10;
+		dp[i] = coin_ten;
+	}
+	for (int i = 25; i < 50; i++) {
+		int coin_ten = 0, coin_else = 0;
+		coin_ten += i % 10; coin_ten += (i - (i % 10)) / 10;
+		coin_else = dp[i - 25]; coin_else++;
+		dp[i] = min(coin_else, coin_ten);
+	}
+	for (int i = 50; i < 75; i++) {
+		int coin_ten = 0, coin_else = 0;
+		coin_ten += i % 10; coin_ten += (i - (i % 10)) / 10;
+		coin_else = min(dp[i - 50],dp[i-25]);
+		if (coin_else == dp[i - 50])coin_else += 2;
+		else coin_else++;
+		dp[i] = min(coin_else, coin_ten);
+	}
+	for (int i = 75; i < 100; i++) {
+		int coin_ten = 0, coin_else = 0;
+		coin_ten += i % 10; coin_ten += (i - (i % 10)) / 10;
+		coin_else = min(dp[i - 75],dp[i-50]); 
+		if (coin_else == dp[i - 75]) coin_else += 3;
+		else coin_else+=2;
+		dp[i] = min(coin_else, coin_ten);
+	}
+
+	int T; cin >> T;
+	while (T--) {
+		ll coin = 0;
+		ll t; cin >> t;
+		char price[20] = { 0 };
+		int idx = 0;
+		while (t != 0) {
+			price[idx++] = t % 10;
+			t /= 10;
+		}
+		for (int i = 0; i < idx; i+=2) {
+			coin+=dp[to_number(price[i], price[i + 1])];
+		}
+		cout << coin<<"\n";
+	}
+}
