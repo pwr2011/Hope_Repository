@@ -1,0 +1,47 @@
+#include<iostream>
+#include<vector>
+#define ll long long
+using namespace std;
+
+vector<int> child[200'005];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		int a, b;
+		cin >> a >> b;
+		if (a != -1) {
+			child[n].push_back(a - 1);
+		}
+		if (b != -1) {
+			child[n].push_back(b - 1);
+		}
+	}
+	ll K; cin >> K;
+
+	int cur = 0;
+	ll left = K;
+
+	while (1) {
+		if (child[cur].size() == 0) {
+			break;
+		}
+		else if (child[cur].size() == 1) {
+			cur = child[cur][0];
+		}
+		else {
+			if (left % 2 == 0) {
+				cur = child[cur][1];
+				left /= 2;
+			}
+			else {
+				cur = child[cur][0];
+				left /= 2;
+				left++;
+			}
+		}
+	}
+	cout << cur + 1;
+}
