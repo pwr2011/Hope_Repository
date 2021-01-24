@@ -1,0 +1,61 @@
+#include<iostream>
+#define ll long long
+using namespace std;
+
+ll dp[22][2];
+ll com[22][22];
+ll fact[22];
+
+void combi() {
+	for (int n = 1; n <= 20; n++) {
+		for (int r = 1; r <= n; r++) {
+			com[n][r] = fact[n] / (fact[n - r] * fact[r]);
+		}
+	}
+}
+
+int main() {
+	fact[0] = 1;
+	for (int i = 1; i <= 20; i++) {
+		fact[i] = fact[i - 1] * i;
+	}
+	dp[1][0] = 1;
+	dp[1][1] = 1;
+	dp[2][0] = 1;
+	dp[2][1] = 1;
+	combi();
+
+	for (int i = 3; i <= 20; i++) {
+		for (int idx = 2; idx < i; idx++) {
+			ll cnt = 0;
+			bool flag = 0;
+			int L_left = idx-1;
+			if (L_left % 2 != 0) {
+				flag = 1;
+			}
+			cnt += dp[L_left][flag];
+			int R_left = i - idx;
+			cnt *= dp[R_left][0];
+			cnt *= com[i - 1][L_left];
+			dp[i][flag] += cnt;
+		}
+		dp[i][0] += dp[i - 1][1];
+		if ((i-1) % 2 == 0) {
+			dp[i][0] += dp[i - 1][0];
+		}
+		else {
+			dp[i][1] += dp[i - 1][1];
+		}
+	}
+
+	int T; cin >> T;
+	while (T--) {
+		int N; cin >> N;
+		if (N == 1) {
+			cout << "1\n";
+		}
+		else {
+			cout << dp[N][0] + dp[N][1] << "\n";
+		}
+	}
+}
