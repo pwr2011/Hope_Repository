@@ -1,0 +1,46 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int A[2'005];
+vector<int> arr;
+int inc[2'005][2'005];
+int decr[2'005][2'005];
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> A[n];
+		arr.push_back(A[n]);
+	}
+	sort(arr.begin(),arr.end());
+	arr.erase(unique(arr.begin(), arr.end()), arr.end());
+
+	for (int n = 0; n < N; n++) {
+		A[n] = (int)(lower_bound(arr.begin(), arr.end(), A[n]) - arr.begin());
+	}
+
+	for (int n = 0; n < arr.size(); n++) {
+		inc[0][n] = abs(arr[A[0]] - arr[n]);
+		if (n) inc[0][n] = min(inc[0][n], inc[0][n - 1]);
+	}
+
+	for (int n = (int)arr.size()-1; n >= 0; n--) {
+		decr[0][n] = abs(arr[A[0]] - arr[n]);
+		if (n+1 != arr.size()) decr[0][n] = min(decr[0][n], decr[0][n + 1]);
+	}
+
+	for (int i = 1; i < N; i++) {
+		for (int j = 0; j < arr.size(); j++) {
+			inc[i][j] = inc[i - 1][j] + abs(arr[A[i]] - arr[j]);
+			if(j) inc[i][j] = min(inc[i][j], inc[i][j - 1]);
+		}
+
+		for (int j = arr.size()-1; j >= 0; j--) {
+			decr[i][j] = decr[i - 1][j] + abs(arr[A[i]] - arr[j]);
+			if (j+1 != arr.size()) decr[i][j] = min(decr[i][j], decr[i][j + 1]);
+		}
+	}
+	cout << min(inc[N - 1][arr.size() - 1], decr[N - 1][0]);
+}
