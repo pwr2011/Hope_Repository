@@ -1,0 +1,76 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#define ll long long
+using namespace std;
+
+vector<ll> A;
+vector<ll> B;
+ll summedA[1'005][1'005];
+ll summedB[1'005][1'005];
+vector<ll> A_list;
+vector<ll> B_list;
+int totalA, totalB;
+
+int main() {
+	ll buy; cin >> buy;
+	ll M, N; cin >> M >> N;
+
+	for (ll m = 0; m < M; m++) {
+		ll tmp; cin >> tmp;
+		summedA[m][m] = tmp;
+		A_list.push_back(tmp);
+		A.push_back(tmp);
+		totalA += tmp;
+	}
+	for (ll n = 0; n < N; n++) {
+		ll tmp; cin >> tmp;
+		summedB[n][n] = tmp;
+		B_list.push_back(tmp);
+		B.push_back(tmp);
+		totalB += tmp;
+	}
+
+	for (ll s = 0; s < M; s++) {
+		ll e = (s + 1) % M;
+		while (e != (s == 0 ? M - 1 : s - 1)) {
+			summedA[s][e] = summedA[s][e == 0 ? M - 1 : e - 1] + A[e];
+			A_list.push_back(summedA[s][e]);
+			e = (e + 1) % M;
+		}
+	}
+	A_list.push_back(totalA);
+
+	for (ll s = 0; s < N; s++) {
+		ll e = (s + 1) % N;
+		while (e != (s == 0 ? N - 1 : s-1)) {
+			summedB[s][e] = summedB[s][e == 0 ? N - 1 : e - 1] + B[e];
+			B_list.push_back(summedB[s][e]);
+			e = (e + 1) % N;
+		}
+	}
+	B_list.push_back(totalB);
+	sort(A_list.begin(), A_list.end());
+	sort(B_list.begin(), B_list.end());
+
+	ll ans = 0;
+	for (ll a_size = 0; a_size <= buy; a_size++) {
+		ll tmp = 1;
+		ll b_size = buy - a_size;
+		ll s = lower_bound(A_list.begin(), A_list.end(), a_size) - A_list.begin();
+		ll e = upper_bound(A_list.begin(), A_list.end(), a_size) - A_list.begin();
+		tmp = e - s;
+		if (a_size == 0) {
+			tmp = 1;
+		}
+		if (a_size == buy) {
+			ans += tmp;
+			break;
+		}
+		s = lower_bound(B_list.begin(), B_list.end(), b_size) - B_list.begin();
+		e = upper_bound(B_list.begin(), B_list.end(), b_size) - B_list.begin();
+		tmp *= e - s;
+		ans += tmp;
+	}
+	cout << ans;
+}
