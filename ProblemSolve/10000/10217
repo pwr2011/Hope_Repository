@@ -1,0 +1,70 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#define ll long long
+#define INF 987'000'000
+using namespace std;
+
+typedef pair<int, pair<int, int>> P;
+int dp[115][12'005];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+	while (T--) {
+		vector<P> g[105];
+		int N, M, K;
+		cin >> N >> M >> K;
+		for (int k = 0; k < K; k++) {
+			int a, b, c, d;
+			cin >> a >> b >> c >> d;
+			g[a].push_back(P(b, make_pair(c, d)));//비용 시간
+		}
+		for (int i = 0; i < 115; i++) {
+			for (int j = 0; j < 12'005; j++) {
+				dp[i][j] = INF;
+			}
+		}
+
+		priority_queue<P> pq; //시간, node, 비용
+		dp[1][0] = 0;
+		pq.push(P(0, make_pair(1, 0)));
+
+		bool flag = false;
+		while (!pq.empty()) {
+
+			int cur = pq.top().second.first;
+			int cur_cost = -pq.top().first;
+			int cur_money = pq.top().second.second;
+			pq.pop();
+
+			if (cur_money > M) continue;
+			if (dp[cur][cur_money] < cur_cost) {
+				continue;
+			}
+			if (cur == N) {
+				flag = true;
+				cout << cur_cost << "\n";
+				break;
+			}
+
+			for (int i = 0; i < g[cur].size(); i++) {
+				int next = g[cur][i].first;
+				int next_cost = g[cur][i].second.second + cur_cost;
+				int next_money = g[cur][i].second.first + cur_money;
+				if (next_money > M) continue;
+				if (next_cost < dp[next][next_money]) {
+					dp[next][next_money] = next_cost;
+					pq.push(P(-next_cost, make_pair(next, next_money)));
+				}
+			}
+		}
+		if (!flag) {
+			cout << "Poor KCM\n";
+		}
+		for (int i = 0; i < 105; i++) {
+			g[i].clear();
+		}
+	}
+}
