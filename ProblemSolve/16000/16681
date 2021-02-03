@@ -1,0 +1,82 @@
+#include<iostream>
+#include<queue>
+#include<algorithm>
+#include<vector>
+#define ll long long
+#define INF 999'999'999'999'999
+using namespace std;
+typedef pair<ll, ll> P;
+
+vector<P> g[100'005];
+ll decr[100'005];
+ll inc[100'005];
+ll height[100'005];
+ll N, M, D, E;
+
+int main() {
+	for (ll i = 0; i < 100'005; i++) {
+		inc[i] = INF; decr[i] = INF;
+	}
+	cin >> N >> M >> D >> E;
+	for(ll n = 1; n <= N; n++) {
+		cin >> height[n];
+	}
+
+	ll a, b, n;
+	for (ll m = 0; m < M; m++) {
+		cin >> a >> b >> n;
+		g[a].push_back(P(b, n));
+		g[b].push_back(P(a, n));
+	}
+
+	priority_queue<P> pq;
+	pq.push(P(0, 1));//dis, node
+	inc[1] = 0;
+	while (!pq.empty()) {
+		P cur = pq.top(); pq.pop();
+		if (inc[cur.second] < cur.first) continue;
+		for (P n : g[cur.second]) {
+			ll next = n.first;
+			ll next_dis = n.second;
+			if (height[next] <= height[cur.second]) {
+				continue;
+			}
+			if (inc[next] > cur.first + next_dis) {
+				inc[next] = cur.first + next_dis;
+				pq.push(P(cur.first + next_dis,next));
+			}
+		}
+	}
+
+	pq.push(P(0, N)); //dis. node
+	decr[N] = 0;
+	while (!pq.empty()) {
+		P cur = pq.top(); pq.pop();
+		if (decr[cur.second] < cur.first) continue;
+		for (P n : g[cur.second]) {
+			ll next = n.first;
+			ll next_dis = n.second;
+			if (height[next] <= height[cur.second]) {
+				continue;
+			}
+			if (decr[next] > cur.first + next_dis) {
+				decr[next] = cur.first + next_dis;
+				pq.push(P( cur.first + next_dis,next));
+			}
+		}
+	}
+
+	ll ans = -INF; //범위 틀릴수도
+	
+	for (int n = 1; n <= N; n++) {
+		if ((inc[n] != INF) && (decr[n] != INF)) {
+			ans = max(ans, (height[n] * E - (inc[n] + decr[n]) * D));
+		}
+	}
+	if (ans == -INF) {
+		cout << "Impossible";
+	}
+	else {
+		cout << ans;
+	}
+}
