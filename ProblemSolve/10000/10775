@@ -1,0 +1,79 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+
+int input[100'005];
+int gate[100'005]; //0번 ~ G-1번
+int arr[600'000];
+int idx;
+int G, P;
+
+void init() {
+	for (int i = idx; i < idx * 2; i++) {
+		arr[i] = i - idx+1;
+	}
+	for (int i = idx - 1; i > 0; i--) {
+		int left = arr[i * 2]; int right = arr[i * 2 + 1];
+		if (gate[right] == 0) { //비어있다면
+			arr[i] = right;
+		}
+		else if (gate[left] == 0) {
+			arr[i] = left;
+		}
+		else {
+			arr[i] = 0;
+		}
+	}
+}
+
+void update(int i) { //i : 1~G
+	gate[i] = 1;
+	i += idx;
+	i--;
+	arr[i] = 0;
+	i /= 2;
+	for (; i > 0; i /= 2) {
+		int left = arr[i * 2]; int right = arr[i * 2 + 1];
+		if (gate[right] == 0) { //비어있다면
+			arr[i] = right;
+		}
+		else if (gate[left] == 0) {
+			arr[i] = left;
+		}
+		else {
+			arr[i] = 0;
+		}
+	}
+}
+
+int find(int L, int R, int node, int nodeL, int nodeR) {
+	if (L > nodeR || R < nodeL) return -1;
+	if (L <= nodeL && nodeR <= R) { 
+		
+		return arr[node]; 
+	}
+	int mid = (nodeL + nodeR) / 2;
+	return max(find(L, R, node * 2, nodeL, mid), find(L, R, node * 2 + 1, mid + 1, nodeR));
+}
+
+int main() {
+	cin >> G >> P;
+	for (int p = 0; p < P; p++) {
+		cin >> input[p];
+	}
+	idx = pow(2,ceil(log2(G)));
+	init();
+	gate[0] = 1;
+	for (int p = 0; p < P; p++) {
+		int val = find(0, input[p] - 1, 1, 0, idx - 1);
+		if (val == 0) {
+			cout << p;
+			return 0;
+		}
+		else {
+			update(val);
+		}
+	}
+	cout << P;
+}
