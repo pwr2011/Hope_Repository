@@ -1,0 +1,94 @@
+#include<iostream>
+#define ll long long
+using namespace std;
+
+ll N, R, G, B;
+ll dp[13][103][103][103];
+ll combi[13][13][13][13];
+ll fact[15];
+
+ll solve(ll n, ll r, ll g, ll b) {
+	if (r < 0 || g < 0 || b < 0) {
+		return 0;
+	}
+	if (dp[n][r][g][b] != -1) return dp[n][r][g][b];
+	if (n > N) {
+		return dp[n][r][g][b] = 1;
+	}
+
+	ll ret = 0;
+	if (n <= r) {
+		ret += solve(n + 1, r-n, g, b);
+	}
+	if (n <= g) {
+		ret += solve(n + 1, r, g-n, b);
+	}
+	if (n <= b) {
+		ret += solve(n + 1, r, g, b-n);
+	}
+	if (n % 2 == 0) {
+		int cnt = n / 2;
+		if (r >= cnt && g >= cnt) {
+			ret += solve(n + 1, r - cnt, g - cnt, b)*combi[n][cnt][cnt][0];
+		}
+		if (r >= cnt && b >= cnt) {
+			ret += solve(n + 1, r - cnt, g, b - cnt) * combi[n][cnt][0][cnt];
+		}
+		if (g >= cnt && b >= cnt) {
+			ret += solve(n + 1, r, g - cnt, b - cnt) * combi[n][0][cnt][cnt];
+		}
+	}
+	if (n % 3 == 0) {
+		int cnt = n / 3;
+		if (r >= cnt && g >= cnt && b>=cnt) {
+			ret += solve(n + 1, r - cnt, g - cnt, b-cnt) * combi[n][cnt][cnt][cnt];
+		}
+	}
+
+	return dp[n][r][g][b] = ret;
+}
+
+int main() {
+	fact[0] = 1;
+	for (int n = 1; n < 15; n++) {
+		fact[n] = fact[n - 1] * n;
+	}
+	for (int n = 1; n < 13; n++) {
+		for (int r = 0; r < 13; r++) {
+			for (int g = 0; g < 13; g++) {
+				for (int b = 0; b < 13; b++) {
+					if (r + g + b == n) {
+						if (r == n || g== n || b == n) {
+							combi[n][r][g][b] = 1;
+						}
+						else if (r == g && b == 0) {
+							combi[n][r][g][b] = fact[n] / (fact[r]*fact[g]);
+						}
+						else if (r == b && g == 0) {
+							combi[n][r][g][b] = fact[n] / (fact[r] * fact[b]);
+						}
+						else if (g == b && r == 0) {
+							combi[n][r][g][b] = fact[n] / (fact[b] * fact[g]);
+						}
+						else if (r == g && g == b) {
+							combi[n][r][g][b] = fact[n] / (fact[r]*fact[g]*fact[b]);
+						}
+					}
+				}
+			}
+		}
+	}
+	for (int i = 0; i < 13; i++) {
+		for (int j = 0; j < 103; j++) {
+			for (int k = 0; k < 103; k++) {
+				for (int l = 0; l < 103; l++) {
+					dp[i][j][k][l] = -1;
+				}
+			}
+		}
+	}
+
+	cin >> N >> R >> G >> B;
+	
+	cout<<solve(1, R, G, B);
+}
