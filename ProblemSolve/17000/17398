@@ -1,0 +1,69 @@
+#include<iostream>
+#define ll long long
+using namespace std;
+
+bool exist[100'005];
+ll N, M, Q;
+ll input[100'005][2];
+ll del_order[100'005];
+ll parent[100'005];
+
+ll find_parent(ll a) {
+	if (parent[a] < 0) return a;
+	else {
+		return parent[a] = find_parent(parent[a]);
+	}
+}
+
+ll merge(ll a, ll b) {
+	ll p_a = find_parent(a);
+	ll p_b = find_parent(b);
+
+	ll ret = 0;
+	if (p_a != p_b) {
+		ret = parent[p_a] * parent[p_b];
+		if (p_a < p_b) {
+			parent[p_a] += parent[p_b];
+			parent[p_b] = p_a;
+		}
+		else {
+			parent[p_b] += parent[p_a];
+			parent[p_a] = p_b;
+		}
+		return ret;
+	}
+	else {
+		return 0;
+	}
+}
+
+int main() {
+
+	cin >> N >> M >> Q;
+	for (ll m = 0; m < M; m++) {
+		cin >> input[m][0] >> input[m][1];
+	}
+	for (ll q = 0; q < Q; q++) {
+		cin >> del_order[q];
+		exist[del_order[q]] = true;
+	}
+
+	for (ll i = 0; i < 100'005; i++) {
+		parent[i] = -1;
+	}
+
+	
+	for (int i = 0; i < M; i++) {
+		if (!exist[i + 1]) {
+			merge(input[i][0], input[i][1]);
+		}
+	}
+
+	ll ans = 0;
+	for (int q = 0; q < Q; q++) {
+		int del = del_order[q];
+		ans += merge(input[del - 1][0], input[del - 1][1]);
+	}
+
+	cout << ans;
+}
