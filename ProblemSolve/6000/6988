@@ -1,0 +1,57 @@
+#include<iostream>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+ll dp[3'005][3'005];
+ll pos[3'000'005];
+ll input[3'005];
+int N;
+
+ll solve(int i, int j, bool flag) {
+	ll ret_val = 0;
+	if (!flag) {
+		ll dif = input[j] - input[i];
+		ll next_idx = pos[input[j] + dif];
+		if (next_idx == -1) {
+			return dp[i][j] = 0;
+		}
+		ret_val = input[i] + input[j];
+
+		flag = true;
+	}
+	if (dp[i][j] != -1) return dp[i][j];
+	ll dif = input[j] - input[i];
+	ll next_idx = pos[input[j] + dif];
+	if (next_idx == -1) {
+		return dp[i][j] = 0;
+	}
+	else {
+		return dp[i][j] = solve(j, next_idx,flag) + input[next_idx]+ret_val;
+	}
+}
+
+int main() {
+	for (int i = 0; i < 3'005; i++) {
+		for (int j = 0; j < 3'005; j++) {
+			dp[i][j] = -1;
+		}
+	}
+	for (int i = 0; i < 3'000'005; i++) {
+		pos[i] = -1;
+	}
+
+	cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+		pos[input[n]] = n;
+	}
+
+	ll ans = 0;
+	for (int i = 0; i < N; i++) {
+		for (int j = i + 1; j < N; j++) {
+			ans = max(ans,solve(i, j,false));
+		}
+	}
+	cout << ans;
+}
