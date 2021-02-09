@@ -1,0 +1,102 @@
+#include<iostream>
+#include<string.h>
+using namespace std;
+
+int N;
+char S[10'005], T[10'005];
+int dp[2][2][10'005];
+int i, j;
+char c1, c2;
+
+bool solve(bool f1, bool f2,int idx) {
+	if (dp[f1][f2][idx]) {
+		return false;
+	}
+	dp[f1][f2][idx] = true;
+
+	int idx_T = idx;
+	if (f1) idx_T++;
+	if (f2) idx_T++;
+
+	if (idx == N) {
+		cout << "YES";
+		return true;
+	}
+	if (S[idx] == T[idx_T]) {
+		if (!f1) {
+			if (c1 == T[idx_T]) {
+				if (solve(true, f2, idx)) {
+					return true;
+				}
+				else {
+					if (solve(f1, f2, idx + 1))
+						return true;
+				}
+			}
+			else {
+				if (solve(f1, f2, idx + 1))
+					return true;
+			}
+		}
+		else if(!f2){
+			if (c2 == T[idx_T]) {
+				if (solve(f1, true, idx))
+					return true;
+				else {
+					if (solve(f1, f2, idx + 1))
+						return true;
+				}
+			}
+			else {
+				if (solve(f1, f2, idx + 1))
+					return true;
+			}
+		}
+		else {
+			if (solve(f1, f2, idx + 1))
+				return true;
+		}
+	}
+	else {
+		if (!f1) {
+			if (c1 == T[idx_T]) {
+				if (solve(true, f2, idx)) {
+					return true;
+				}
+				
+			}
+
+		}
+		else if (!f2) {
+			if (c2 == T[idx_T]) {
+				if (solve(f1, true, idx)) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+
+	cin >> N;
+	cin >> S >> T >> i >> j;
+	
+	c1 = S[i]; c2 = S[j];
+
+	for (int idx = i; idx < N-1; idx++) {
+		S[idx] = S[idx + 1];
+	}
+	S[N - 1] = '\0';
+	for (int idx = j - 1; idx < N - 1; idx++) {
+		S[idx] = S[idx + 1];
+	}
+	S[N - 2] = '\0';
+
+	if (!solve(false, false, 0)) {
+		cout << "NO";
+	}
+}
