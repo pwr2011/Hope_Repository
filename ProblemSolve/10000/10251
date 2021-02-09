@@ -1,0 +1,70 @@
+#include<iostream>
+#include<algorithm>
+#define INF 9'999'999
+using namespace std;
+
+int dp[105][105][210][2];
+int R[105][105];
+int D[105][105];
+int M, N, L, G;
+
+
+void solve() {
+	dp[0][0][0][0] = dp[0][0][0][1] = 0;
+	for (int m = 0; m < M; m++) {
+		for (int n = 0; n < N; n++) {
+			for (int k = 0; k < 210; k++) {
+				if (n < N - 1) {
+					dp[m][n + 1][k][0] = min(dp[m][n + 1][k][0], dp[m][n][k][0]+R[m][n]);
+					dp[m][n+1][k+1][0] = min(dp[m][n + 1][k + 1][0], dp[m][n][k][1]+R[m][n]);
+				}
+				if (m < M - 1) {
+					dp[m + 1][n][k][1] = min(dp[m + 1][n][k][1], dp[m][n][k][1] + D[m][n]);
+					dp[m + 1][n][k+1][1]= min(dp[m + 1][n][k+1][1], dp[m][n][k][0] + D[m][n]);
+				}
+			}
+		}
+	}
+
+	int ans = INF;
+	for (int k = 0; k < 210; k++) {
+		if (dp[M - 1][N - 1][k][0] <= G) {
+			ans = min(ans, (M + N - 2) * L + k);
+		}
+		if (dp[M - 1][N - 1][k][1] <= G) {
+			ans = min(ans, (M + N - 2) * L + k);
+		}
+	}
+	if (ans >= INF) cout << "-1\n";
+	else {
+		cout << ans << "\n";
+	}
+}
+
+int main() {
+	int T; cin >> T;
+	while (T--) {
+		for (int i = 0; i < 105; i++) {
+			for (int j = 0; j < 105; j++) {
+				for (int k = 0; k < 210; k++) {
+					dp[i][j][k][0] = INF;
+					dp[i][j][k][1] = INF;
+				}
+			}
+		}
+
+		cin >> M >> N >> L >> G;
+		for (int m = 0; m < M; m++) {
+			for (int n = 0; n < N - 1; n++) {
+				cin >> R[m][n];
+			}
+		}
+		for (int m = 0; m < M - 1; m++) {
+			for (int n = 0; n < N; n++) {
+				cin >> D[m][n];
+			}
+		}
+
+		solve();
+	}
+}
