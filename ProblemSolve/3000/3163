@@ -1,0 +1,92 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+typedef pair<int, int>P;
+
+int main() {
+	int T; cin >> T;
+	while (T--) {
+		cin.tie(NULL);
+		ios::sync_with_stdio(false);
+		vector<int> ID;
+		vector<P> left;
+		int N, L, K, tmp1, tmp2;
+		cin >> N >> L >> K;
+		for (int n = 0; n < N; n++) {
+			cin >> tmp1 >> tmp2;
+			ID.push_back(tmp2);
+			if (ID[n] > 0) {
+				left.push_back(P(L - tmp1, tmp2));
+			}
+			else {
+				left.push_back(P(tmp1, tmp2));
+			}
+		}
+
+		sort(left.begin(), left.end());
+
+		int i = 0, j = N - 1;
+		int idx = 0;
+
+		if (K < 2) {
+			if (left[idx].first == left[idx + 1].first) {
+				if (ID[i] > ID[j]) {
+					cout << ID[j];
+				}
+				else {
+					cout << ID[i];
+				}
+			}
+			else {
+				cout << (left[idx].second < 0 ? ID[i] : ID[j]);
+			}
+
+		}
+		else {
+
+			for (int k = 0; k < K - 2; k++) {
+				if (left[idx].second < 0) {
+					i++;
+				}
+				else {
+					j--;
+				}
+				idx++;
+			}
+
+			if (left[idx].first == left[idx + 1].first) {
+				if (ID[i] < ID[j]) {
+					cout << ID[j];
+				}
+				else {
+					cout << ID[i];
+				}
+			}
+			else if (left[idx + 1].first == left[idx + 2].first) {
+				if (left[idx].second < 0) {
+					i++;
+				}
+				else {
+					j--;
+				}
+				if (ID[i] < ID[j]) {
+					cout << ID[i];
+				}
+				else {
+					cout << ID[j];
+				}
+			}
+			else {
+				if (left[idx].second < 0) {
+					i++;
+				}
+				else {
+					j--;
+				}
+				cout << (left[idx + 1].second < 0 ? ID[i] : ID[j]);
+			}
+		}
+		cout << "\n";
+	}
+}
