@@ -1,0 +1,51 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+using namespace std;
+
+typedef pair<int, int>P;
+vector<P> p;
+
+int solve(int i, int j) {
+	int x_diff = p[j].first - p[i].first;
+	int y_diff = p[j].second - p[i].second;
+
+	int n1_x = p[j].first - y_diff;
+	int n1_y = p[j].second + x_diff;
+	int idx = lower_bound(p.begin(), p.end(), P(n1_x, n1_y)) - p.begin();
+	if (idx >= p.size()) return 0;
+	if (p[idx].first == n1_x && p[idx].second == n1_y) {
+		int n2_x = n1_x - x_diff; int n2_y = n1_y - y_diff;
+		idx = lower_bound(p.begin(), p.end(), P(n2_x, n2_y)) - p.begin();
+		if (idx >= p.size()) return 0;
+		if (p[idx].first == n2_x && p[idx].second == n2_y) {
+			return x_diff * x_diff + y_diff * y_diff;
+		}
+	}
+	return 0;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+	while (T--) {
+		int N; cin >> N;
+
+		for (int n = 0; n < N; n++) {
+			P tmp; cin >> tmp.first >> tmp.second;
+			p.push_back(tmp);
+		}
+
+		sort(p.begin(), p.end());
+
+		int ans = 0;
+		for (int i = 0; i < N-1; i++) {
+			for (int j = i + 1; j < N; j++) {
+				ans = max(ans,solve(i, j));
+			}
+		}
+		p.clear();
+		cout << ans<<"\n";
+	}
+}
