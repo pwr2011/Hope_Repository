@@ -1,0 +1,62 @@
+#include<iostream>
+using namespace std;
+
+char map[1'005][1'005];
+bool visit[1'005][1'005];
+int cnt = 0;
+int check[1'005][1'005];
+
+int dfs(int n, int m) {
+	char cur = map[n][m];
+	if (visit[n][m]) {
+		if (check[n][m] == -1) {
+			check[n][m] = cnt;
+			return cnt;
+		}
+		else {
+			return check[n][m];
+		}
+	}
+
+	visit[n][m] = true;
+
+	if (cur == 'N') {
+		return check[n][m] = dfs(n - 1, m);
+	}
+	else if (cur == 'S') {
+		return check[n][m] = dfs(n + 1, m);
+	}
+	else if (cur == 'W') {
+		return check[n][m] = dfs(n, m - 1);
+	}
+	else {
+		return check[n][m] = dfs(n, m + 1);
+	}
+}
+
+int main() {
+	for (int i = 0; i < 1'005; i++) {
+		for (int j = 0; j < 1'005; j++) {
+			check[i][j] = -1;
+		}
+	}
+
+	int N, M; cin >> N >> M;
+
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < M; m++) {
+			cin >> map[n][m];
+		}
+	}
+
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < M; m++) {
+			if (visit[n][m]) continue;
+			int val = dfs(n, m);
+			if (val == cnt) {
+				cnt++;
+			}
+		}
+	}
+	cout << cnt;
+}
