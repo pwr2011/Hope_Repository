@@ -1,0 +1,81 @@
+#include<iostream>
+#include<algorithm>
+#define INF 9'999'999
+using namespace std;
+
+int dp[10'005][20]; int N;
+char cur[10'005];
+char want[10'005];
+
+int solve(int idx, int rot) {
+	if (dp[idx][rot] != -1) return dp[idx][rot];
+	
+	int c = cur[idx] - '0';
+	c += rot; c %= 10; 
+	int w = want[idx] - '0';
+
+	int to_left = (w - c + 10) % 10; //+
+	int to_right = (c - w + 10) % 10; 
+	
+	if (idx == N-1) {
+		return dp[idx][rot] = min(to_left, to_right);
+	}
+
+	int ans = INF;
+	ans = min(ans, solve(idx + 1, (rot + to_left) % 10) + to_left);
+	ans = min(ans, solve(idx + 1, rot) + to_right);
+	return dp[idx][rot] = ans;
+}
+
+void trace(int idx, int rot) {
+	
+	int c = cur[idx] - '0';
+	c += rot; c %= 10;
+	int w = want[idx] - '0';
+
+	int to_left = (w - c + 10) % 10; //+
+	int to_right = (c - w + 10) % 10; 
+	
+	if (idx == N - 1) {
+		if (to_left > to_right) {
+			cout << idx + 1 << " " << -to_right << "\n";
+		}
+		else {
+			cout << idx + 1 << " " << to_left << "\n";
+		}
+		return;
+	}
+
+	int left = dp[idx + 1][(rot + to_left) % 10]+to_left;
+	int right = dp[idx + 1][rot]+to_right;
+
+	if (left > right) {
+		cout << idx + 1 << " " << -to_right << "\n";
+		trace(idx + 1, rot);
+	}
+	else {
+		cout << idx + 1 << " " << to_left << "\n";
+		trace(idx + 1, (rot + to_left) % 10);
+	}
+	return;
+}
+
+int main() {
+	for (int i = 0; i < 10'005; i++) {
+		for (int j = 0; j < 20; j++) {
+			dp[i][j] = -1;
+		}
+	}
+
+	cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> cur[n];
+	}
+	for (int n = 0; n < N; n++) {
+		cin >> want[n];
+	}
+
+	solve(0, 0);
+	cout << dp[0][0] << "\n";
+	trace(0, 0);
+}
