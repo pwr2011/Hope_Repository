@@ -1,0 +1,50 @@
+#include<iostream>
+#include<algorithm>
+#define ll long long
+#define INF 9'000'009
+using namespace std;
+
+ll N, M;
+ll dp[10'005][105];
+
+ll solve(ll n, ll m) {
+	if (dp[n][m] != -1) return dp[n][m];
+
+	if (n == m) return dp[n][m] = 1;
+
+	ll ans = INF;
+	if (n >= 3 * m) {
+		ans = min(ans, solve(n - m, m) + 1);
+	}
+	else {
+		for (int col = 1; col < n; col++) {
+			ans = min(ans, solve(col, m) + solve(n - col, m));
+		}
+
+		for (int row = 1; row < m; row++) {
+			ans = min(ans, solve(n, row) + solve(n, m - row));
+		}
+	}
+	return dp[n][m] = ans;
+}
+
+int main() {
+	for (int i = 0; i < 10'005; i++) {
+		for (int j = 0; j < 105; j++) {
+			dp[i][j] = -1;
+		}
+	}
+	for (int i = 1; i < 10'005; i++) {
+		dp[i][1] = i;
+	}
+	for (int i = 1; i < 105; i++) {
+		dp[1][i] = i;
+	}
+	for (int i = 1; i <= 100; i++) {
+		dp[i][i] = 1;
+	}
+
+	cin >> N >> M;
+
+	cout<<solve(N, M);
+}
