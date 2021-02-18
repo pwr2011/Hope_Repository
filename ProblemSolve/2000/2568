@@ -1,0 +1,59 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<stack>
+using namespace std;
+typedef pair<int, int> P;
+
+int N;
+vector<P> input;
+vector<int> LIS;
+int len = 0;
+bool visit[500'005];
+P ans[500'005];
+
+void solve() {
+	LIS.push_back(input[0].second);
+	ans[0] = { 0,input[0].first };
+
+	for (int n = 1; n < N; n++) {
+		if (LIS[len] < input[n].second) {
+			LIS.push_back(input[n].second);
+			len++;
+			ans[n] = { len,input[n].first };
+			continue;
+		}
+		int idx = lower_bound(LIS.begin(), LIS.end(), input[n].second) - LIS.begin();
+		LIS[idx] = input[n].second;
+		ans[n] = { idx,input[n].first };
+	}
+	cout << N-(len+1)<<"\n";
+	
+	for (int i = N-1; i >= 0; i--) {
+		if (ans[i].first == len) {
+			visit[ans[i].second] = false;
+			len--;
+		}
+	}
+	
+	for (int i = 0; i < 500'005; i++) {
+		if (visit[i]) {
+			cout << i << "\n";
+		}
+	}
+	return;
+}
+
+int main() {
+
+	cin >> N;
+	for (int n = 0; n < N; n++) {
+		P tmp; cin >> tmp.first >> tmp.second;
+		visit[tmp.first] = true;
+		input.push_back(tmp);
+	}
+
+	sort(input.begin(), input.end());
+
+	solve();
+}
