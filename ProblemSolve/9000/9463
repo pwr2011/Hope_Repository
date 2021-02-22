@@ -1,0 +1,56 @@
+#include<iostream>
+#include<cmath>
+#include<string.h>
+using namespace std;
+
+int arr[262'114];
+int start;
+int input1[100'005];
+int pos[100'005];
+
+int sum(int L, int R, int node, int nodeL, int nodeR) {
+	if (L <= nodeL && nodeR <= R) return arr[node];
+	if (R < nodeL || nodeR < L) {
+		return 0;
+	}
+	int mid = (nodeL + nodeR) / 2;
+	return sum(L, R, node * 2, nodeL, mid) + sum(L, R, node * 2 + 1, mid + 1, nodeR);
+}
+
+void update(int idx) {
+	idx += start;
+	arr[idx] = 1;
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+	while (T--) {
+		int N; cin >> N;
+		start = (int)pow(2,ceil(log2(N)));
+		for (int n = 0; n < N; n++) {
+			cin >> input1[n];
+		}
+		for(int n = 0; n < N; n++) {
+			int tmp;
+			cin >> tmp;
+			pos[tmp] = n;
+		}
+
+		long long ans = 0;
+		for (int n = 0; n < N; n++) {
+			int cur = input1[n];
+			update(pos[cur]);
+			ans +=sum(pos[cur] + 1, start - 1, 1, 0, start - 1);
+		}
+		cout << ans << "\n";
+		memset(arr, 0, sizeof(arr));
+	}
+}
