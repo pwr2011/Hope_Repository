@@ -1,0 +1,71 @@
+#include<iostream>
+#include<algorithm>
+#include<cmath>
+#include<vector>
+using namespace std;
+typedef pair<int, int> P;
+
+int N, A, B;
+vector<P> dis[2'005];
+
+void solve() {
+	int k, a, b;
+	long long ans = 0;
+	int cnt_A = 0;
+	int cnt_B = 0;
+	for (int n = 0; n < N; n++) {
+		cin >> k >> a >> b;
+		dis[a - b + 1000].push_back(P(a, k));
+		ans += (a < b ? k * a : k * b);
+		if (a < b) cnt_A += k;
+		else cnt_B += k;
+	}
+	int idx = 999;
+	while (cnt_A > A) {
+		for (P cur : dis[idx]) {
+			int want = cnt_A - A;
+			if (want <= cur.second) {
+				ans += want * (long long)(abs(idx - 1000));
+				cnt_A -= want;
+				cnt_B += want;
+			}
+			else {
+				ans += cur.second * (long long)(abs(idx-1000));
+				cnt_A -= cur.second;
+				cnt_B += cur.second;
+			}
+			if (cnt_A <= A) break;
+		}
+		idx--;
+	}
+	idx = 1000;
+	while (cnt_B > B) {
+		for (P cur : dis[idx]) {
+			int want = cnt_B - B;
+			if (want <= cur.second) {
+				ans += want * (long long)(abs(idx - 1000));
+				cnt_A += want;
+				cnt_B -= want;
+			}
+			else {
+				ans += cur.second * (long long)(abs(idx - 1000));
+				cnt_A += cur.second;
+				cnt_B -= cur.second;
+			}
+			if (cnt_B <= B) break;
+		}
+		idx++;
+	}
+	cout << ans << "\n";
+}
+
+int main() {
+	while (1) {
+		cin >> N >> A >> B;
+		if (N == 0) break;
+		solve();
+		for (int i = 0; i < 2'002; i++) {
+			dis[i].clear();
+		}
+	}
+}
