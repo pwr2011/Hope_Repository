@@ -1,0 +1,34 @@
+#include<iostream>
+#include<queue>
+
+using namespace std;
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	priority_queue<int> max;
+	priority_queue<int> min;
+	int N; cin >> N;
+	int tmp;
+	for (int n = 0; n < N; n++) {
+		cin >> tmp;
+		if (max.size() <= min.size()) {
+			max.push(tmp);
+		}
+		else {
+			min.push(-tmp);
+		}
+		if (n == 0) {
+			cout << max.top() << "\n";
+			continue;
+		}
+		if (max.top() > -min.top()) {
+			int t = max.top(); max.pop();
+			max.push(-min.top());
+			min.pop();
+			min.push(-t);
+		}
+		cout << max.top() << "\n";
+	}
+}
