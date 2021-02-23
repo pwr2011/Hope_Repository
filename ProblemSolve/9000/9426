@@ -1,0 +1,60 @@
+#include<iostream>
+#include<cmath>
+using namespace std;
+
+int arr[200'000]; int N, K;
+int start;
+int mid;
+int input[250'005];
+
+void init() {
+	for (int k = 0; k < K; k++) {
+		arr[start + input[k]] += 1;
+	}
+	for (int s = start - 1; s > 0; s--) {
+		arr[s] = arr[s * 2] + arr[s * 2 + 1];
+	}
+}
+
+int find(int idx,int node=1,int nodeL=0,int nodeR=start-1){
+	if (node >= start) return node-start; //....
+	long long left = arr[node * 2];
+	int mid = (nodeL + nodeR) / 2;
+	if (idx <= left) return find(idx, node * 2, nodeL, mid);
+	else return find(idx - left, node * 2 + 1, mid + 1, nodeR);
+}
+
+void update(int i,bool c) {
+	int idx = i + start;
+	if (c) {
+		arr[idx]++;
+	}
+	else {
+		arr[idx]--;
+	}
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+int main() {
+	cin >> N >> K;
+	mid = (K + 1) / 2;
+	start = (int)pow(2, ceil(log2(65536)));
+
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+	}
+	init();
+
+	long long ans = 0;
+	for (int k = K; k <= N; k++) {
+		ans += find(mid);
+		if (k == N) break;
+		update(input[k],true);
+		update(input[k - K],false);
+	}
+	cout << ans;
+}
