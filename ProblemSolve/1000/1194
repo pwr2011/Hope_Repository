@@ -1,0 +1,60 @@
+#include<iostream>
+#include<queue>
+using namespace std;
+typedef pair<int, int> P;
+
+char map[55][55];
+bool visit[200][55][55];
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+
+int main() {
+	P s;
+	int N, M; cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < M; m++) {
+			cin >> map[n][m];
+			if (map[n][m] == '0') {
+				s.first = n; s.second = m;
+			}
+		}
+	}
+
+	int dis = 0;
+	queue<pair<P,int>> q;
+	q.push(make_pair(s,0));
+	visit[0][s.first][s.second] = true;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int t = 0; t < qsize; t++) {
+			P cur = q.front().first;
+			int key = q.front().second;
+			q.pop();
+
+			for (int i = 0; i < 4; i++) {
+				int n_key = key;
+				P n; n.first = cur.first + dx[i]; n.second = cur.second + dy[i];
+				if (n.first < 0 || n.second < 0 || n.first >= N || n.second >= M) continue;
+				if (visit[key][n.first][n.second]) continue;
+				if (map[n.first][n.second] == '#') {
+					continue;
+				}
+				if (map[n.first][n.second] == '1') {
+					cout << dis+1; return 0;
+				}
+				if (map[n.first][n.second] >= 'A' && map[n.first][n.second] <= 'F') {
+					int req = map[n.first][n.second] - 'A';
+					if (!(key & (1 << req)))continue;
+				}
+				if (map[n.first][n.second] >= 'a' && map[n.first][n.second] <= 'f') {
+					int find = map[n.first][n.second] - 'a';
+					n_key = key | (1 << find);
+				}
+				visit[n_key][n.first][n.second] = true;
+				q.push(make_pair(n, n_key));
+			}
+		}
+		dis++;
+	}
+	cout << -1;
+}
