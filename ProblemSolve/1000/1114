@@ -1,0 +1,54 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#define ll long long
+using namespace std;
+
+vector<ll> input;
+ll len[10'005];
+
+int main() {
+	ll L, K, C; cin >> L >> K >> C;
+	for (int k = 0; k < K; k++) {
+		ll tmp; cin >> tmp;
+		input.push_back(tmp);
+	}
+	input.push_back(L);
+	sort(input.begin(), input.end());
+
+	len[0] = input[0];
+	for (int k = 1; k <= K; k++) {
+		len[k] = input[k] - input[k - 1];
+	}
+
+	ll A=0, B=0;
+	ll left = 0, right = L;
+	while (left <= right) {
+		ll a = 0, b = 0;
+		ll m = (left + right) / 2;
+		int cnt = 0;
+		ll p = 0;
+		ll sum = 0;
+		for (int k = K; k >= 0; k--) {
+			if (len[k] > m) {
+				cnt = C + 1;
+				break;
+			}
+			if (len[k] + sum > m) {
+				p = k;
+				cnt++;
+				sum = 0;
+			}
+			sum += len[k];
+		}
+		if (cnt > C) {
+			left = m + 1;
+		}
+		else {
+			A = m;
+			right = m-1;
+			B = cnt == C ? input[p] : input[0];
+		}
+	}
+	cout << A << " " << B;
+}
