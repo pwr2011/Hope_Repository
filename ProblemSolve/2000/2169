@@ -1,0 +1,42 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int map[1'005][1'005];
+int max_val[1'005][1'005];
+int N, M;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < M; m++) {
+			cin >> map[n][m];
+		}
+	}
+
+	int sum = 0;
+	for (int m = 0; m < M; m++) {
+		sum += map[0][m];
+		max_val[0][m] = sum;
+	}
+
+	for (int n = 1; n < N; n++) {
+		int tmp[2][1'005] = { 0 };
+
+		tmp[0][0] = max_val[n - 1][0] + map[n][0];
+		for (int m = 1; m < M; m++) {
+			tmp[0][m] = max(tmp[0][m - 1], max_val[n - 1][m]) + map[n][m];
+		}
+
+		tmp[1][M - 1] = max_val[n - 1][M - 1] + map[n][M - 1];
+		for (int m = M-2; m >= 0; m--) {
+			tmp[1][m] = max(tmp[1][m + 1], max_val[n - 1][m]) + map[n][m];
+		}
+		for (int m = 0; m < M; m++) {
+			max_val[n][m] = max(tmp[0][m], tmp[1][m]);
+		}
+	}
+	cout << max_val[N - 1][M - 1];
+}
