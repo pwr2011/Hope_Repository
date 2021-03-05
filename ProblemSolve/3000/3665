@@ -1,0 +1,58 @@
+#include <iostream>
+#include<algorithm>
+#include<string.h>
+#include<vector>
+using namespace std;
+
+vector<int> v;
+int g[505][505];
+
+void solve() {
+	memset(g, 0, sizeof(g));
+	int pos[505] = { 0 };
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		int tmp; cin >> tmp; v.push_back(tmp);
+		pos[tmp] = n;
+	}
+	for (int i = 0; i < N; i++) {
+		for (int j = i + 1; j < N; j++) {
+			g[i][j] = 1;
+		}
+	}
+	int M; cin >> M;
+	int a, b;
+	for (int m = 0; m < M; m++) {
+		cin >> a >> b;
+		swap(g[pos[a]][pos[b]], g[pos[b]][pos[a]]);
+	}
+
+	int ans[505] = { 0 };
+	int ind[505] = { 0 };
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			if (g[i][j]) ind[j]++;
+		}
+	}
+	bool flag = false;
+	for (int i = 0; i < N; i++) {
+		if (ans[ind[i]] != 0) { flag = true; break; }
+		ans[ind[i]] = v[i];
+	}
+	if (flag) {
+		cout << "IMPOSSIBLE\n";
+	}
+	else {
+		for (int i = 0; i < N; i++) {
+			cout << ans[i] << " ";
+		}
+		cout << "\n";
+	}
+	v.clear();
+}
+
+int main() {
+	ios_base::sync_with_stdio(0); cin.tie(0);
+	int t; cin >> t;
+	while (t--) solve();
+}
