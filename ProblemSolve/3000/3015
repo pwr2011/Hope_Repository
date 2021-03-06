@@ -1,0 +1,37 @@
+#include<iostream>
+#include<stack>
+#define ll long long
+using namespace std;
+
+int main() {
+	stack<pair<ll, ll>> s;
+	ll res = 0;
+	ll N; cin >> N;
+	for (ll n = 0; n < N; n++) {
+		ll val; cin >> val;
+		while (!s.empty() && s.top().first < val) {
+			auto cur = s.top(); s.pop();
+			res += cur.second;
+		}
+		if (s.empty()) {
+			s.push({ val,1 });
+		}
+		else {
+			if (s.top().first == val) {
+				auto cur = s.top(); s.pop();
+
+				res += cur.second;
+				if (!s.empty()) {
+					res++;
+				}
+				cur.second += 1;
+				s.push(cur);
+			}
+			else {
+				res++; //?
+				s.push({ val,1 });
+			}
+		}
+	}
+	cout << res;
+}
