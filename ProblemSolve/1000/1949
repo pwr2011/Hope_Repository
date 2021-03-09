@@ -1,0 +1,45 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+using namespace std;
+
+int p[10'005];
+vector<int> g[10'005];
+int dp[10'005][2];
+
+int dfs(int c,int ch,int prev) {
+	if (dp[c][ch] != -1) return dp[c][ch];
+
+	dp[c][ch] = 0;
+	for (int next : g[c]) {
+		if (prev == next) continue;
+		if (ch) {
+			dp[c][1] += dfs(next,0,c);
+		}
+		else {
+			dp[c][0] += max(dfs(next, 0, c), dfs(next, 1, c));
+		}
+	}
+	if (ch)dp[c][1] += p[c];
+
+	return dp[c][ch];
+}
+
+int main() {
+	int N; cin >> N;
+	for (int n = 1; n <= N; n++) {
+		cin >> p[n];
+	}
+	int a, b;
+	for (int n = 0; n < N - 1; n++) {
+		cin >> a >> b;
+		g[a].push_back(b);
+		g[b].push_back(a);
+	}
+	for (int i = 0; i <= N; i++) {
+		dp[i][0] = -1;
+		dp[i][1] = -1;
+	}
+
+	cout<<max(dfs(1,0,-1), dfs(1,1,-1));
+}
