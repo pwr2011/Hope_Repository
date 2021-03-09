@@ -1,0 +1,54 @@
+#include<iostream>
+#include<bitset>
+#include<string>
+#include<algorithm>
+using namespace std;
+
+int s[22];
+string input[22];
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+	}
+	for (int n = 0; n < N; n++) {
+		int idx = 0;
+		for (int i = input[n].size() - 1; i >= 0; i--) {
+			if (input[n][i] == 'H') {
+				s[n] += 1 << idx;
+			}
+			idx++;
+		}
+	}
+
+	int ans = 9'999'999;
+
+	for (int i = 0; i <= (1 << N)-1; i++) {
+		int cnt = 0;
+		int cur[22] = { 0 };
+		for (int j = 0; j < N; j++) {
+			if (i & (1 << j)) {
+				cur[j] = s[j] ^ ((1 << N) - 1);
+			}
+			else {
+				cur[j] = s[j];
+			}
+		}
+		for(int idx = 0;idx<N;idx++){
+			//Tail의 개수 카운트
+			int tail = 0;
+			for (int k = 0; k < N; k++) {
+				if ((cur[k] & (1 << idx)) == 0) {
+					tail++;
+				}
+			}
+			if (tail > N / 2) {
+				cnt += N - tail;
+			}
+			else cnt += tail;
+		}
+		ans = min(ans, cnt);
+	}
+	cout << ans;
+}
