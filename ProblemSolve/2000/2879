@@ -1,0 +1,30 @@
+#include<iostream>
+#include<cmath>
+using namespace std;
+
+int cur[1'005];
+int diff[1'005];
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> cur[n];
+	}
+	int tmp = 0;
+	for (int n = 0; n < N; n++) {
+		cin >> tmp;
+		diff[n] = tmp - cur[n];
+	}
+
+	int prevH = diff[0]; 
+	int ans = 0;
+
+	for (int n = 1; n < N; n++) {
+		if (diff[n] * prevH < 0)ans += abs(prevH);
+		else if (abs(diff[n]) < abs(prevH)) {
+			ans += abs(abs(diff[n]) - abs(prevH));
+		}
+		prevH = diff[n];
+	}
+	cout << abs(prevH) + ans;
+}
