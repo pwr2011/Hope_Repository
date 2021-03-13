@@ -1,0 +1,61 @@
+#include<iostream>
+#include<stack>
+#include<string>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int cost[105];
+vector<int> g[105];
+int dfsn[105], sn[105];
+bool finish[105];
+int cnt, SN;
+stack<int> S;
+int ans;
+
+int DFS(int cur) {
+	dfsn[cur] = ++cnt;
+	S.push(cur);
+
+	int res = dfsn[cur];
+	for (int next : g[cur]) {
+		if (dfsn[next] == 0) res = min(res, DFS(next));
+		else if (!finish[next]) res = min(res, dfsn[next]);
+	}
+	int min_cost = 9'999'999;
+	if (res == dfsn[cur]) {
+		while (1) {
+			int t = S.top();
+			S.pop();
+			min_cost = min(min_cost, cost[t]);
+			finish[t] = true;
+			sn[t] = SN;
+			if (t == cur) break;
+		}
+		SN++;
+		ans += min_cost;
+	}
+	return res;
+}
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> cost[n];
+	}
+	for (int i = 0; i < N; i++) {
+		string tmp; cin >> tmp;
+		for (int j = 0; j < tmp.size(); j++) {
+			if (tmp[j]-'0') {
+				g[i].push_back(j);
+			}
+		}
+	}
+
+	for (int i = 0; i < N; i++) {
+		if (dfsn[i] == 0) {
+			DFS(i);
+		}
+	}
+	cout << ans;
+}
