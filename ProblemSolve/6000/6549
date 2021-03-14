@@ -1,0 +1,53 @@
+#include<iostream>
+#include<stack>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+ll h[100'005];
+
+int main() {
+	while (1) {
+		ll N; cin >> N;
+		if (N == 0) break;
+		for (int n = 0; n < N; n++) {
+			cin >> h[n];
+		}
+
+		stack<ll> s;
+		ll ans = 0;
+		for (int n = 0; n < N; n++) {
+			if (s.empty()) {
+				s.push(n);
+			}
+			else {
+				while (1) {
+					if (s.empty()) {
+						s.push(n);
+						break;
+					}
+					else if (h[s.top()] > h[n]) {
+						ll H = h[s.top()];
+						ll l = n;
+						s.pop();
+						if (!s.empty()) l = n - s.top() - 1;
+						ans = max(ans, l * H);
+					}
+					else {
+						s.push(n);
+						break;
+					}
+				}
+			}
+		}
+		while (!s.empty()) {
+			ll l = N;
+			ll H = h[s.top()];
+			s.pop();
+			if (!s.empty()) l = N - s.top() - 1;
+
+			ans = max(ans, l * H);
+		}
+		cout << ans<<"\n";
+	}
+}
