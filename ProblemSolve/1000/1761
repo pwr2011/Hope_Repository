@@ -1,0 +1,79 @@
+#include<iostream>
+#include<vector>
+#include<string.h>
+using namespace std;
+typedef pair<int, int> P;
+
+const int MAX = 20;
+vector<P> g[40'005];
+int N,M;
+int parent[40'005][MAX];
+int dist[40'005];
+int height[40'005];
+
+void DFS(int cur) {
+	for (P n : g[cur]) {
+		if (dist[n.first] == -1) {
+			dist[n.first] = dist[cur] + n.second;
+			parent[n.first][0] = cur;
+			height[n.first] = height[cur] + 1;
+			DFS(n.first);
+		}
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	 cin >> N;
+	for (int n = 0; n < N - 1; n++) {
+		int u, v, d; cin >> u >> v >> d;
+		g[u].push_back(P(v,d));
+		g[v].push_back(P(u,d));
+	}
+	cin >> M;
+
+	memset(parent, -1, sizeof(parent));
+	memset(dist, -1, sizeof(dist));
+	memset(height, -1, sizeof(height));
+
+	dist[1] = 0;
+	height[1] = 0;
+	DFS(1);
+
+	for (int i = 0; i < MAX-1; i++) {
+		for (int j = 2; j <= N; j++) {
+			if (parent[j][i] != -1) {
+				parent[j][i + 1] = parent[parent[j][i]][i];
+			}
+		}
+	}
+
+	for (int m = 0; m < M; m++) {
+		int s_u, s_v;
+		int u, v; cin >> u >> v;
+		s_u = u; s_v = v;
+		if (height[u] < height[v]) {
+			swap(u, v);
+		}
+		int dif = height[u] - height[v];
+
+		for (int i = 0; dif; i++) {
+			if (dif % 2) u = parent[u][i];
+			dif /= 2;
+		}
+
+		if (u != v) {
+			for (int j = MAX - 1; j >= 0; j--) {
+				if (parent[u][j] != -1 && parent[u][j] != parent[v][j]) {
+					u = parent[u][j];
+					v = parent[v][j];
+				}
+			}
+			u = parent[u][0];
+		}
+		int ans = dist[s_u] - dist[u] + dist[s_v] - dist[u];
+		cout << ans << "\n";
+	}
+}
