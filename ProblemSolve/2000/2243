@@ -1,0 +1,54 @@
+#include<iostream>
+#include<cmath>
+#define ll long long
+using namespace std;
+
+ll arr[4'000'000];
+int start;
+
+void update(int i, int cnt) { // i : 1~
+	int idx = i + start - 1;
+	arr[idx] += cnt;
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+int find(int idx, int node=1, int nodeL=0, int nodeR=start-1) {
+	if (node >= start) {
+		return node - start + 1;
+	}
+	int left = arr[node * 2];
+	int mid = (nodeL + nodeR) / 2;
+	
+	if (idx > left) {
+		return find(idx - left, node * 2 + 1, mid + 1, nodeR);
+	}
+	else {
+		return find(idx, node * 2, nodeL, mid);
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N;
+	start = pow(2, ceil(log2(1'000'000)));
+	for (int n = 0; n < N; n++) {
+		int A, B, C;
+		cin >> A;
+		if (A == 1) {
+			cin >> B;
+			int idx = find(B);
+			update(idx, -1);
+			cout << idx << "\n";
+		}
+		else {
+			cin >> B >> C;
+			update(B, C);
+		}
+	}
+}
