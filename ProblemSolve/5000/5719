@@ -1,0 +1,116 @@
+#include<iostream>
+#include<queue>
+#include<algorithm>
+#include<string.h>
+#include<vector>
+#define INT_MAX 19'999'999
+using namespace std;
+typedef pair<int, int> P;
+int N, M;
+int S, D;
+bool non_valid[505][505];
+int dist[505];
+vector<P> g[505];
+vector<P> inv[505];
+
+void delete_path(int min_dis) {
+	queue<P> q;
+	q.push(P(D, min_dis));
+	while (!q.empty()) {
+		auto c = q.front();
+		q.pop();
+		for (P n : inv[c.first]) {
+			if (non_valid[n.first][c.first]) continue;
+			if (n.second + dist[n.first] == c.second) {
+				non_valid[n.first][c.first] = 1;
+				q.push(P(n.first, c.second - n.second));
+			}
+		}
+	}
+}
+
+void solve() {
+	cin >> S >> D;
+	for (int m = 0; m < M; m++) {
+		int u, v, p;
+		cin >> u >> v >> p;
+		g[u].push_back(P(v, p));
+		inv[v].push_back(P(u, p));
+	}
+	int min_dis = 19'999'999;
+	priority_queue<P> pq;
+	pq.push(P(0, S));
+	for (int i = 0; i < N; i++) {
+		dist[i] = INT_MAX;
+	}
+	dist[S] = 0;
+	while (!pq.empty()) {
+		int cur = pq.top().second;
+		int dis = -pq.top().first;
+		pq.pop();
+		if (dist[cur] < dis) continue;
+		if (cur == D) {
+			min_dis = dis;
+			break;
+		}
+		for (P n : g[cur]) {
+			int thereDis = dis + n.second;
+			if (dist[n.first] > thereDis) {
+				dist[n.first] = thereDis;
+				pq.push(P(-thereDis, n.first));
+			}
+		}
+	}
+	while (!pq.empty()) pq.pop();
+	delete_path(min_dis);
+
+	for (int i = 0; i < N; i++) {
+		dist[i] = INT_MAX;
+	}
+	dist[S] = 0;
+	int cur_min_dis = INT_MAX;
+	pq.push(P(0, S));
+
+	while (!pq.empty()) {
+		int cur = pq.top().second;
+		int dis = -pq.top().first;
+		pq.pop();
+		if (dist[cur] < dis) continue;
+
+		if (cur == D) {
+			cur_min_dis = dis;
+			break;
+		}
+		for (P n : g[cur]) {
+			if (non_valid[cur][n.first]) continue;
+			int thereDis = dis + n.second;
+			if (dist[n.first] > thereDis) {
+				dist[n.first] = thereDis;
+				pq.push(P(-thereDis, n.first));
+			}
+		}
+	}
+	if (cur_min_dis == INT_MAX) {
+		cout << "-1\n";
+		return;
+	}
+	else {
+		cout << cur_min_dis << "\n";
+		return;
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	while (1) {
+		cin >> N >> M;
+		if (N == 0 && M == 0) break;
+		solve();
+		for (int i = 0; i < N; i++) { g[i].clear(); inv[i].clear(); }
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) non_valid[i][j] = 0;
+		}
+	}
+}
