@@ -1,0 +1,71 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define ll long long
+using namespace std;
+typedef pair<ll, ll> P;
+
+vector<pair<P, ll>> line;
+vector<P> input;
+ll N, M;
+
+bool oper(pair<P, ll> a, pair<P, ll> b) {
+	if (a.first.first != b.first.first)
+		return a.first.first <= b.first.first;
+	else
+		return a.first.second <= b.first.second;
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> M;
+	for (ll m = 1; m <= M; m++) {
+		ll a, b; cin >> a >> b;
+		if (a > b) b += N;
+		line.push_back(make_pair(P(a, b), m));
+		input.push_back(P(a, b));
+	}
+	sort(line.begin(), line.end(), oper);
+
+	vector<ll> ans;
+
+	P pre = line[0].first;
+	ll pre_num = line[0].second;
+	ll prev_max = -1;
+	for (ll i = 1; i < line.size(); i++) {
+		P cur = line[i].first;
+		ll cur_num = line[i].second;
+
+		if (pre.first == cur.first) {
+			pre = cur;
+			pre_num = cur_num;
+			continue;
+		}
+
+		if (prev_max < pre.second) {
+			ans.push_back(pre_num);
+			prev_max = max(pre.second, prev_max);
+		}
+		pre = cur;
+		pre_num = cur_num;
+	}
+	if (prev_max < pre.second) {
+		ans.push_back(pre_num);
+		prev_max = max(pre.second, prev_max);
+	}
+
+	vector<ll> real_ans;
+	prev_max -= N;
+	for (ll i = 0; i < ans.size(); i++) {
+		if (input[ans[i] - 1].second > prev_max) {
+			real_ans.push_back(ans[i]);
+		}
+	}
+
+	sort(real_ans.begin(), real_ans.end());
+	for (ll cur : real_ans) {
+		cout << cur << " ";
+	}
+}
