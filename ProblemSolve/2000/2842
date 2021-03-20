@@ -1,0 +1,96 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<queue>
+using namespace std;
+typedef pair<int, int> P;
+
+char map[55][55];
+int h[55][55]; int N,city_cnt;
+vector<int> tmp_list;
+vector<int> h_list;
+P S;
+int dy[] = { 0,-1,0,1,1,1,-1,-1 };
+int dx[] = { -1,0,1,0,-1,1,-1,1 };
+
+bool bfs(int min_h, int max_h) {
+	bool non_valid[55][55] = { false };
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			if (h[i][j] > max_h) {
+				non_valid[i][j] = true;
+			}
+			else if (h[i][j] < min_h) {
+				non_valid[i][j] = true;
+			}
+		}
+	}
+	bool visit[55][55] = { false };
+	queue<P> q; q.push(S);
+	if (non_valid[S.first][S.second]) return false;
+	visit[S.first][S.second] = true;
+	int cnt = 0;
+	while (!q.empty()) {
+		P c = q.front(); q.pop();
+		for (int i = 0; i < 8; i++) {
+			P n; n.first = c.first + dx[i]; n.second = c.second + dy[i];
+			if (n.first < 0 || n.second < 0 || n.first >= N || n.second >= N) {
+				continue;
+			}
+			if (non_valid[n.first][n.second]) continue;
+			if (visit[n.first][n.second]) continue;
+			if (map[n.first][n.second] == 'K') cnt++;
+			visit[n.first][n.second] = true;
+			q.push(n);
+			if (cnt == city_cnt) return true;
+		}
+	}
+	if (city_cnt == cnt) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+int main() {
+	int max_city_height=0;
+	int min_city_height = 9'999'999;
+	cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> map[n];
+	}
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < N; m++) {
+			cin >> h[n][m];
+			if (map[n][m] == 'K') {
+				max_city_height = max(max_city_height, h[n][m]);
+				min_city_height = min(min_city_height, h[n][m]);
+				city_cnt++;
+			}
+			else if (map[n][m] == 'P') {
+				max_city_height = max(max_city_height, h[n][m]);
+				min_city_height = min(min_city_height, h[n][m]);
+				S.first = n; S.second = m;
+			}
+			tmp_list.push_back(h[n][m]);
+		}
+	}
+
+	sort(tmp_list.begin(), tmp_list.end());
+	tmp_list.erase(unique(tmp_list.begin(), tmp_list.end()), tmp_list.end());
+	
+	int i = 0; int j = 0;
+	int ans = 9'999'999;
+	while (j<tmp_list.size()) {
+		bool res = bfs(tmp_list[i], tmp_list[j]);
+		if (res) {
+			ans = min(ans, tmp_list[j] - tmp_list[i]);
+			i++;
+		}
+		else {
+			j++;
+		}
+	}
+	cout << ans;
+}
