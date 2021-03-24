@@ -1,0 +1,63 @@
+#include<iostream>
+#include<cmath>
+using namespace std;
+
+int input[250'005];
+int start;
+int arr[300'005];
+int N,K;
+
+void inc(int i) {
+	int idx = i + start;
+	arr[idx]++;
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+void dec(int i) {
+	int idx = i + start;
+	arr[idx]--;
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+int find(int idx, int node=1, int nodeL=0, int nodeR=start-1) {
+	if (node >= start) return node - start;
+	int mid = (nodeL + nodeR) / 2;
+	int left = arr[node * 2];
+	if (left < idx) {
+		return find(idx - left, node * 2 + 1, mid + 1, nodeR);
+	}
+	else {
+		return find(idx, node * 2, nodeL, mid);
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> K;
+	start = pow(2, ceil(log2(65537)));
+
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+	}
+
+	for (int n = 0; n < K; n++) {
+		inc(input[n]);
+	}
+	long long ans = 0;
+	int left = 0;
+	for (int right = K; right <= N; right++) {
+		ans += find((K + 1) / 2);
+		inc(input[right]);
+		dec(input[left++]);
+	}
+	cout << ans;
+}
