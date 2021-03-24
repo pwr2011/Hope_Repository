@@ -1,0 +1,36 @@
+#include<iostream>
+#include<map>
+#include<algorithm>
+using namespace std;
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	map<int, int> m;
+	int N; cin >> N;
+
+	long long C = 0;
+	int num;
+
+	for (int n = 0; n < N; n++) {
+		cin >> num;
+		if (n == 0) {
+			m[num] = 0;
+			cout << C << "\n";
+			continue;
+		}
+		int height = 0;
+		auto iter = m.upper_bound(num);
+		if (m.end() != iter) {
+			height = max(height, iter->second);
+		}
+		iter--;
+		if (m.end() != iter) {
+			height = max(height, iter->second);
+		}
+		m[num] = height + 1;
+		C += m[num];
+		cout << C << "\n";
+	}
+}
