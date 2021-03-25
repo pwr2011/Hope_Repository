@@ -1,0 +1,80 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+using namespace std;
+typedef pair<int, int> P;
+
+int dx[] = { -1,1,-1,1 };
+int dy[] = { 1,1 ,-1,-1 };
+string input[760];
+int dp[760][760][4]; //0 : 왼쪽 대각 아래1 : 오른쪽 대각 아래 2 : 왼쪽 대각 위
+int R, C;
+int ans = 0;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> R >> C;
+	for (int r = 0; r < R; r++) {
+		cin >> input[r];
+	}
+	for (int r = R - 1; r >= 0; r--) {
+		for (int c = 0; c < C; c++) {
+			if (input[r][c] == '1') {
+				for (int i = 0; i < 2; i++) {
+					P next;
+					next.first = r + dy[i];
+					next.second = c + dx[i];
+
+					if (next.first < 0 || next.second < 0 || next.first >= R || next.second >= C) {
+						dp[r][c][i] = 1;
+						continue;
+					}
+					if (input[next.first][next.second] == '0') {
+						dp[r][c][i] = 1;
+					}
+					else {
+						dp[r][c][i] = dp[next.first][next.second][i] + 1;
+					}
+				}
+			}
+		}
+	}
+
+	for (int r = 0; r <R; r++) {
+		for (int c = 0; c < C; c++) {
+			if (input[r][c] == '1') {
+				for (int i = 2; i < 4; i++) {
+					P next;
+					next.first = r + dy[i];
+					next.second = c + dx[i];
+
+					if (next.first < 0 || next.second < 0 || next.first >= R || next.second >= C) {
+						dp[r][c][i] = 1;
+						continue;
+					}
+					if (input[next.first][next.second] == '0') {
+						dp[r][c][i] = 1;
+					}
+					else {
+						dp[r][c][i] = dp[next.first][next.second][i] + 1;
+					}
+				}
+			}
+		}
+	}
+
+	for (int r = 0; r < R; r++) {
+		for (int c = 0; c < C; c++) {
+			int max_len = min(dp[r][c][1], dp[r][c][3]);
+			for (int len = 1; len <= max_len; len++) {
+				P oppo;
+				oppo.first = r; oppo.second = c + 2 * (len - 1);
+				if (min(dp[oppo.first][oppo.second][0], dp[oppo.first][oppo.second][2]) >= len) {
+					ans = max(ans, len);
+				}
+			}
+		}
+	}
+	cout << ans;
+}
