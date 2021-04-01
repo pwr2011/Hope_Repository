@@ -1,0 +1,38 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+const ll INF = 1e18;
+ll N;
+ll x[100'005];
+
+inline ll f(int x0) {
+	ll res = 0;
+	for (int i = 1; i < N; i++) {
+		res += abs(1LL * x0 * i - x[i]);
+	}
+	return res;
+}
+
+int main() {
+	cin >> N;
+	for (int i = 0; i < N; i++) {
+		cin >> x[i];
+	}
+
+	ll lo = 0, hi = x[N - 1];
+	while (hi - lo >= 3) {
+		ll p = (lo * 2 + hi) / 3, q = (lo + hi * 2) / 3;
+		if (f(p) <= f(q))hi = q;
+		else lo = p;
+
+	}
+
+	ll res = INF;
+	for (int i = lo; i <= hi; i++) {
+		res = min(f(i), res);
+	}
+	cout << res;
+}
