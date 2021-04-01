@@ -1,0 +1,52 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<algorithm>
+using namespace std;
+
+vector<int>g[55];
+vector<int> list[55];
+int ans[55];
+int cnt[55];
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		int tmp; cin >> tmp;
+		if (n == 0) continue;
+		g[n].push_back(tmp);
+		cnt[tmp]++;
+	}
+
+	queue<int> q;
+
+	for (int n = 0; n < N; n++) {
+		if (cnt[n] == 0) {
+			q.push(n);
+		}
+	}
+
+	while (!q.empty()) {
+		int c = q.front(); q.pop();
+		if (list[c].size() == 0) {
+			ans[c] = 1;
+		}
+		else {
+			int t = 0;
+			sort(list[c].rbegin(), list[c].rend());
+			for (int i = 0; i < list[c].size(); i++) {
+				list[c][i] += (i);
+				t = max(t, list[c][i]);
+			}
+			ans[c] = t;
+		}
+		if (c == 0) break;
+		int p = g[c][0];
+		list[p].push_back(ans[c]+1);
+		cnt[p]--;
+		if (cnt[p] == 0) {
+			q.push(p);
+		}
+	}
+	cout << ans[0]-1;
+}
