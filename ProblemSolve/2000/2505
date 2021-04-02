@@ -1,0 +1,100 @@
+#include<iostream>
+using namespace std;
+
+int i=1, j, min_idx, max_idx;
+int input[10'005];
+int order[10'005]; int N;
+int t_i, t_j;
+
+bool swap(int x,int y) {
+	while (x <= y) {
+		int tmp = order[y];
+		order[y] = order[x];
+		order[x] = tmp;
+		x++; y--;
+	}
+	t_i=0, t_j=N+1;
+	for (int n = 1; n <= N; n++) {
+		if (order[n] != n) {
+			t_i = n;
+			break;
+		}
+	}
+	for (int n = N; n >= 1; n--) {
+		if (order[n] != n) {
+			t_j = n;
+			break;
+		}
+	}
+	if (t_i == 0) {
+		t_i = 1; t_j = 1; return true;
+	}
+	int test_i = t_i;
+	int test_j = t_j;
+	while (test_i <= test_j) {
+		int tmp = order[test_i];
+		order[test_i] = order[test_j];
+		order[test_j] = tmp;
+		test_i++; test_j--;
+	}
+
+	bool ret = true;
+	for (int n = 1; n <= N; n++) {
+		if (order[n] != n) {
+			ret = false;
+			break;
+		}
+	}
+	return ret;
+}
+
+int main() {
+	cin >> N;
+	for (int n = 1; n <= N; n++) {
+		cin >> input[n];
+		order[n] = input[n];
+	}
+	i = 0;
+	j = N + 1;
+	
+	for (int k = 1; k <= N; k++) {
+		if (input[k] != k) {
+			i = k;
+			break;
+		}
+	}
+	for (int k = N; k >= 1; k--) {
+		if (input[k] != k) {
+			j = k; break;
+		}
+	}
+	
+
+	if (i == 0) {
+		cout << "1 1\n1 1";
+		return 0;
+	}
+
+	for (int k = 1; k <= N; k++) {
+		if (input[k] == i) {
+			min_idx = k;
+		}
+		if (input[k] == j) {
+			max_idx = k;
+		}
+	}
+
+	if (swap(i, min_idx)) {
+		cout << i << " " << min_idx << "\n" << t_i << " " << t_j;
+		return 0;
+	}
+
+	for (int n = 1; n <= N; n++) {
+		order[n] = input[n];
+	}
+
+	if (swap(max_idx, j)) {
+		cout << max_idx << " " << j << "\n" << t_i << " " << t_j;
+	}
+
+}
