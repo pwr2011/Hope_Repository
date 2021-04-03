@@ -1,0 +1,93 @@
+#include<iostream>
+#include<vector>
+#define INF 99'999'999
+using namespace std;
+typedef pair<int, int> P;
+
+vector<P> g[905];
+int W, H, G, E;
+bool rip[905];
+bool ent[905];
+int dy[] = { 0,-1,0,1 };
+int dx[] = { -1,0,1,0 };
+int dist[905];
+
+int to_num(int x, int y) {
+	return y * (W+1) + x;
+}
+
+void solve() {
+	cin >> W >> H;
+	if (W == 0 && H == 0) exit(0);
+	W--; H--;
+	cin >> G;
+	for (int g = 0; g < G; g++) {
+		int x, y;
+		cin >> x >> y;
+
+		rip[to_num(x, y)] = 1;
+	}
+	cin >> E;
+	for (int e = 0; e < E; e++) {
+		int x1, y1, x2, y2, t;
+		cin >> x1 >> y1 >> x2 >> y2 >> t;
+
+		ent[to_num(x1, y1)] = 1;
+		g[to_num(x1, y1)].push_back(P(to_num(x2, y2), t));
+	}
+
+	for (int i = 0; i < to_num(W, H); i++) {
+		int x = i % (W+1);
+		int y = i / (W+1);
+		if (ent[i] || rip[i]) continue;
+
+		for (int t = 0; t < 4; t++) {
+			int nx = x + dx[t]; int ny = y + dy[t];
+			if (nx<0 || ny<0 || nx>W || ny>H)continue;
+			if (rip[to_num(nx, ny)]) continue;
+			g[i].push_back(P(to_num(nx, ny), 1));
+		}
+	}
+	for (int i = 0; i < 905; i++) {
+		dist[i] = INF;
+	}
+	dist[0] = 0;
+	bool cycle = false;
+	for (int i = 0; i <= to_num(W, H) ; i++) {
+		for (int j = 0; j < to_num(W, H); j++) {
+			if (dist[j] == INF)continue;
+			for (P n : g[j]) {
+				if (dist[n.first] > dist[j] + n.second) {
+					dist[n.first] = dist[j] + n.second;
+
+					if (i == to_num(W, H))
+						cycle = true;
+				}
+			}
+		}
+	}
+	if (cycle) {
+		cout << "Never\n";
+	}
+	else if (dist[to_num(W, H)] == INF) {
+		cout << "Impossible\n";
+	}
+	else {
+		cout << dist[to_num(W, H)] << "\n";
+	}
+}
+
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	while (1) {
+		solve();
+		for (int i = 0; i < 905; i++) {
+			g[i].clear();
+			rip[i] = 0;
+			ent[i] = 0;
+		}
+	}
+}
