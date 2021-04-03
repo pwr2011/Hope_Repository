@@ -1,0 +1,58 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+using namespace std;
+
+int fail[200'005];
+vector<int> in1, in2;
+vector<int> text;
+vector<int> p;
+int ans_size;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N; int tmp;
+	for (int n = 0; n < N; n++) {
+		cin >> tmp; in1.push_back(tmp);
+	}
+	for (int n = 0; n < N; n++) {
+		cin >> tmp; in2.push_back(tmp);
+	}
+	ans_size = in2.size() - 1;
+
+	sort(in1.begin(), in1.end());
+	sort(in2.begin(), in2.end());
+
+	int size = in1.size();
+	for (int i = 0; i < size; i++) {
+		in1.push_back(in1[i]+360'000);
+	}
+
+	for (int i = 1; i < in1.size(); i++) {
+		text.push_back(in1[i] - in1[i - 1]);
+	}
+	for (int i = 1; i < in2.size(); i++) {
+		p.push_back(in2[i] - in2[i - 1]);
+	}
+
+	int j;
+	for (int i = 1, j = 0; i < p.size(); i++) {
+		while (j > 0 && p[j] != p[i]) j = fail[j - 1];
+		if (p[i] == p[j]) fail[i] = ++j;
+	}
+
+	for (int i = 0, j = 0; i < text.size(); i++) {
+		while (j > 0 && text[i] != p[j]) j = fail[j - 1];
+		if (text[i] == p[j]) {
+			if (j == ans_size-1) {
+				cout << "possible";
+				return 0;
+			}
+			else {
+				j++;
+			}
+		}
+	}
+	cout << "impossible";
+}
