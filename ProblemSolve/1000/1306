@@ -1,0 +1,37 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+
+int N, M;
+int lux[1'000'005];
+int arr[4'000'000];
+int start;
+
+int see_lux(int L, int R, int node=1, int nodeL=0, int nodeR = start-1) {
+	if (nodeL > R || nodeR < L) return 0;
+	if (L <= nodeL && nodeR <= R) return arr[node];
+	int mid = (nodeL + nodeR) / 2;
+
+	return max(see_lux(L, R, node * 2, nodeL, mid), see_lux(L, R, node * 2 + 1, mid + 1, nodeR));
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> M;
+	start = pow(2, ceil(log2(N)));
+	for (int n = 0; n < N; n++) {
+		cin >> lux[n];
+		arr[start + n] = lux[n];
+	}
+
+	for (int i = start - 1; i > 0; i--) {
+		arr[i] = max(arr[i * 2], arr[i * 2 + 1]);
+	}
+
+	for (int i = M-1; i <= N - M; i++) {
+		cout<<see_lux(i - (M - 1), i + (M - 1))<<" ";
+	}
+}
