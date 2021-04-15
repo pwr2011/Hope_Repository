@@ -1,0 +1,76 @@
+#include<iostream>
+using namespace std;
+
+int N, K;
+int code[105][1'005];
+int inv_code[105][1'005];
+int len[105];
+int fail[1'005];
+int pat[1'005];
+
+void cal_fail(int idx, int s, int e) {
+	int len = e - s + 1;
+	int j = 0;
+	for (int i = 1; i < len; i++) {
+		while (j > 0 && code[idx][j] != code[idx][i]) j = fail[j - 1];
+		if (code[idx][i] == code[idx][j]) fail[i] = ++j;
+	}
+	for (int i = 0; i < len; i++) {
+		pat[i] = code[idx][s + i];
+	}
+}
+
+bool kmp(int idx, int l) {
+	int j = 0;
+	for (int i = 0; i < len[idx]; i++) {
+		while (j > 0 && code[idx][i] != pat[j]) j = fail[j - 1];
+		if (code[idx][i] == pat[j]) {
+			if (j == l - 1) {
+				return true;
+			}
+			else
+				j++;
+		}
+	}
+
+	j = 0;
+	for (int i = 0; i < len[idx]; i++) {
+		while (j > 0 && inv_code[idx][i] != pat[j]) j = fail[j - 1];
+		if (inv_code[idx][i] == pat[j]) {
+			if (j == l - 1) {
+				return true;
+			}
+			else
+				j++;
+		}
+	}
+	return false;
+}
+
+int main() {
+	cin >> N >> K;
+	for (int n = 0; n < N; n++) {
+		cin >> len[n];
+		for (int m = 0; m < len[n]; m++) {
+			cin >> code[n][m];
+			inv_code[n][len[n] - 1 - m] = code[n][m];
+		}
+	}
+
+	bool flag = false;
+
+	for (int s = 0; s < len[0] - K + 1; s++) {
+		int e = s + K - 1;
+		cal_fail(0, s, e);
+		int cnt = 0;
+		for (int j = 1; j < N; j++) {
+			if (kmp(j, K)) cnt++;
+		}
+		if (cnt == N - 1) {
+			cout << "YES";
+			return 0;
+		}
+	}
+
+	cout << "NO";
+}
