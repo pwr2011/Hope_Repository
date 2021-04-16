@@ -1,0 +1,63 @@
+#include<iostream>
+#include<vector>
+#define ll long long
+#define MAX_D 18
+using namespace std;
+typedef pair<ll, ll> P;
+
+vector<P> t[100'005];
+vector<P> g[100'005];
+ll energy[100'005];
+ll sparse[100'005][MAX_D];
+ll dist[100'005][MAX_D];
+
+void dfs(ll c, ll p) {
+	for (P n : t[c]) {
+		if (n.first == p) continue;
+		g[n.first].push_back({ c,n.second });
+		sparse[n.first][0] = c;
+		dist[n.first][0] = n.second;
+		dfs(n.first, c);
+	}
+	return;
+}
+
+int main() {
+	ll N; cin >> N;
+	for (ll n = 0; n < N; n++) {
+		cin >> energy[n];
+	}
+
+	for (ll n = 0; n < N - 1; n++) {
+		ll a, b, c; cin >> a >> b >> c;
+		t[a].push_back({ b,c });
+		t[b].push_back({ a,c });
+	}
+	dfs(1, 0);
+
+	for (ll j = 1; j < MAX_D; j++) {
+		for (ll n = 1; n <= N; n++) {
+			if (sparse[n][j - 1] > 0) {
+				sparse[n][j] = sparse[sparse[n][j - 1]][j - 1];
+				dist[n][j] = dist[sparse[n][j - 1]][j - 1] + dist[n][j - 1];
+			}
+		}
+	}
+	for (ll n = 1; n <= N; n++) {
+		ll cur_energy = energy[n - 1];
+		ll cur_pos = n;
+		for (ll j = MAX_D - 1; j >= 0 && cur_pos != 0; j--) {
+			if (sparse[cur_pos][j] > 0) {
+				if (dist[cur_pos][j] <= cur_energy) {
+					cur_energy -= dist[cur_pos][j];
+					cur_pos = sparse[cur_pos][j];
+				}
+			}
+		}
+		if (cur_pos == 0) {
+			cout << 1 << "\n";
+		}
+		else
+			cout << cur_pos << "\n";
+	}
+}
