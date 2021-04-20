@@ -1,0 +1,34 @@
+#include<iostream>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+ll dp[2'005][2'005];
+ll pitch[2'005];
+ll N;
+
+ll solve(int a, int b) {
+	if (dp[a][b] != -1) return dp[a][b];
+	int idx = max(a, b) + 1;
+
+	if (idx > N) return 0;
+	ll ret = solve(a, idx) + (b == 0 ? 0 : abs(pitch[idx] - pitch[b]));
+	ret = min(ret, solve(idx, b) + (a == 0 ? 0 : abs(pitch[idx] - pitch[a])));
+
+	return dp[a][b] = ret;
+}
+
+int main() {
+	 cin >> N;
+	for (ll n = 1; n <= N; n++) {
+		cin >> pitch[n];
+	}
+
+	for (ll i = 0; i < 2'005; i++) {
+		for (ll j = 0; j < 2'005; j++) {
+			dp[i][j] = -1;
+		}
+	}
+
+	cout<<solve(0, 0);
+}
