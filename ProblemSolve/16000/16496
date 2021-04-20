@@ -1,0 +1,35 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<string>
+using namespace std;
+
+vector<int> arr;
+
+bool ord(int a, int b) {
+	string s_a, s_b;
+	s_a = to_string(a);
+	s_b = to_string(b);
+	return s_a + s_b > s_b + s_a;
+}
+
+int main() {
+	int N; cin >> N;
+
+	int z_cnt = 0;
+	for (int n = 0; n < N; n++) {
+		int tmp; cin >> tmp;
+		if (tmp == 0) z_cnt++;
+		arr.push_back(tmp);
+	}
+
+	if (z_cnt == arr.size()) {
+		cout << 0;
+		return 0;
+	}
+
+	sort(arr.begin(), arr.end(), ord);
+	for (int i = 0; i < N; i++) {
+		cout << arr[i];
+	}
+}
