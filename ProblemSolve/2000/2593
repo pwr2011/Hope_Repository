@@ -1,0 +1,84 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<string.h>
+#include<queue>
+using namespace std;
+
+int N, M, A, B;
+vector<int> arr[100'005];
+vector<int> g[105];
+bool visit[105];
+bool e[105];
+int rec[105];
+bool check[105][105];
+
+int main() {
+	cout.tie(NULL);
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+
+	cin >> N >> M;
+	for (int m = 0; m < M; m++) {
+		int x, y; cin >> x >> y;
+		for (int n = x; n <= N; n += y) {
+			arr[n].push_back(m);
+		}
+	}
+	cin >> A >> B;
+	for (int n = 1; n <= N; n++) {
+		for (int i = 0; i < arr[n].size(); i++) {
+			for (int j = i + 1; j < arr[n].size(); j++) {
+				if (check[arr[n][i]][arr[n][j]]) continue;
+				g[arr[n][i]].push_back(arr[n][j]);
+				g[arr[n][j]].push_back(arr[n][i]);
+				check[arr[n][j]][arr[n][i]] = true;
+				check[arr[n][i]][arr[n][j]] = true;
+			}
+		}
+	}
+	memset(rec, -1, sizeof(rec));
+
+	queue<int> q;
+	for (int i = 0; i < arr[A].size(); i++) {
+		q.push(arr[A][i]);
+		visit[arr[A][i]] = true;
+	}
+	
+	for (int i = 0; i < arr[B].size(); i++) {
+		e[arr[B][i]] = true;
+		if (visit[arr[B][i]]) {
+			cout << "1\n" << arr[B][i]+1;
+			return 0;
+		}
+	}
+
+	int dist = 2;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int i = 0; i < qsize; i++) {
+			int cur = q.front(); q.pop();
+			for (int next : g[cur]) {
+				if (visit[next]) continue;
+				visit[next] = true;
+				rec[next] = cur;
+				if (e[next]) {
+					cout << dist<<"\n";
+					int idx = next;
+					vector<int> tmp;
+					while (idx != -1) {
+						tmp.push_back(idx + 1);
+						idx = rec[idx];
+					}
+					for (int i = tmp.size() - 1; i >= 0; i--) {
+						cout << tmp[i] << "\n";
+					}
+					return 0;
+				}
+				q.push(next);
+			}
+		}
+		dist++;
+	}
+	cout << -1;
+}
