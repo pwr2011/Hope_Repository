@@ -1,0 +1,43 @@
+#include<iostream>
+#define MOD 31'991
+#define ll long long
+using namespace std;
+
+ll D, T;
+
+struct mat {
+	ll m[55][55] = {};
+	mat operator*(mat a) const {
+		mat ret;
+		for (int i = 0; i < D; i++) {
+			for (int j = 0; j < D; j++) {
+				for (int k = 0; k < D; k++) {
+					ret.m[i][j] = (ret.m[i][j] + m[i][k] * a.m[k][j])%MOD;
+				}
+			}
+		}
+		return ret;
+	}
+};
+
+mat ans,ori;
+
+int main() {
+	cin >> D >> T;
+	for (int i = 0; i < D; i++) {
+		ori.m[0][i] = ans.m[i][i]= 1;
+	}
+	for (int i = 1; i < D; i++) {
+		ori.m[i][i-1] = 1;
+	}
+
+
+	while (T > 0) {
+		if (T % 2 == 1) {
+			ans = ans * ori;
+		}
+		ori = ori * ori;
+		T /= 2;
+	}
+	cout << ans.m[0][0];
+}
