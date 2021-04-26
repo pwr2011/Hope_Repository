@@ -1,0 +1,66 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<stack>
+using namespace std;
+
+vector<int> g[100'005];
+stack<int> s;
+bool finish[100'005];
+int dfsn[100'005];
+int sn[100'005];
+int cnt = 0;
+int N, M;
+int s_cnt = 0;
+int outdegree[100'005];
+
+int dfs(int c) {
+	dfsn[c] = ++cnt;
+	s.push(c);
+
+	int result = dfsn[c];
+	for (int n : g[c]) {
+		if (dfsn[n] == 0) result = min(result, dfs(n));
+		else if (!finish[n]) result = min(result, dfsn[n]);
+	}
+
+	if (result == dfsn[c]) {
+		while (1) {
+			int t = s.top();
+			s.pop();
+			finish[t] = true;
+			sn[t] = s_cnt;
+			if (t == c) break;
+		}
+		s_cnt++;
+	}
+	return result;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	 cin >> N >> M;
+	 for (int m = 0; m < M; m++) {
+		 int A, B; cin >> A >> B;
+		 g[A].push_back(B);
+	 }
+
+	 for (int n = 0; n < N; n++) {
+		 if (dfsn[n] == 0) dfs(n);
+	 }
+
+	 for (int i = 0; i < N; i++) {
+		 for (int j : g[i]) {
+			 if (sn[i] != sn[j]) {
+				 outdegree[sn[j]]++;
+			 }
+		 }
+	 }
+
+	 int ans = 0;
+	 for (int i = 0; i < s_cnt; i++) {
+		 if (outdegree[i] == 0)ans++;
+	 }
+	 cout << ans;
+}
