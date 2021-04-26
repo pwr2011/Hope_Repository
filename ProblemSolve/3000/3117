@@ -1,0 +1,42 @@
+#include<iostream>
+#define ll long long
+#define MAX_D 31
+using namespace std;
+
+ll N, K, M;
+int init[100'005];
+int sparse[MAX_D][100'005];
+
+int main() {
+	cin.tie(NULL); cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> K >> M;
+	for (int n = 0; n < N; n++) {
+		cin >> init[n];
+		init[n]--;
+	}
+	for (int k = 0; k < K; k++) {
+		cin >> sparse[0][k];
+		sparse[0][k]--;
+	}
+
+	for (int i = 1; i < MAX_D; i++) {
+		for (int n = 0; n < K; n++) {
+			sparse[i][n] = sparse[i-1][sparse[i-1][n]];
+		}
+	}
+
+	int base = 0; M-- ;
+	while(M>0){
+		if (M % 2 == 1) {
+			for (int n = 0; n < N; n++) {
+				init[n] = sparse[base][init[n]];
+			}
+		}
+		M /= 2;
+		base++;
+	}
+	for (int n = 0; n < N; n++) {
+		cout << init[n]+1<<" ";
+	}
+}
