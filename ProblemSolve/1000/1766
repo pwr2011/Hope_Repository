@@ -1,0 +1,47 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+using namespace std;
+
+vector<int> g[32'005];
+int cnt[32'005];
+bool visit[32'005];
+
+int main() {
+	int N, M;
+	cin >> N >> M;
+	for (int m = 0; m < M; m++) {
+		int a, b;
+		cin >> a >> b;
+		g[a].push_back(b); cnt[b]++;
+	}
+
+	priority_queue<int> pq;
+	for (int m = 1; m <= N; m++) {
+		if (cnt[m] == 0) {
+			pq.push(-m);
+		}
+	}
+	int i;
+	for (i = 0; i < N; i++) {
+		if (pq.size() == 0) {
+			break;
+		}
+		else {
+			int num = -pq.top(); pq.pop();
+			visit[num] = true;
+			cout << num << " ";
+			for (int n : g[num]) {
+				cnt[n]--;
+				if (cnt[n] == 0) {
+					pq.push(-n);
+				}
+			}
+		}
+	}
+	for (int i=1; i < N; i++) {
+		if (visit[i] == false) {
+			cout << i << " ";
+		}
+	}
+}
