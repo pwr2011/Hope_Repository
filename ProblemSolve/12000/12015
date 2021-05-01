@@ -1,0 +1,29 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int N;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	vector<int> input;
+	cin >> N;
+	for (int n = 0; n < N; n++) {
+		int tmp; cin >> tmp;
+		input.push_back(tmp);
+	}
+	
+	vector<int> arr;
+	for (int n = 0; n < N; n++) {
+		int idx = lower_bound(arr.begin(), arr.end(),input[n])-arr.begin();
+		if (idx == arr.size()) {
+			arr.push_back(input[n]);
+		}
+		else {
+			arr[idx] = input[n];
+		}
+	}
+	cout << arr.size();
+}
