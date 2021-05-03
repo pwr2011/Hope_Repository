@@ -1,0 +1,58 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+typedef pair<ll, ll> P;
+ll min_res = 1e18;
+ll N;
+vector<P> g[10'005];
+ll cnt[10'005], sum[10'005];
+
+ll dfs(ll c,ll p) {
+	ll total_cnt = 0;
+	
+	ll child_cnt = 0;
+
+	for (P n : g[c]) {
+		if (n.first == p) continue;
+		child_cnt++;
+		total_cnt += dfs(n.first, c);
+		sum[c] += sum[n.first]+n.second*cnt[n.first];
+	}
+	cnt[c] = total_cnt + 1;
+	return cnt[c];
+}
+
+void get_sum(ll c, ll p,ll total) {
+	min_res = min(min_res, total);
+	for (P n : g[c]) {
+		if (n.first == p) continue;
+		get_sum(n.first, c, total - n.second * cnt[n.first] + n.second * (cnt[0] - cnt[n.first]));
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	while (1) {
+		cin >> N;
+		if (N == 0)break;
+		for (ll n = 0; n < N-1; n++) {
+			ll a, b, w; cin >> a >> b >> w;
+			g[a].push_back(P(b, w));
+			g[b].push_back(P(a, w));
+		}
+		dfs(0,-1);
+		get_sum(0, -1,sum[0]);
+		cout << min_res << "\n";
+		for (ll n = 0; n < N; n++) {
+			cnt[n] = 0;
+			sum[n] = 0;
+			g[n].clear();
+		}
+		min_res = 1e18;
+	}
+}
