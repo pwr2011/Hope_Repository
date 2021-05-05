@@ -1,0 +1,60 @@
+#include<iostream>
+#include<algorithm>
+#include<string.h>
+using namespace std;
+
+int time[2][1'005];
+int dp1[100'002];
+int dp2[100'002];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+	while (T--) {
+		int N; cin >> N;
+		int t = 0;
+		for (int n = 0; n < N; n++) {
+			cin >> time[0][n] >> time[1][n];
+			t += time[1][n];
+		}
+		memset(dp1, -1, sizeof(dp1));
+		memset(dp2, -1, sizeof(dp2));
+
+		dp1[t] = 0;
+		for (int i = 1; i <= N; i++) {
+			for (int j = 0; j <= N * 100; j++) {
+				if (dp1[j]!= -1) {
+					if (dp2[j - time[1][i - 1]] != -1) {
+						dp2[j - time[1][i - 1]] = min(dp1[j] + time[0][i - 1], dp2[j - time[1][i - 1]]);
+					}
+					else {
+						dp2[j - time[1][i - 1]] = dp1[j] + time[0][i - 1];
+					}
+					if (dp2[j] != -1) {
+						dp2[j] = min(dp1[j], dp2[j]);
+					}
+					else {
+						dp2[j] = dp1[j];
+					}
+				}
+			}
+			memset(dp1, -1, sizeof(dp1));
+
+			for (int j = 0; j <= N * 100; j++) {
+				if (dp2[j] != -1) {
+					dp1[j] = dp2[j];
+				}
+			}
+			memset(dp2, -1, sizeof(dp2));
+		}
+
+		int ans = 19'999'999;
+		for (int j = 0; j <= N * 100; j++) {
+			if (dp1[j]!= -1) {
+				ans = min(ans, max(dp1[j], j));
+			}
+		}
+		cout << ans << "\n";
+	}
+}
