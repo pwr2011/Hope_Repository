@@ -1,0 +1,69 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+int p[1'005];
+vector<int> g[1'005];
+
+int parent(int a) {
+	if (p[a] <0) return a;
+	else return p[a] = parent(p[a]);
+}
+
+void merge(int a, int b) {
+	int p_a = parent(a);
+	int p_b = parent(b);
+	if (p_a != p_b) {
+		if (p_a > p_b) {
+			p[p_b] += p[p_a];
+			p[p_a] = p_b;
+		}
+		else{
+			p[p_a] += p[p_b];
+			p[p_b] = p_a;
+		}
+	}
+	return;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N, M; cin >> N >> M;
+
+	for (int n = 1; n <= N; n++) {
+		p[n] = -1;
+	}
+
+	for (int m = 0; m < M; m++) {
+		char c;
+		int a, b; cin >> c >> a >> b;
+		if (c == 'F') {
+			merge(a, b);
+		}
+		else {
+			g[a].push_back(b);
+			g[b].push_back(a);
+		}
+	}
+
+	for (int c = 1; c <= N; c++) {
+		vector<int> tmp;
+		for (int n : g[c]) {
+			tmp.push_back(n);
+		}
+		for (int i = 0; i < tmp.size(); i++) {
+			for (int j = i + 1; j < tmp.size(); j++) {
+				merge(tmp[i], tmp[j]);
+			}
+		}
+	}
+
+	int ans = 0;
+	for (int n = 1; n <= N; n++) {
+		if (p[n] < 0) {
+			ans++;
+		}
+	}
+	cout << ans;
+}
