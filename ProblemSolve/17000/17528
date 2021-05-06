@@ -1,0 +1,44 @@
+#include<iostream>
+#include<string.h>
+using namespace std;
+
+int time[2][252];
+int dp[252 * 252][252];
+
+int main() {
+	int N; cin >> N;
+	int sum = 0;
+	for (int n = 0; n < N; n++) {
+		cin >> time[0][n] >> time[1][n];
+		sum += time[1][n];
+	}
+
+	memset(dp, -1, sizeof(dp));
+	dp[sum][0] = 0;
+
+	for (int n = 1; n <= N; n++) {
+		for (int k = 0; k <= N * 250; k++) {
+			if (dp[k][n - 1] != -1) {
+				if (dp[k - time[1][n - 1]][n] != -1) {
+					dp[k - time[1][n - 1]][n] = min(dp[k][n - 1] + time[0][n - 1], dp[k - time[1][n - 1]][n]);
+				}
+				else {
+					dp[k - time[1][n - 1]][n] = dp[k][n - 1] + time[0][n - 1];
+				}
+				if (dp[k][n] != -1) {
+					dp[k][n] = min(dp[k][n - 1],dp[k][n]);
+				}
+				else {
+					dp[k][n] = dp[k][n - 1];
+				}
+			}
+		}
+	}
+	int ans = 19'999'999;
+	for (int k = 0; k <= N * 250; k++) {
+		if (dp[k][N] != -1) {
+			ans = min(max(dp[k][N], k), ans);
+		}
+	}
+	cout << ans;
+}
