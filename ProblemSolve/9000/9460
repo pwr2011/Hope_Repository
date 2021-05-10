@@ -1,0 +1,45 @@
+#include<iostream>
+#include<algorithm>
+#define ll long long
+using namespace std;
+typedef pair<ll, ll> P;
+
+P poll[10'005];
+
+int main() {
+	ll T; cin >> T;
+	while (T--) {
+		ll N, K;
+		cin >> N >> K;
+		for (ll n = 0; n < N; n++) {
+			cin >> poll[n].first >> poll[n].second;
+		}
+		sort(poll, poll + N);
+
+		ll l = 0;
+		ll r = 200'000'000;
+		while (l <= r) {
+			ll k = 1;
+			ll diff = (l + r) / 2;
+			ll min_val = poll[0].second; ll max_val = poll[0].second;
+			for (ll n = 1; n < N; n++) {
+				min_val = min(min_val, poll[n].second);
+				max_val = max(max_val, poll[n].second);
+				if (max_val - min_val > diff) {
+					min_val = poll[n].second;
+					max_val = poll[n].second;
+					k++;
+				}
+			}
+			if (k <= K) {
+				r = diff - 1;
+			}
+			else {
+				l = diff + 1;
+			}
+		}
+		cout << fixed;
+		cout.precision(1);
+		cout << 1.0 * l / 2 << "\n";
+	}
+}
