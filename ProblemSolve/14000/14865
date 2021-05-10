@@ -1,0 +1,98 @@
+#include<iostream>
+#include<set>
+#include<cmath>
+#include <algorithm>
+using namespace std;
+typedef pair<int, int> P;
+
+int N;
+int rec= 1e9 + 1;
+bool flag = false;
+P arr[1'000'004];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int i_x, i_y;
+	cin >> N;
+	int prev;
+	int cnt = 0;
+	for (int n = 0; n <= N; n++) {
+		int x, y;
+		if (n == N) {
+			x = i_x; y = i_y;
+		}
+		else cin >> x >> y;
+		if (n == 0) {
+			i_x = x; i_y = y;
+			prev = y;
+			prev /= abs(prev);
+			if (prev > 0) flag = true;
+			continue;
+		}
+		//직선이 x축 교차
+		if (prev * y < 0) {
+			if (flag) {
+				rec = x;
+				flag = false;
+			}
+			else {
+				if (prev < 0) { //위 방향
+					arr[cnt].first = x;
+				}
+				else {
+					arr[cnt++].second = x;
+				}
+			}
+			prev *= -1;
+		}
+		if (n == N) {
+			if (rec != 1e9 + 1) {
+				arr[cnt++].second = rec;
+			}
+		}
+	}
+
+	for (int i = 0; i < cnt; i++) {
+		if (arr[i].first > arr[i].second) {
+			swap(arr[i].first, arr[i].second);
+		}
+	}
+
+
+	set<int> big_set;
+	set<int> empty_set;
+	for (int i = 0; i < cnt; i++) {
+		big_set.insert(arr[i].first);
+		empty_set.insert(arr[i].first);
+	}
+
+	for (int i = 0; i < cnt; i++) {
+		int s = arr[i].first; int e = arr[i].second;
+		auto iter1 = empty_set.lower_bound(s);
+		auto iter2 = empty_set.lower_bound(e);
+		auto tmp = iter1;
+
+		iter1++;
+		if (iter1 != iter2 && iter1!=empty_set.end())empty_set.erase(tmp);
+
+	}
+
+	for (int i = 0; i < cnt; i++) {
+		int s = arr[i].first; int e = arr[i].second;
+		auto iter1 = big_set.lower_bound(s);
+		auto iter2 = big_set.lower_bound(e);
+		if (iter1 == big_set.end()) continue;
+		if (*iter1 != s) continue;
+		iter1++;
+		if (iter1 == big_set.end()) continue;
+		for (; iter1 != iter2;) {
+			auto next_iter = iter1;
+			next_iter++;
+			big_set.erase(iter1);
+			iter1 = next_iter;
+			if (iter1 == big_set.end()) break;
+		}
+	}
+	cout << big_set.size() << " " << empty_set.size();
+}
