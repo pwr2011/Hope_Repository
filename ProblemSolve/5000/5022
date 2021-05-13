@@ -1,0 +1,109 @@
+#include<iostream>
+#include<algorithm>
+#include<queue>
+#include<cmath>
+using namespace std;
+typedef pair<int, int> P;
+
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+bool visit[105][105];
+P back_track[105][105];
+int min_dist = 9'999'999;
+
+int main() {
+	int N, M; cin >> N >> M;
+	P point[4];
+	for (int i = 0; i < 4; i++) {
+		cin >> point[i].first >> point[i].second;
+	}
+
+	for (int i = 0; i < 4; i++) {
+		//init
+		for (int c = 0; c <= N; c++) {
+			for (int r = 0; r <= M; r++)
+				visit[r][c] = 0;
+		}
+		for (int c = 0; c <= N; c++) {
+			for (int r = 0; r <= M; r++){
+				back_track[r][c].first = -1;
+				back_track[r][c].second = -1;
+			}
+		}
+
+		P conn1 = point[(i/2) * 2]; P conn2 = point[(i/2) * 2 + 1];
+
+		P end = i <= 1 ? point[3] : point[1];
+		P start = i <= 1 ? point[2] : point[0];
+
+		bool end_flag = false;
+		queue<P>tq;
+		tq.push(conn1);
+		while (!tq.empty()) {
+			P cur = tq.front(); tq.pop();
+			for (int t = 0; t < 4; t++) {
+				P next; 
+				next.first = cur.first + dx[t]; next.second = cur.second + dy[t];
+				if (next.first<0 || next.second<0 || next.first>N || next.second>M) continue;
+				if (back_track[next.second][next.first].first != -1) continue;
+				if (next == end || next == start) continue;
+				back_track[next.second][next.first] = cur;
+				tq.push(next);
+				if (next == conn2) {
+					end_flag = true;
+					break;
+				}
+			}
+			if (end_flag) break;
+		}
+
+		int add_dist = 0;
+		P cur_pos = conn2;
+		while (cur_pos != conn1) {
+			add_dist++;
+			visit[cur_pos.second][cur_pos.first] = 1;
+			cur_pos = back_track[cur_pos.second][cur_pos.first];
+		}
+		visit[conn1.second][conn1.first] = 1;
+		queue<P> q;
+
+		if (visit[start.second][start.first] || visit[end.second][end.first]) continue;
+		visit[start.second][start.first] = 1;
+		bool flag = false;
+		q.push(start);
+		int dist = 1;
+		while (!q.empty()) {
+			int qsize = q.size();
+			for (int t = 0; t < qsize; t++) {
+				P cur = q.front(); q.pop();
+ 				for (int n = 0; n < 4; n++) {
+					P next;
+					next.first = cur.first + dx[n]; next.second = cur.second + dy[n];
+					if (next.first<0 || next.second<0 || next.first>N || next.second>M) continue;
+					if (visit[next.second][next.first]) continue;
+					if (end == next) {
+						flag = true;
+						break;
+					}
+					visit[next.second][next.first] = 1;
+					q.push(next);
+				}
+				if (flag) break;
+			}
+			if (flag) break;
+			dist++;
+		}
+
+		if (flag) {
+			dist += add_dist;
+			min_dist = min(min_dist, dist);
+		}
+	}
+
+	if (min_dist != 9'999'999) {
+		cout << min_dist;
+	}
+	else {
+		cout << "IMPOSSIBLE";
+	}
+}
