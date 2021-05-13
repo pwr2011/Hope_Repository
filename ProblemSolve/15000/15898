@@ -1,0 +1,140 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int num[10][4][4];
+char color[10][4][4];
+
+char r_c[10][4][4];
+int r_n[10][4][4];
+
+int pot_num[5][5];
+char pot_color[5][5];
+
+int ans = 0;
+
+void init_pot() {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			pot_color[i][j] = 'W';
+			pot_num[i][j] = 0;
+		}
+	}
+}
+
+int cal_ans() {
+	int R = 0, B = 0, G = 0, Y = 0;
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			if (pot_color[i][j] == 'R') {
+				R += pot_num[i][j];
+			}
+			else if (pot_color[i][j] == 'B') {
+				B += pot_num[i][j];
+			}
+			else if (pot_color[i][j] == 'G') {
+				G += pot_num[i][j];
+			}
+			else if (pot_color[i][j] == 'Y') {
+				Y += pot_num[i][j];
+			}
+		}
+	}
+	return 7 * R + 5 * B + 3 * G + 2 * Y;
+}
+
+void add(int item, int left, int up) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			pot_num[i + up][j + left] += r_n[item][i][j];
+			if (pot_num[i + up][j + left] >= 10) pot_num[i + up][j + left] = 9;
+			if (pot_num[i + up][j + left] < 0) pot_num[i + up][j + left] = 0;
+			if (r_c[item][i][j] != 'W') {
+				pot_color[i+up][j+left] = r_c[item][i][j];
+			}
+		}
+	}
+}
+
+void rotate(int item, int cnt) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			r_n[item][i][j] = num[item][i][j];
+			r_c[item][i][j] = color[item][i][j];
+		}
+	}
+
+	char t_c[4][4];
+	int t_n[4][4];
+	for (int c = 0; c < cnt; c++) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				t_c[j][3 - i] = r_c[item][i][j];
+				t_n[j][3 - i] = r_n[item][i][j];
+			}
+		}
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				r_c[item][i][j] = t_c[i][j];
+				r_n[item][i][j] = t_n[i][j];
+			}
+		}
+	}
+}
+
+int main() {
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				cin >> num[n][i][j];
+			}
+		}
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				cin >> color[n][i][j];
+			}
+		}
+	}
+
+	for (int i1 = 0; i1 < N; i1++) {
+		for (int i2 = 0; i2 < N; i2++) {
+			if (i1 == i2) continue;
+			for (int i3 = 0; i3 < N; i3++) {
+				if (i1 == i3) continue;
+				if (i2 == i3) continue;
+
+				for (int r1 = 0; r1 < 4; r1++) {
+					for (int r2 = 0; r2 < 4; r2++) {
+						for (int r3 = 0; r3 < 4; r3++) {
+							rotate(i1, r1);
+							rotate(i2, r2);
+							rotate(i3, r3);
+							for (int l_x1 = 0; l_x1 < 2; l_x1++) {
+								for (int u_x1 = 0; u_x1 < 2; u_x1++) {
+									for (int l_x2 = 0; l_x2 < 2; l_x2++) {
+										for (int u_x2 = 0; u_x2 < 2; u_x2++) {
+											for (int l_x3 = 0; l_x3 < 2; l_x3++) {
+												for (int u_x3 = 0; u_x3 < 2; u_x3++) {
+													init_pot();
+													add(i1, l_x1, u_x1);
+													add(i2, l_x2, u_x2);
+													add(i3, l_x3, u_x3);
+													ans = max(ans, cal_ans());
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+
+
+			}
+		}
+	}
+
+	cout << ans;
+}
