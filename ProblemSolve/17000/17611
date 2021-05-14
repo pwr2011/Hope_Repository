@@ -1,0 +1,61 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#include<set>
+using namespace std;
+typedef pair<int, int> P;
+
+P input[100'005];
+vector<P> hori;
+vector<P> vert;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n].first >> input[n].second;
+	}
+	input[N] = input[0];
+	for (int n = 1; n <= N; n++) {
+		P prev = input[n - 1]; P cur = input[n];
+		if (prev.first != cur.first) {
+			hori.push_back({ min(prev.first,cur.first),max(prev.first,cur.first) });
+		}
+		else vert.push_back({ min(prev.second,cur.second),max(prev.second,cur.second) });
+	}
+
+	sort(hori.begin(), hori.end());
+	sort(vert.begin(), vert.end());
+
+	int max_h = 0, max_v = 0;
+	multiset<int> h_s;
+	int i = 0, j = -1;
+	while (j<(int)hori.size()-1) {
+		j++;
+		h_s.insert(hori[j].second);
+		auto iter = h_s.begin();
+		while (*iter <= hori[j].first) {
+			auto tmp = iter++;
+			h_s.erase(tmp);
+		}
+
+		max_h = max(max_h, (int)h_s.size());
+	}
+
+	i = 0; j = -1;
+	multiset<int> v_s;
+	while (j < (int)vert.size() - 1) {
+		j++;
+		v_s.insert(vert[j].second);
+		auto iter = v_s.begin();
+		while (*iter <= vert[j].first) {
+			auto tmp = iter++;
+			v_s.erase(tmp);
+		}
+
+		max_v = max(max_v, (int)v_s.size());
+	}
+	cout << max(max_v, max_h);
+}
