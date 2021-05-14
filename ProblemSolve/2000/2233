@@ -1,0 +1,82 @@
+#include<iostream>
+#include<stack>
+#include<string>
+#define MAX_D 12
+using namespace std;
+
+string ord;
+int N;
+int X, Y;
+int parent[MAX_D][2'005];
+int to_node_num[4'005];
+int depth[2'005];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> ord >> X >> Y;
+
+	int node_num = 1;
+	stack<int>s;
+	s.push(0);
+	int d = 0;
+
+	for (int i = 0; i < MAX_D; i++) {
+		for (int j = 0; j < 2'005; j++) {
+			parent[i][j] = -1;
+		}
+	}
+
+	for (int i = 0; i < ord.size(); i++) {
+		if (ord[i] == '0') {
+			d++; depth[node_num] = d;
+			s.push(node_num);
+			to_node_num[i] = node_num++;
+		}
+		else {
+			d--;
+			to_node_num[i] = s.top();
+			int cur_num = s.top(); s.pop();
+			parent[0][cur_num] = s.top();
+		}
+	}
+
+
+	for (int i = 1; i < MAX_D; i++) {
+		for (int j = 1; j <= N; j++) {
+			if (parent[i - 1][j] != -1)
+				parent[i][j] = parent[i - 1][parent[i - 1][j]];
+		}
+	}
+
+	int a_1 = to_node_num[X-1];
+	int a_2 = to_node_num[Y-1];
+
+	if (depth[a_1] > depth[a_2]) swap(a_1, a_2);
+	int diff = depth[a_2] - depth[a_1];
+
+	for (int i = 0; i < MAX_D; i++) {
+		if (diff % 2) {
+			a_2 = parent[i][a_2];
+		}
+		diff /= 2;
+	}
+
+	if (a_1 != a_2) {
+		for (int i = MAX_D-1; i >=0; i--) {
+			if (parent[i][a_1] != -1) {
+				if (parent[i][a_1] != parent[i][a_2]) {
+					a_1 = parent[i][a_1];
+					a_2 = parent[i][a_2];
+				}
+			}
+		}
+		a_1 = parent[0][a_1];
+		a_2 = parent[0][a_2];
+	}
+	for (int i = 0; i <= 2*N; i++) {
+		if (to_node_num[i] == a_1) {
+			cout << i+1 << " ";
+		}
+	}
+}
