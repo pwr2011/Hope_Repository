@@ -1,0 +1,58 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<map>
+using namespace std;
+
+typedef pair<int, int > P;
+vector<pair<P,int>> arr;
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		P t; cin >> t.first >> t.second;
+		arr.push_back({ t,n+1 });
+	}
+	sort(arr.begin(), arr.end());
+
+	
+	int ans = 0;
+	vector<int> ans_arr;
+	int i = 0, j = -1;
+	multimap<int,int> s;
+	while (j < (int)arr.size() - 1) {
+		j++;
+		s.insert({ arr[j].first.second,arr[j].second });
+		auto iter = s.begin();
+		while (iter->first < arr[j].first.first) {
+			auto tmp = iter++;
+			s.erase(tmp);
+		}
+
+		ans = max(ans, (int)s.size());
+	}
+	s.clear();
+	i = 0, j = -1;
+	while (j < (int)arr.size() - 1) {
+		j++;
+		s.insert({ arr[j].first.second,arr[j].second });
+		auto iter = s.begin();
+		while (iter->first < arr[j].first.first) {
+			auto tmp = iter++;
+			s.erase(tmp);
+		}
+		if ((int)s.size() == ans) {
+			break;
+		}
+	}
+	cout << ans<<"\n";
+	auto iter = s.begin();
+	while (iter != s.end()) {
+		cout << iter->second << " ";
+		iter++;
+	}
+
+}
