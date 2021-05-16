@@ -1,0 +1,45 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int ans[2];
+int N;
+int map[12][12];
+int l[22];
+int r[22];
+
+void solve(int y, int x, int cnt, int color) {
+	if (x >= N) {
+		y++;
+		if (x%2 == 0) {
+			x = 1;
+		}
+		else {
+			x = 0;
+		}
+	}
+	if (y >= N) {
+		ans[color] = max(ans[color], cnt);
+		return;
+	}
+
+	if (map[y][x] && !l[x - y + N - 1] && !r[x + y]) {
+		l[x - y + N - 1] = r[x + y] = 1;
+		solve(y, x + 2, cnt + 1, color);
+		l[x - y + N - 1] = r[x + y] = 0;
+	}
+	solve(y, x + 2, cnt, color);
+}
+
+int main() {
+	 cin >> N;
+	 for (int i = 0; i < N; i++) {
+		 for (int j = 0; j < N; j++) {
+			 cin >> map[i][j];
+		 }
+	 }
+	 solve(0, 0, 0, 1); //흑
+	 solve(0, 1, 0, 0);
+
+	 cout << ans[0] + ans[1];
+}
