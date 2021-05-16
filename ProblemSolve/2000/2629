@@ -1,0 +1,41 @@
+#include<iostream>
+#define ll long long
+#define D 15000
+using namespace std;
+
+ll ball[10];
+ll sinker[32];
+bool arr[32][40'005] = { false };
+ll N, M;
+
+
+int main() {
+	cin >> N;
+	for (ll n = 0; n < N; n++) {
+		cin >> sinker[n];
+	}
+	cin >> M;
+	for (ll m = 0; m < M; m++) {
+		cin >> ball[m];
+	}
+	
+	arr[0][sinker[0]+D] = true;
+	arr[0][-sinker[0] + D] = true;
+	arr[0][D] = true;
+	for (int i = 1; i < N; i++) {
+		for (int g = 0; g <= 30'000; g++) {
+			if (arr[i - 1][g]) {
+				arr[i][g + sinker[i]] = true;
+				arr[i][g - sinker[i]] = true;
+				arr[i][g] = true;
+			}
+		}
+	}
+
+	for (ll m = 0; m < M; m++) {
+		if (arr[N-1][ball[m]+D])
+			cout << "Y ";
+		else 
+			cout << "N ";
+	}
+}
