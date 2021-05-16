@@ -1,0 +1,54 @@
+def solution(N, T, M, timetable):
+    answer = ''
+
+    timetable = sorted(timetable)
+    cur_time_h = 9
+    cur_time_m = 0
+    idx = 0
+    end_flag = False
+    n = 0
+    while n<N :
+        flag = False
+        m = 0
+        while m<M:
+            time = timetable[idx]
+            person_h = int(time[0]+time[1])
+            person_m = int(time[3]+time[4])
+            if person_h<=cur_time_h :
+                if(person_m <= cur_time_m) or (person_h<cur_time_h):
+                    idx+=1
+                    m+=1
+                    if idx == len(timetable):
+                        end_flag = True
+                        break
+
+                else:
+                    flag = True
+            else:
+                flag = True
+
+            if flag == True:
+                break
+
+        if (end_flag == True) or n == N-1:
+            idx-=1
+            if m<M:
+                return str(cur_time_h).zfill(2) + ":" + str(cur_time_m).zfill(2)
+            time = timetable[idx]
+            person_h = int(time[0] + time[1])
+            person_m = int(time[3] + time[4])
+            
+            person_m-=1
+            if(person_m<0):
+                person_m += 60
+                person_h -= 1
+            return str(person_h).zfill(2) + ":" + str(person_m).zfill(2)
+
+        cur_time_m = cur_time_m+T
+        if cur_time_m>=60:
+            cur_time_m %= 60
+            cur_time_h += 1
+
+        n+=1
+
+    return answer
