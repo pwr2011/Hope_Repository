@@ -1,0 +1,43 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+#define MAX_N 205
+#define MAX_D 100'000'000
+using namespace std;
+typedef pair<int, int> P;
+
+vector<P> g[MAX_N];
+int dist[MAX_N][MAX_N];
+
+int solution(int N, int S, int A, int B, vector<vector<int>> fares) {
+    int answer = 0;
+
+    for (int i = 0; i < MAX_N; i++) {
+        for (int j = 0; j < MAX_N; j++) {
+            dist[i][j] = i == j ? 0 : MAX_D;
+        }
+    }
+
+    for (vector<int> t: fares) {
+        dist[t[0]][t[1]] = t[2];
+        dist[t[1]][t[0]] = t[2];
+    }
+
+    for (int k = 1; k <= N; k++) {
+        for (int i = 1; i <= N; i++) {
+            for (int j = 1; j <= N; j++) {
+                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+            }
+        }
+    }
+    answer = dist[S][A] + dist[S][B];
+
+    for (int i = 1; i <= N; i++) {
+        int tmp = 0;
+        tmp = dist[S][i];
+        tmp += dist[i][A];
+        tmp += dist[i][B];
+        answer = min(tmp, answer);
+    }
+    return answer;
+}
