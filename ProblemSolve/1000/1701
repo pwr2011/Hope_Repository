@@ -1,0 +1,25 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+using namespace std;
+
+string input;
+int fail[5'005][5'005];
+
+int main() {
+	int max_val = 0;
+	cin >> input;
+	for (int start = 0; start < input.size(); start++) {
+		int j = 0;
+		for (int i = 1; i < input.size(); i++) {
+			while ((input[start+i] != input[start+j]) && j > 0) j = fail[start][j - 1];
+			if (input[start + i] == input[start + j]) {
+				fail[start][i] = ++j;
+				max_val = max(fail[start][i], max_val);
+			}
+		}
+	}
+	
+
+	cout << max_val;
+}
