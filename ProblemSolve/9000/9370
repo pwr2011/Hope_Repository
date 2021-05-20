@@ -1,0 +1,77 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<algorithm>
+#define MAX_N 2'005
+#define INF 100'000'000
+using namespace std;
+
+typedef pair<int, int> P;
+vector<P> g[MAX_N];
+bool goal[MAX_N];
+bool visit[MAX_N];
+int dist[MAX_N];
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int Tc; cin >> Tc;
+	while (Tc--) {
+		int N, M, T; cin >> N >> M >> T;
+		int S, G, H; cin >> S >> G >> H;
+		for (int m = 0; m < M; m++) {
+			int A, B, D; cin >> A >> B >> D;
+			g[A].push_back({ B,D });
+			g[B].push_back({ A,D });
+		}
+		for (int t = 0; t < T; t++) {
+			int x;
+			cin >> x; goal[x] = true;
+		}
+
+		vector<int> res;
+		fill(dist, dist + MAX_N, INF);
+		dist[S] = 0;
+		priority_queue < pair<int, pair<int, bool>>>pq;
+		//dist,node, pass route?
+		pq.push({ 0,{S,false} });
+		while (!pq.empty()) {
+			auto c = pq.top(); pq.pop();
+			int d = -c.first;
+			int cur = c.second.first;
+			bool flag = c.second.second;
+			if (visit[cur])continue;
+			visit[cur] = 1;
+			if (goal[cur] && flag) {
+				res.push_back(cur);
+			}
+
+			for (auto n : g[cur]) {
+
+				int next = n.first; int weight = n.second;
+				if (visit[next])continue;
+				if (dist[next] >= d + weight) {
+					dist[next] = d + weight;
+					if ((cur == G && next == H) || (cur == H && next == G))
+						pq.push({ -dist[next],{next,true} });
+
+					else pq.push({ -dist[next],{next,flag} });
+				}
+			}
+		}
+
+		sort(res.begin(), res.end());
+		for (int t : res) {
+			cout << t << " ";
+		}
+		cout << endl;
+		//clear
+		for (int n = 0; n < MAX_N; n++) {
+			g[n].clear();
+			goal[n] = 0;
+			visit[n] = 0;
+		}
+
+	}
+}
