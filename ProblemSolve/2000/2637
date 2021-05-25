@@ -1,0 +1,53 @@
+#include<vector>
+#include<iostream>
+#include<queue>
+using namespace std;
+typedef pair<int, int> P;
+
+vector<P> g[105];
+int N, M;
+int ans[105][105];
+int cnt[105];
+bool is_base[105];
+
+int main() {
+	for (int i = 0; i < 105; i++) {
+		is_base[i] = true;
+	}
+
+	cin >> N >> M;
+	for (int m = 0; m < M; m++) {
+		int X, Y, K;
+		cin >> X >> Y >> K;
+		is_base[X] = false;
+		g[Y].push_back({ X,K });  
+		cnt[X]++;
+	}
+	queue<int> q;
+	for (int n = 1; n <= N; n++) {
+		if (!is_base[n]) continue;
+		for (P next : g[n]) {
+			ans[next.first][n] = next.second;
+			cnt[next.first]--;
+			if (cnt[next.first] == 0) {
+				q.push(next.first);
+			}
+		}
+	}
+
+	while (!q.empty()) {
+		int cur = q.front(); q.pop();
+		for (P n : g[cur]) {
+			for (int i = 1; i <=N; i++) {
+				ans[n.first][i] += ans[cur][i] * n.second;
+				}
+			cnt[n.first]--;
+			if (cnt[n.first] == 0) q.push(n.first);
+		}
+	}
+	
+
+	for (int n = 1; n <= N; n++) {
+		if(is_base[n]) cout << n<<" "<<ans[N][n] << "\n";
+	}
+}
