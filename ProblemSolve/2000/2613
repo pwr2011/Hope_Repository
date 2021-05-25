@@ -1,0 +1,60 @@
+#include<iostream>
+using namespace std;
+
+int N, M;
+int input[305];
+int min_l = 0;
+
+int main() {
+
+	cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n];
+		if (min_l < input[n]) min_l = input[n];
+	}
+
+	int l = min_l; int r = 30050;
+	while (l < r) {
+		int mid = (l + r) / 2;
+		int sum = 0;
+		int cnt = 1;
+		for (int i = 0; i < N; i++) {
+			sum += input[i];
+			if (sum > mid) {
+				sum = 0;
+				sum = input[i];
+				cnt++;
+			}
+		}
+		if (cnt > M) {
+			l = mid + 1;
+		}
+		else {
+			r = mid;
+		}
+	}
+
+	cout << l << "\n";
+	int group_cnt = 0;
+	int sum = 0;
+	int cnt = 0;
+	int i = 0;
+	for ( i = 0; i < N; i++) {
+		sum += input[i];
+		if (sum > l) {
+			cout << cnt << " ";
+			sum = input[i];
+			cnt = 0;
+			group_cnt++;
+		}
+		cnt++;
+		if (N - i == M-group_cnt) {
+			cout << cnt << " ";
+			for (int j = i + 1; j < N; j++) {
+				cout << "1 ";
+			}
+			return 0;
+		}
+		if (i == N - 1)cout << cnt;
+	}
+} 
