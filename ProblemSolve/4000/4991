@@ -1,0 +1,75 @@
+#include<iostream>
+#include<queue>
+#include<algorithm>
+using namespace std;
+typedef pair<int, int > P;
+
+bool visit[1 << 10][22][22];
+int W, H;
+char map[22][22];
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+int cnt = 0;
+
+int solve() {
+	P s;
+	for (int h = 0; h < H; h++) {
+		for (int w = 0; w < W; w++) {
+			cin >> map[h][w];
+			if (map[h][w] == 'o') {
+				s.first = h; s.second = w;
+			}
+			if (map[h][w] == '*') {
+				map[h][w] = cnt++;
+			}
+		}
+	}
+	queue<pair<P,int>> q;
+	//pos, status
+	int dist = 1;
+	bool end_flag = false;
+	q.push({ s,0 });
+	visit[0][s.first][s.second] = 1;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int t = 0; t < qsize; t++) {
+			auto c = q.front(); q.pop();
+			int status = c.second;
+			for (int i = 0; i < 4; i++) {
+				P next; next.first = c.first.first + dx[i];
+				next.second = c.first.second + dy[i];
+				if (next.first < 0 || next.second<0 || next.first >= H || next.second>=W)continue;
+				if (map[next.first][next.second] == 'x') continue;
+				int cur_st = status;
+				if (map[next.first][next.second] >= 0 && map[next.first][next.second] <= 10) {
+					cur_st = status | ((int)1 << map[next.first][next.second]);
+				}
+				if (cur_st == (1 << cnt) - 1) { end_flag = 1; break; }
+				if (visit[cur_st][next.first][next.second]) continue;
+				q.push({ next,cur_st });
+				visit[cur_st][next.first][next.second] = 1;
+			}
+			if (end_flag) break;
+		}
+		if (end_flag) break;
+		dist++;
+	}
+	if (end_flag) return dist;
+	else return -1;
+}
+
+int main() {
+	while (1) {
+		cin >> W >> H;
+		if (W == 0 && H == 0) break;
+		for (int w = 0; w < W; w++) {
+			for (int h = 0; h < H; h++) {
+				for (int i = 0; i < (1 << 10); i++) {
+					visit[i][h][w] = 0;
+				}
+			}
+		}
+		cnt = 0;
+		cout<<solve()<<"\n";
+	}
+}
