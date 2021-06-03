@@ -1,0 +1,96 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+using namespace std;
+
+string max_val[105];
+string min_val[105];
+int cnt[] = {6,2,5,5,4,5,6,3,7,6};
+
+string max_comp(string a, string b) {
+	if (a.size() != b.size()) {
+		if (a.size() > b.size())return a;
+		else return b;
+	}
+	for (int i = 0; i < max(a.size(), b.size()); i++) {
+		if (a[i] != b[i]) {
+			if (a[i] - '0' > b[i] - '0') {
+				return a;
+			}
+			else {
+				return b;
+			}
+		}
+	}
+	return a;
+}
+string min_comp(string a, string b) {
+	if (a.size() != b.size()) {
+		if (a.size() > b.size())return b;
+		else return a;
+	}
+	for (int i = 0; i < max(a.size(), b.size()); i++) {
+		if (a[i] != b[i]) {
+			if (a[i] - '0' > b[i] - '0') {
+				return b;
+			}
+			else {
+				return a;
+			}
+		}
+	}
+	return a;
+}
+
+string min_solve(int left,int idx) {
+	if (min_val[left] != "") {
+		return min_val[left];
+	}
+	if (left == 0) return "";
+	string ret;
+	for (int i = 0; i < 52; i++) {
+		ret.push_back('1');
+	}
+	for (int i = 0; i < 10; i++) {
+		if (i == 0 && idx == 0) continue;
+		if (cnt[i] <= left) {
+			string tmp = to_string(i) + min_solve(left - cnt[i], idx + 1);
+			ret = min_comp(tmp, ret);
+		}
+	}
+	min_val[left] = ret;
+	return ret;
+}
+
+string max_solve(int left,int idx) {
+	if (max_val[left] != "") {
+		return max_val[left];
+	}
+	if (left == 0) return "";
+	string ret = "";
+	for (int i = 0; i < 10; i++) {
+		if (i == 0 && idx == 0) continue;
+		if (cnt[i] <= left) {
+			string tmp = to_string(i) + max_solve(left - cnt[i], idx + 1);
+			if (ret != "")ret = max_comp(tmp, ret);
+			else ret = tmp;
+		}
+	}
+	max_val[left] = ret;
+	return ret;
+}
+
+int main() {
+	int T; cin >> T;
+	while (T--) {
+		int N; cin >> N;
+		cout<<min_solve(N,0)<<" ";
+		cout<<max_solve(N,0)<<"\n";
+
+		//init
+		for (int i = 0; i < 105; i++) {
+			min_val[i].clear();
+			max_val[i].clear();
+		}
+	}
+}
