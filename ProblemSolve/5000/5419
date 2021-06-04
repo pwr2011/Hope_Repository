@@ -1,0 +1,66 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<cmath>
+using namespace std;
+typedef pair<int, int> P;
+
+vector<int> Y;
+P input[75'002];
+int arr[4'000'000];
+int start;
+
+bool comp(P a, P b) {
+	if (a.first != b.first) {
+		return a.first < b.first;
+	}
+	else {
+		return a.second > b.second;
+	}
+}
+
+int sum(int L, int R, int node=1, int nodeL=0, int nodeR=start-1) {
+	if (R<nodeL || nodeR<L) return 0;
+	if (L <= nodeL && nodeR <= R) return arr[node];
+	int mid = (nodeL + nodeR) / 2;
+	return sum(L, R, node * 2, nodeL, mid) + sum(L, R, node * 2 + 1, mid + 1, nodeR);
+}
+
+void update(int i) {
+	int idx = i + start;
+	arr[idx]++;
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+
+	while (T--) {
+		int N; cin >> N;
+		start = pow(2,ceil(log2(N)));
+		for (int n = 0; n < N; n++) {
+			cin >> input[n].first >> input[n].second;
+			Y.push_back(input[n].second);
+		}
+
+		sort(input, input + N, comp);
+		sort(Y.begin(), Y.end());
+		Y.erase(unique(Y.begin(), Y.end()), Y.end());
+
+		long long ans = 0;
+		for (int n = N-1; n >=0; n--) {
+			int idx = lower_bound(Y.begin(), Y.end(), input[n].second) - Y.begin();
+			ans += sum(0, idx);
+			update(idx);
+		}
+		cout << ans << "\n";
+		Y.clear();
+		for (int i = 0; i < 4'000'000; i++) arr[i] = 0;
+	}
+}
