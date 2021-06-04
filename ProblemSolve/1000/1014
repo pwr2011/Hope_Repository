@@ -1,0 +1,81 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+using namespace std;
+
+char map[12][12];
+int dp[1 << 12][12];
+int N, M;
+vector<int> candidate;
+vector<int> cnt;
+
+bool check(int m) {
+	int cnt = 0;
+	for (int i = 1; i < 10; i++) {
+		if (((1 << i) & m) && (1 << (i + 1)) & m) {
+			return false;
+		}
+	}
+	return true;
+}
+
+int cal(int row, int upper) {
+	if (dp[upper][row] != -1) return dp[upper][row];
+	if (row > N) return 0;
+	int max_ret = 0;
+
+	for (int i = 0; i < candidate.size();i++) {
+		bool flag = true;
+		int c = candidate[i];
+		if (c >= (1 << (M+1)) - 1) break;
+		for (int m = 1; m <= M; m++) {
+			if (c & (1 << m)) {
+				if (((1 << (m - 1)) & upper) || ((1 << (m + 1)) & upper)) {
+					flag = false; break;
+				}
+				if (map[row][m] == 'x') {
+					flag = false;
+					break;
+				}
+			}
+		}
+		if(flag) max_ret = max(max_ret, cal(row + 1, c) + cnt[i]);
+	}
+	return dp[upper][row] = max_ret;
+}
+
+void solve() {
+	cin >> N >> M;
+	for (int n = 1; n <= N; n++) {
+		for (int m = 1; m <= M; m++) {
+			cin >> map[n][m];
+		}
+	}
+	for (int i = 0; i <= (1 << 11)-2; i++) {
+		for (int j = 0; j < 12; j++) dp[i][j] = -1;
+	}
+	cout<<cal(1, 0)<<"\n";
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	for (int m = 1; m < (1 << 11)-2; m++) {
+		int t_m = m & ((1 << 11) - 2);
+		if (check(t_m)) candidate.push_back(t_m);
+	}
+	candidate.erase(unique(candidate.begin(), candidate.end()), candidate.end());
+	for (int c : candidate) {
+		int count = 0;
+		for (int m = 1; m <= 10; m++) {
+			if ((1 << m) & c) count++;
+		}
+		cnt.push_back(count);
+	}
+
+	int C; cin >> C;
+	while (C--) {
+		solve();
+	}
+}
