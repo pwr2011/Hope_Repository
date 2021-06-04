@@ -1,0 +1,96 @@
+#include<iostream>
+#include<queue>
+#define x first
+#define y second
+using namespace std;
+typedef pair<int, int> P;
+
+P city[100'005];
+int N,K;
+int p[100'005];
+int map[2'005][2'005];
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+
+int parent(int i) {
+	if (p[i] < 0) return i;
+	return p[i] = parent(p[i]);
+}
+
+void merge(int a, int b) {
+	int p_a = parent(a);
+	int p_b = parent(b);
+	if (p_a != p_b) {
+		if (p_a < p_b) {
+			p[p_a] += p[p_b];
+			p[p_b] = p_a;
+		}
+		else {
+			p[p_b] += p[p_a];
+			p[p_a] = p_b;
+		}
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	for (int i = 0; i < 100'005; i++) {
+		p[i] = -1;
+	}
+	for (int i = 0; i < 2'005; i++) {
+		for (int j = 0; j < 2'005; j++) {
+			map[i][j] = -1;
+		}
+	}
+
+	queue<P> q;
+	cin >> N >> K;
+	for (int k = 0; k < K; k++) {
+		cin >> city[k].x >> city[k].y;
+		city[k].x--;
+		city[k].y--;
+		map[city[k].x][city[k].y] = k;
+		q.push(city[k]);
+	}
+
+	//init check needed
+	int year = 0;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int t = 0; t < qsize; t++) {
+			P c = q.front(); q.pop(); 
+			for (int i = 0; i < 4; i++) {
+				P nxt; nxt.x = c.x + dx[i]; nxt.y = c.y + dy[i];
+				if (nxt.x < 0 || nxt.y < 0 || nxt.x >= N || nxt.y >= N) continue;
+				if (map[nxt.x][nxt.y] != -1 && map[c.x][c.y] != map[nxt.x][nxt.y]) {
+					merge(map[c.x][c.y], map[nxt.x][nxt.y]);
+				}
+			}
+			q.push(c);
+		}
+		if (-p[0] == K) {
+			break;
+		}
+		year++;
+
+		qsize = q.size();
+		for (int t = 0; t < qsize; t++) {
+			P c = q.front(); q.pop();
+			for (int i = 0; i < 4; i++) {
+				P nxt; nxt.x = c.x + dx[i]; nxt.y = c.y + dy[i];
+				if (nxt.x<0 || nxt.y<0 || nxt.x>=N || nxt.y>=N) continue;
+				if (map[nxt.x][nxt.y] == -1) {
+					map[nxt.x][nxt.y] = map[c.x][c.y];
+					q.push(nxt);
+				}
+				else {
+					if (map[c.x][c.y] != map[nxt.x][nxt.y]) {
+						merge(map[c.x][c.y], map[nxt.x][nxt.y]);
+					}
+				}
+			}
+		}
+	}
+	cout << year;
+}  
