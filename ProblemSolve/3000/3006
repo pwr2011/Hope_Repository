@@ -1,0 +1,62 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+#include<vector>
+using namespace std;
+typedef pair<int, int> P;
+
+int arr[400'005];
+vector<P> input;
+int start;
+
+void update(int i) {
+	int idx = i + start;
+	arr[idx] = 0;
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] + arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+int sum(int L, int R, int node=1, int nodeL=0, int nodeR=start-1) {
+	if (R < nodeL || nodeR < L)return 0;
+	if (L <= nodeL && nodeR <= R) return arr[node];
+	int mid = (nodeL + nodeR) / 2;
+	return sum(L, R, node * 2, nodeL, mid) + sum(L, R, node * 2 + 1, mid + 1, nodeR);
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		P t; cin >> t.first;
+		t.second = n;
+		input.push_back(t);
+	}
+	sort(input.begin(), input.end());
+
+	start = pow(2, ceil(log2(N)));
+	for (int i = start; i < start + N; i++) {
+		arr[i] = 1;
+	}
+	for (int i = start - 1; i > 0; i--) {
+		arr[i] = arr[i * 2] + arr[i * 2 + 1];
+	}
+
+	int left = 0;
+	int right = N - 1;
+	while (left <= right) {
+		int idx = input[left].second;
+		update(idx);
+		cout<<sum(0, idx)<<"\n";
+		if (left == right)
+			break;
+		idx = input[right].second;
+		update(idx);
+		cout << sum(idx, start-1) << "\n";
+		left++; right--;
+	}
+}
