@@ -1,0 +1,82 @@
+#include<iostream>
+#include<queue>
+#include<stack>
+using namespace std;
+typedef pair<int, int> P;
+
+int N;
+P arr[250'002];
+int trace[250'002];
+int rec_dist[250'002];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N;
+	int moveR[] = { -(N - 1),1,(N) };
+	int moveL[] = { -(N),-1,(N - 1) };
+	for (int n = 0; n < N * N - N / 2; n++) {
+		cin >> arr[n].first >> arr[n].second;
+	}
+	for (int i = 0; i < 250'002; i++) {
+		trace[i] = -1;
+		rec_dist[i] = -1;
+	}
+	queue<int> q;
+	q.push(0);
+	rec_dist[0] = 1;
+	int dist = 2;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int t = 0; t < qsize; t++) {
+			int c = q.front(); q.pop();
+			for (int i = 0; i < 3; i++) {
+				int nxt = c + moveL[i];
+				if (nxt < 0 || nxt >= N * N - N / 2) continue;
+				if ((c % (N + (N - 1))) == 0) continue;
+				if (i == 1) {
+					if ((c % (N + (N - 1))) == N) continue;
+				} 
+				if (rec_dist[nxt] != -1)continue;
+				if (arr[c].first != arr[nxt].second) continue;
+				trace[nxt] = c;
+				rec_dist[nxt] = dist;
+				q.push(nxt);
+			}
+
+			for (int i = 0; i < 3; i++) {
+				int nxt = c + moveR[i];
+				if (nxt < 0 || nxt >= N * N - N / 2) continue;
+				if ((c % (N + (N - 1))) == N-1) continue;
+				if (i == 1) {
+					if ((c % (N + (N - 1))) == 2*N-1) continue;
+				}
+				if (rec_dist[nxt] != -1)continue;
+				if (arr[c].second != arr[nxt].first) continue;
+				trace[nxt] = c;
+				rec_dist[nxt] = dist;
+				q.push(nxt);
+			}
+		}
+
+		dist++;
+	}
+	stack<int> ans;
+	for (int n = (N * N - N / 2) - 1; n >= 0; n--) {
+		if (rec_dist[n] != -1) {
+			cout << rec_dist[n] << "\n";
+			int c = n;
+			while (c != 0) {
+				ans.push(c + 1);
+				c = trace[c];
+			}
+			ans.push(1);
+			break;
+		}
+	}
+
+	while (!ans.empty()) {
+		cout << ans.top() << " ";
+		ans.pop();
+	}
+}
