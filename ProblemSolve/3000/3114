@@ -1,0 +1,71 @@
+#include<iostream>
+#include<string>
+#define MAX_L 1505
+using namespace std;
+
+int dp[MAX_L][MAX_L];
+int R, C;
+char map[MAX_L][MAX_L];
+int cnt[MAX_L][MAX_L];
+int dx[] = { 0,1,1 };
+int dy[] = { 1,1,0 };
+int A_sum[MAX_L][MAX_L];
+int B_sum[MAX_L][MAX_L];
+
+int main() {
+	cin >> R >> C;
+	for (int r = 0; r < R; r++) {
+		string t;
+		for (int c = 0; c < C; c++) {
+			cin >> t;
+			int count = 0;
+			if (t.size() == 2) {
+				count = t[1] - '0';
+			}
+			else {
+				count = (t[1] - '0') * 10 + (t[2] - '0');
+			}
+			map[r][c] = t[0];
+			cnt[r][c] = count;
+		}
+	}
+	for (int r = 0; r < R; r++) {
+		int A_total = 0, B_total = 0;
+		for (int c = 0; c < C; c++) {
+			if (map[r][c] == 'A') A_total += cnt[r][c];
+			else B_total += cnt[r][c];
+			A_sum[r][c] = A_total;
+			B_sum[r][c] = B_total;
+		}
+	}
+
+	for (int r = R - 1; r >= 0; r--) {
+		for (int c = C - 1; c >= 0; c--) {
+			int A_total = c == 0 ? 0 : A_sum[r][c - 1];
+			int B_total = B_sum[r][C - 1] - B_sum[r][c];
+			int total = A_total + B_total;
+			int max_val = 0;
+			for (int i = 0; i < 3; i++) {
+				int n_r = r + dy[i]; int n_c = c + dx[i];
+				if (i == 2) {
+					if (map[r][c] == 'A') {
+						max_val = max(max_val, dp[n_r][n_c] - cnt[r][c]);
+					}
+					else {
+						max_val = max(max_val, dp[n_r][n_c]);
+					}
+				}
+				else {
+					if (r == R - 1) {
+						max_val = max(max_val, A_total);
+					}
+					else {
+						max_val = max(max_val, dp[n_r][n_c] + total);
+					}
+				}
+			}
+			dp[r][c] = max_val;
+		}
+	}
+	cout << dp[0][0];
+}
