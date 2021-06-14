@@ -1,0 +1,37 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+typedef pair<int, int> P;
+
+int cnt[1'005];
+int class_cnt = 0;
+
+int main() {
+	vector<P> arr;
+	int N, M; cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < M; m++) {
+			int t; cin >> t;
+			arr.push_back({ t,n });
+		}
+	}
+
+	sort(arr.begin(), arr.end());
+
+	int ans = 1'000'000'009;
+	int i = 0;
+	for (int j = 0; j < arr.size(); j++) {
+		if (cnt[arr[j].second]++ == 0) {
+			class_cnt++;
+		}
+		while (class_cnt == N) {
+			ans = min(ans, arr[j].first - arr[i].first);
+			if (--cnt[arr[i++].second] == 0) {
+				class_cnt--;
+				break;
+			}
+		}
+	}
+	cout << ans;
+}
