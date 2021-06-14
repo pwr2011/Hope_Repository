@@ -1,0 +1,75 @@
+#include<iostream>
+using namespace std;
+typedef pair<int, int>P;
+int N, L;
+P input[3'005];
+// length, d
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> L;
+	for (int n = 0; n < N; n++) {
+		cin >> input[n].first >> input[n].second;
+	}
+
+	int time = 0;
+	int c = 0;
+	while (c != N - 1) {
+		P cur = input[c];
+		P nxt = input[c + 1];
+		if (cur.first == L || nxt.first == L) {
+			c++; continue;
+		}
+		P cur_pos, nxt_pos;
+		int cur_d, nxt_d;
+		if ((time / (L - cur.first)) % 2 == 1) {
+			cur_d = cur.second == 0 ? 1 : 0;
+		}
+		else {
+			cur_d = cur.second;
+		}
+
+		if ((time / (L - nxt.first)) % 2 == 1) {
+			nxt_d = nxt.second == 0 ? 1 : 0;
+		}
+		else {
+			nxt_d = nxt.second;
+		}
+
+		if (cur_d) {
+			int d = time % (L - cur.first);
+			cur_pos.first = L - cur.first - d;
+			cur_pos.second = L - d;
+		}
+		else {
+			int d = time % (L - cur.first);
+			cur_pos.first = d;
+			cur_pos.second = cur.first + d;
+		}
+
+		if (nxt_d) {
+			int d = time % (L - nxt.first);
+			nxt_pos.first = L - nxt.first - d;
+			nxt_pos.second = L - d;
+		}
+		else {
+			int d = time % (L - nxt.first);
+			nxt_pos.first = d;
+			nxt_pos.second = nxt.first + d;
+		}
+
+		//겹치면
+		if((cur_pos.first>=nxt_pos.first && cur_pos.first<=nxt_pos.second) ||
+			(cur_pos.second>=nxt_pos.first&&cur_pos.second<=nxt_pos.second) ||
+			(cur_pos.first<=nxt_pos.first && nxt_pos.first<=cur_pos.second)||
+			(cur_pos.first <= nxt_pos.second && nxt_pos.second <= cur_pos.second)
+			)
+			c++;
+		//안겹치면
+		else {
+			time++;
+		}
+	}
+	cout << time;
+}
