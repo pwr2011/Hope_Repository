@@ -1,0 +1,39 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+#define MAX_L 2'002
+using namespace std;
+
+string input;
+bool isPalin[MAX_L][MAX_L];
+int dp[MAX_L];
+
+int solve(int idx1) {
+	if (dp[idx1] != 9'999'999) return dp[idx1];
+	if (idx1 >= input.size()) return 0;
+	int ret = 9'999'999;
+	for (int idx2 = idx1; idx2 < input.size(); idx2++) {
+		if (isPalin[idx1][idx2]) ret = min(ret, solve(idx2+1) + 1);
+	}
+	return dp[idx1] = ret;
+}
+
+int main() {
+	cin >> input;
+	for (int i = 0; i < input.size(); i++) {
+		isPalin[i][i] = true;
+	}
+	for (int i = 0; i < input.size() - 1; i++) {
+		if (input[i] == input[i + 1]) isPalin[i][i + 1] = true;
+	}
+	for (int len = 3; len <= input.size(); len++) {
+		for (int i = 0; i <= input.size() - len; i++) {
+			int j = i + len - 1;
+			if (isPalin[i + 1][j - 1] && input[i]==input[j]) isPalin[i][j] = true;
+		}
+	}
+
+	for (int i = 0; i < MAX_L; i++) dp[i] = 9'999'999;
+	
+	cout<<solve(0);
+}
