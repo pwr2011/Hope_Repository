@@ -1,0 +1,40 @@
+#include<iostream>
+#include<set>
+#include<vector>
+#include<algorithm>
+using namespace std;
+typedef pair<int, int> P;
+
+vector<P> arr;
+int N, K;
+multiset<int> bag;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> K;
+	for (int n = 0; n < N; n++) {
+		int m, v; cin >> m >> v;
+		arr.push_back({ v,m });
+	}
+	for (int k = 0; k < K; k++) {
+		int t; cin >> t;
+		bag.insert(t);
+	}
+
+	sort(arr.rbegin(), arr.rend());
+
+	long long ans = 0;
+	for (P c : arr) {
+		int val = c.first;
+		int mass = c.second;
+
+		auto iter = bag.lower_bound(mass);
+		if (iter != bag.end()) {
+			ans += val;
+			bag.erase(iter);
+		}
+		if (bag.size() == 0) break;
+	}
+	cout << ans;
+}
