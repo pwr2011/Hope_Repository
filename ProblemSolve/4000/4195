@@ -1,0 +1,62 @@
+#include<iostream>
+#include<string>
+#include<map>
+using namespace std;
+
+int arr[200'005];
+
+int find(int a) {
+	if (arr[a] < 0) {
+		return a;
+	}
+	return arr[a]= find(arr[a]);
+}
+void merge(int a, int b) {
+	int p_a = find(a);
+	int p_b = find(b);
+	if (p_a == p_b) {
+		cout << -arr[p_a] << "\n";
+		return;
+	}
+	if (p_a < p_b) {
+		arr[p_a] += arr[p_b];
+		arr[p_b] = p_a;
+		cout << -arr[p_a] << "\n";
+	}
+	else {
+		arr[p_b] += arr[p_a];
+		arr[p_a] = p_b;
+		cout << -arr[p_b] << "\n";
+	}
+}
+
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T;
+	cin >> T;
+	while (T--) {
+		map<string, int> m;
+		for (int i = 0; i < 200'005; i++) {
+			arr[i] = -1;
+		}
+		int idx = 0;
+		int F; cin >> F;
+		for (int f = 0; f < F; f++) {
+			string tmp1, tmp2;
+			cin >> tmp1 >> tmp2;
+			int idx1, idx2;
+			auto it = m.find(tmp1);
+			if (it == m.end()) { m.insert(make_pair(tmp1, idx++)); idx1 = idx - 1; }
+			else {
+				idx1 = it->second;
+			}
+			it = m.find(tmp2);
+			if (it == m.end()) { m.insert(make_pair(tmp2, idx++)); idx2 = idx - 1; }
+			else { idx2 = it->second; }
+			merge(idx1, idx2);
+		}
+	}
+}
