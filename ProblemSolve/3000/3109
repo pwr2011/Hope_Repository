@@ -1,0 +1,49 @@
+#include<iostream>
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+bool checked[10'005][505];
+bool visit[10'005][505];
+char map[10'005][505];
+int R, C;
+int dy[] = { -1,0,1 };
+int dx[] = { 1,1,1 };
+
+bool dfs(P c) {
+	if (c.x == C - 1) {
+		return true;
+	}
+	if (checked[c.y][c.x]) return false;
+	for (int i = 0; i < 3; i++) {
+		P n;
+		n.y = c.y + dy[i]; n.x = c.x + dx[i];
+		if (n.y < 0 || n.y >= R) continue;
+		if (visit[n.y][n.x]) continue;
+		if (map[n.y][n.x] == 'x')continue;
+		if (dfs(n)) {
+			visit[c.y][c.x] = true;
+			return true;
+		}
+	}
+	checked[c.y][c.x] = true;
+	return false;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> R >> C;
+	for (int r = 0; r < R; r++) {
+		cin >> map[r];
+	}
+
+	int ans = 0;
+	for (int r = 0; r < R; r++) {
+		if (dfs({ r,0 })) {
+			ans++;
+		}
+	}
+	cout << ans;
+}
