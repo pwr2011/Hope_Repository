@@ -1,0 +1,65 @@
+#include<iostream>
+using namespace std;
+typedef pair<int, int> P;
+
+P g[10'005];
+P cnt[10'005];
+bool hasP[10'005];
+int max_l[10'005];
+int max_r[10'005];
+
+int dfs(int c) {
+	int left = 0, right = 0;
+	if (g[c].first != -1) {
+		left = dfs(g[c].first);
+	}
+	if (g[c].second != -1) {
+		right = dfs(g[c].second);
+	}
+	cnt[c].first = left;
+	cnt[c].second = right;
+	return left + right + 1;
+}
+
+void dfs_cal(int c,int s,int e,int level) {
+	int c_pos = s + cnt[c].first;
+	if (max_l[level] != -1) max_l[level] = min(max_l[level], c_pos);
+	else max_l[level] = c_pos;
+	if (max_r[level] != -1) max_r[level] = max(max_r[level], c_pos);
+	else max_r[level] = c_pos;
+
+	if (g[c].first != -1) dfs_cal(g[c].first,s,c_pos-1,level+1);
+	if (g[c].second != -1) dfs_cal(g[c].second,c_pos+1,e,level+1);
+}
+
+int main() {
+	for (int i = 0; i < 10'005; i++) {
+		max_l[i] = -1;
+		max_r[i] = -1;
+	}
+	int root = 0;
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		int num; cin >> num;
+		cin>>g[num].first >> g[num].second;
+		hasP[g[num].first] = 1; hasP[g[num].second] = 1;
+	}
+	for (int n = 1; n <= N; n++) {
+		if (!hasP[n]) {
+			root = n; break;
+		}
+	}
+	dfs(root);
+
+	dfs_cal(root,1,cnt[1].first+cnt[1].second+1,1);
+
+	int ans = 0;
+	int ans_lev = 0;
+
+	for (int l = 10003;l>=0; l--) {
+		if (max_l[l] == -1) continue;
+		ans = max(ans, max_r[l] - max_l[l] + 1);
+		if (ans == max_r[l] - max_l[l] + 1) ans_lev = l;
+	}
+	cout << ans_lev << " " << ans;
+}
