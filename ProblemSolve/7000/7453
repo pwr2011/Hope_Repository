@@ -1,0 +1,41 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#define ll long long
+using namespace std;
+
+vector<int> arr1, arr2;
+int input[4][4'005];
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		for (int i = 0; i < 4; i++) {
+			cin >> input[i][n];
+		}
+	}
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			arr1.push_back(input[0][i] + input[1][j]);
+			arr2.push_back(input[2][i] + input[3][j]);
+		}
+	}
+
+	sort(arr1.begin(), arr1.end());
+	sort(arr2.begin(), arr2.end());
+
+	ll ans = 0;
+
+	for (int i = 0; i < arr1.size(); i++) {
+		int idx1 = lower_bound(arr2.begin(), arr2.end(), -arr1[i]) - arr2.begin();
+		int idx2 = upper_bound(arr2.begin(), arr2.end(), -arr1[i]) - arr2.begin();
+		if (idx1 == arr2.size()) continue;
+		if (arr2[idx1] != -arr1[i]) continue;
+		ans += (ll)idx2 - (ll)idx1;
+	}
+	cout << ans;
+}
