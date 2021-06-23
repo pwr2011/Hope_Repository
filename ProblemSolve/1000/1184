@@ -1,0 +1,72 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+vector<int> arr1[52][52];
+vector<int> arr2[52][52];
+vector<int> arr3[52][52];
+vector<int> arr4[52][52];
+int N;
+int map[52][52];
+int sum[52][52];
+
+int main() {
+	cin >> N;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			cin >> map[i][j];
+		}
+	}
+	for (int i = 1; i <= N; i++) {//y
+		for (int j = 1; j <= N; j++) {//x
+			sum[i][j] = sum[i - 1][j] + sum[i][j - 1] - sum[i - 1][j - 1]+map[i-1][j-1];
+		}
+	}
+
+	for (int i = 0; i < N; i++) {//y1
+		for (int j = 0; j < N; j++) {//x1
+			for (int a = i + 1; a <= N; a++) {//y2
+				for (int b = j + 1; b <= N; b++) {//x2
+					int cur_area = sum[a][b] - (sum[a][j] + sum[i][b] - sum[i][j]);
+					arr1[i][j].push_back(cur_area);
+					arr2[i][b].push_back(cur_area);
+					arr3[a][b].push_back(cur_area);
+					arr4[a][j].push_back(cur_area);
+				}
+			}
+		}
+	}
+	for (int i = 0; i <= N; i++) {
+		for (int j = 0; j <= N; j++) {
+			sort(arr1[i][j].begin(), arr1[i][j].end());
+			sort(arr2[i][j].begin(), arr2[i][j].end());
+			sort(arr3[i][j].begin(), arr3[i][j].end());
+			sort(arr4[i][j].begin(), arr4[i][j].end());
+		}
+	}
+	int ans = 0;
+
+	for (int i = 0; i <= N; i++) {
+		for (int j = 0; j <= N; j++) {
+			for (int val : arr1[i][j]) {
+				int idx = lower_bound(arr3[i][j].begin(), arr3[i][j].end(), val)-arr3[i][j].begin();
+				if (idx == arr3[i][j].size()) continue;
+				int find_val = arr3[i][j][idx];
+				if (val != find_val) continue;
+				int idx2 = upper_bound(arr3[i][j].begin(), arr3[i][j].end(), val) - arr3[i][j].begin();
+				ans += (idx2 - idx);
+			}
+
+			for (int val : arr2[i][j]) {
+				int idx = lower_bound(arr4[i][j].begin(), arr4[i][j].end(), val) - arr4[i][j].begin();
+				if (idx == arr4[i][j].size()) continue;
+				int find_val = arr4[i][j][idx];
+				if (val != find_val) continue;
+				int idx2 = upper_bound(arr4[i][j].begin(), arr4[i][j].end(), val) - arr4[i][j].begin();
+				ans += (idx2 - idx);
+			}
+		}
+	}
+	cout << ans;
+}
