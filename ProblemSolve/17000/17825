@@ -1,0 +1,109 @@
+#include<iostream>
+#include<vector>
+#include<string>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+
+int input[11];
+vector<int> g[100];
+int score[100];
+int pos[5];
+int ans = 0;
+int S = 0;
+int E = 32;
+
+bool duplicate() {
+	bool check[40] = { false, };
+	for (int i = 1; i < 5; i++) {
+		if (check[pos[i]]) {
+			return true;
+		}
+		check[pos[i]] = true;
+		check[S] = false;
+		check[E] = false;
+	}
+	return false;
+}
+
+void solve(int times,int sum) {
+	if (times == 11) {
+		ans = max(sum, ans);
+		return;
+	}
+
+	for (int p = 1; p < 5; p++) {
+		int save_p = pos[p];
+		for (int m = 0; m < input[times - 1]; m++) {
+			if (m == 0) {
+				if (g[pos[p]].size() > 1) {
+					pos[p] = g[pos[p]][1];
+				}
+				else {
+					pos[p] = g[pos[p]][0];
+				}
+			}
+			else {
+				pos[p] = g[pos[p]][0];
+			}
+		}
+		if (duplicate()) {
+			pos[p] = save_p;
+			continue;
+		}
+		solve(times + 1, sum + score[pos[p]]);
+		pos[p] = save_p;
+	}
+}
+
+int main() {
+	for (int i = 0; i < 10; i++) {
+		cin >> input[i];
+	}
+	for (int i = 0; i <= 20; i++) {
+		score[i] = i * 2;
+		if (i == 20) break;
+		g[i].push_back(i + 1);
+	}
+	g[5].push_back(21);
+	g[21].push_back(22);
+	g[22].push_back(23);
+	g[23].push_back(29);
+
+	g[10].push_back(24);
+	g[24].push_back(25);
+	g[25].push_back(29);
+
+	g[15].push_back(26);
+	g[26].push_back(27);
+	g[27].push_back(28);
+	g[28].push_back(29);
+
+	g[29].push_back(30);
+	g[30].push_back(31);
+	g[31].push_back(20);
+
+	g[20].push_back(32);
+
+	//end point self loop
+	g[32].push_back(32);
+
+	score[21] = 13;
+	score[22] = 16;
+	score[23] = 19;
+
+	score[24] = 22;
+	score[25] = 24;
+
+	score[26] = 28;
+	score[27] = 27;
+	score[28] = 26;
+
+	score[29] = 25;
+	score[30] = 30;
+	score[31] = 35;
+	score[20] = 40;
+
+	solve(1,0);
+	cout << ans;
+}
