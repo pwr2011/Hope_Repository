@@ -1,0 +1,75 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+using namespace std;
+
+string A, B;
+int lenA, lenB;
+int dp[1'005][1'005];
+int ans = 0;
+int S_A, S_B;
+int E_A, E_B;
+
+int solve(int a, int b) {
+	if (dp[a][b] != -1)return dp[a][b];
+
+	if (a == A.size() || b == B.size()) {
+		return dp[a][b] = 0;
+	}
+
+	int ret = 0;
+	ret = max(ret, solve(a + 1, b) - 2);
+	ret = max(ret, solve(a, b + 1) - 2);
+	ret = max(ret, solve(a + 1, b + 1) + (A[a] == B[b] ? 3 : -2));
+	ans = max(ans, ret);
+	if (ans == ret) {
+		S_A = a;
+		S_B = b;
+	}
+	return dp[a][b] = ret;
+}
+
+void trace(int a,int b) {
+	int left = ans;
+	while (left) {
+		if (left == dp[a + 1][b] - 2) {
+			a = a + 1;
+			left += 2;
+		}
+		else if (left == dp[a][b + 1] - 2) {
+			b = b + 1;
+			left += 2;
+		}
+		else {
+			if (A[a] == B[b]) {
+				left -= 3;
+			}
+			else left += 2;
+			if (left != 0) {
+				a = a + 1;
+				b = b + 1;
+			}
+		}
+	}
+	E_A = a;
+	E_B = b;
+}
+
+int main() {
+	cin >> lenA >> A >> lenB >> B;
+	for (int i = 0; i < 1'005; i++) {
+		for (int j = 0; j < 1'005; j++) {
+			dp[i][j] = -1;
+		}
+	}
+	solve(0, 0);
+	cout << ans<<"\n";
+	trace(S_A,S_B);
+	for (int i = S_A; i <= E_A; i++) {
+		cout << A[i];
+	}
+	cout << "\n";
+	for (int i = S_B; i <= E_B; i++) {
+		cout << B[i];
+	}
+}
