@@ -1,0 +1,75 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#define ll long long
+#define INF 100'000'000'000
+using namespace std;
+typedef pair<ll, ll> p;
+
+vector<ll> g[100'005];
+ll N, M, K, S;
+ll P, Q;
+bool attacked[100'005];
+bool isdanger[100'005];
+bool visit[100'005] = { false, };
+ll dist[100'005];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	queue<ll> q;
+	cin >> N >> M >> K >> S;
+	cin >> P >> Q;
+	for (ll k = 0; k < K; k++) {
+		ll t; cin >> t;
+		attacked[t] = true;
+		q.push(t);
+		visit[t] = true;
+	}
+	for (ll m = 0; m < M; m++) {
+		ll a, b; cin >> a >> b;
+		g[a].push_back(b);
+		g[b].push_back(a);
+	}
+
+	while (!q.empty() && S) {
+		ll qsize = q.size();
+		for (ll t = 0; t < qsize; t++) {
+			ll c = q.front(); q.pop();
+			for (ll n : g[c]) {
+				if (visit[n]) continue;
+				q.push(n);
+				isdanger[n] = true;
+				visit[n] = true;
+			}
+		}
+		S--;
+	}
+
+	for (ll i = 0; i < 100'005; i++) {
+		visit[i] = false;
+	}
+
+	priority_queue<p> pq;
+	pq.push({ 0, 1 });
+	for (ll i = 0; i < 100'005; i++) dist[i] = INF;
+	dist[1] = 0;
+
+	while (!pq.empty()) {
+		auto c = pq.top(); pq.pop();
+		ll cur = c.second; ll d = -c.first;
+		if (dist[cur] != d) continue;
+		visit[cur] = true;
+		if (cur == N) break;
+		for (ll n : g[cur]) {
+			if (visit[n] || attacked[n]) continue;
+			ll cost = !isdanger[n] ? P : Q;
+			if (n == N) cost = 0;
+			if (d + cost < dist[n]) {
+				dist[n] = d + cost;
+				pq.push({ -dist[n],n });
+			}
+		}
+	}
+	cout << dist[N];
+}
