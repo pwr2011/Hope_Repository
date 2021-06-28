@@ -1,0 +1,96 @@
+#include<iostream>
+#include<algorithm>
+#include<cmath>
+#define x first
+#define y second
+using namespace std;
+typedef pair<int, int> P;
+
+bool flag[4] = { false, };
+int N;
+P police[500'005];
+P s;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> police[n].first >> police[n].second;
+	}
+	cin >> s.first >> s.second;
+
+	for (int n = 0; n < N; n++) {
+		P c = police[n];
+		if (c.x > s.x) {
+			if (c.y > s.y) {
+				if (abs(c.y - s.y) > abs(c.x - s.x)) {
+					flag[3] = true;
+				}
+				else if (abs(c.y - s.y) < abs(c.x - s.x)) {
+					flag[0] = true;
+				}
+				else {
+					flag[0] = true; flag[3] = true;
+				}
+			}
+			else if (c.y < s.y) {
+				if (abs(c.y - s.y) > abs(c.x - s.x)) {
+					flag[1] = true;
+				}
+				else if (abs(c.y - s.y) < abs(c.x - s.x)) {
+					flag[0] = true;
+				}
+				else {
+					flag[0] = true; flag[1] = true;
+				}
+			}
+			else {
+				flag[0] = true;
+			}
+		}
+		else if (c.x < s.x) {
+			if (c.y > s.y) {
+				if (abs(c.y - s.y) > abs(c.x - s.x)) {
+					flag[3] = true;
+				}
+				else if (abs(c.y - s.y) < abs(c.x - s.x)) {
+					flag[2] = true;
+				}
+				else {
+					flag[2] = true; flag[3] = true;
+				}
+			}
+			else if (c.y < s.y) {
+				if (abs(c.y - s.y) > abs(c.x - s.x)) {
+					flag[1] = true;
+				}
+				else if (abs(c.y - s.y) < abs(c.x - s.x)) {
+					flag[2] = true;
+				}
+				else {
+					flag[2] = true; flag[1] = true;
+				}
+			}
+			else {
+				flag[2] = true;
+			}
+		}
+		else { // c.x == s.x
+			if (c.y > s.y) {
+				flag[3] = true;
+			}
+			else {
+				flag[1] = true;
+			}
+		}
+	}
+
+	int ret = flag[0] && flag[1] && flag[2] && flag[3];
+	if (!ret) {
+		cout << "YES";
+	}
+	else {
+		cout << "NO";
+	}
+}
