@@ -1,0 +1,46 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+typedef pair<int, int> P;
+
+int N, M;
+int p[500'005];
+
+int parent(int a) {
+	if (p[a] == -1) return a;
+	return p[a] = parent(p[a]);
+}
+
+bool merge(int a, int b) {
+	int p_a = parent(a);
+	int p_b = parent(b);
+	if (p_a != p_b) {
+		if (p_a > p_b) swap(p_a, p_b);
+		p[p_b] = p_a;
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	for (int i = 0; i < 500'005; i++) p[i] = -1;
+
+	cin >> N >> M;
+	int ret = 0;
+	int m;
+	for (m = 0; m < M; m++) {
+		int a, b; cin >> a >> b;
+		if (merge(a, b)) {
+			ret = ++m;
+			break;
+		}
+	}
+	for (; m < M; m++) {
+		int a, b; cin >> a >> b;
+	}
+	cout << ret;
+}
