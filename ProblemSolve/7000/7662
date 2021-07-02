@@ -1,0 +1,54 @@
+#include<iostream>
+#include<map>
+using namespace std;
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+	while (T--) {
+		map<int,int> m;
+		int K; cin >> K;
+		for (int k = 0; k < K; k++) {
+			char q; int n;
+			cin >> q >> n;
+			if (q == 'I') {
+				auto res = m.find(n);
+				if (res == m.end()) {
+					m.insert({ n,1 });
+				}
+				else {
+					res->second++;
+				}
+			}
+			else {
+				if (m.size() == 0) continue;
+				if (n == 1) {
+					auto res = m.rbegin();
+					if (res->second == 1) {
+						m.erase(res->first);
+					}
+					else {
+						res->second--;
+					}
+				}
+				else {
+					auto res = m.begin();
+					if (res->second == 1) {
+						m.erase(res->first);
+					}
+					else {
+						res->second--;
+					}
+				}
+			}
+		}
+		if (m.size() == 0) {
+			cout << "EMPTY\n";
+		}
+		else {
+			cout << m.rbegin()->first << " " << m.begin()->first<<"\n";
+		}
+	}
+}
