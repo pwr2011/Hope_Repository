@@ -1,0 +1,67 @@
+#include<iostream>
+#include<algorithm>
+#include<cmath>
+#define ll long long
+using namespace std;
+
+ll p[100'005];
+ll diff[100'005];
+
+ll parent(ll c) {
+	if (p[c] == -1) return c;
+	else {
+		ll temp_p = p[c]; 
+		p[c] = parent(p[c]);
+		if (temp_p != p[c]) {
+			diff[c] += (diff[temp_p]);
+		}
+		return p[c];
+	}
+}
+
+void merge(ll a, ll b,ll w) {
+	ll p_a = parent(a);
+	ll p_b = parent(b);
+	if (p_a == p_b) return;
+	if (p_a < p_b) {
+		p[p_b] = p_a;
+		diff[p_b] = -diff[b] + w + diff[a];
+	}
+	else {
+		p[p_a] = p_b;
+		diff[p_a] = -diff[a] - w + diff[b];
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	while (1) {
+		for (ll i = 0; i < 100'005; i++) {
+			p[i] = -1;
+			diff[i] = 0;
+		}
+
+		ll N, M; cin >> N >> M;
+		if (N == 0 && M == 0)break;
+		for (ll m = 0; m < M; m++) {
+			char q; cin >> q;
+			if (q == '!') {
+				ll a, b, w; cin >> a >> b >> w;
+				merge(a, b, w);
+			}
+			else {
+				ll a, b; cin >> a >> b;
+				ll p_a = parent(a);
+				ll p_b = parent(b);
+				if (p_a == p_b) {
+					cout << diff[b] - diff[a] << "\n";
+				}
+				else {
+					cout << "UNKNOWN\n";
+				}
+			}
+		}
+	}
+}
