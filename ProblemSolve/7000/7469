@@ -1,0 +1,37 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+using namespace std;
+typedef pair<int, int> P;
+vector<P> arr;
+
+void query(int s, int e, int k) {
+	int count = 0;
+	for (int i = 0; i < arr.size(); i++) {
+		if (arr[i].second >= s && arr[i].second <= e) {
+			count++;
+		}
+		if (count == k) {
+			cout << arr[i].first << "\n";
+			break;
+		}
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N, M; cin >> N >> M;
+	for (int n = 0; n < N; n++) {
+		int t; cin >> t;
+		arr.push_back({ t,n });
+	}
+	sort(arr.begin(), arr.end());
+
+	for (int m = 0; m < M; m++) {
+		int s, e, k;
+		cin >> s >> e >> k;
+		query(s-1, e-1, k);
+	}
+}
