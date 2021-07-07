@@ -1,0 +1,34 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int dp[505][505];
+
+int solve(int cnt,int left) {
+	if (dp[cnt][left] != -1)return dp[cnt][left];
+	if (left == 1) return dp[cnt][left] = cnt;
+	if (cnt == 1) return dp[cnt][left] = 1;
+	
+	int ret = 505;
+	for (int idx = 1; idx <= cnt; idx++) {
+		int cur = 1;
+		if (cnt - idx > 0) {
+			cur = max(cur, solve(cnt - idx, left)+1);
+		}
+		if (idx - 1 > 0) {
+			cur = max(cur, solve(idx - 1, left - 1)+1);
+		}
+		ret = min(cur, ret);
+	}
+	return dp[cnt][left] = ret;
+}
+
+int main(){
+	for (int i = 0; i < 505; i++) {
+		for (int j = 0; j < 505; j++) {
+			dp[i][j] = -1;
+		}
+	}
+	int N, K; cin >> N >> K;
+	cout << solve(N, K);
+}
