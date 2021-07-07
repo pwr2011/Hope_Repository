@@ -1,0 +1,58 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int N;
+int h[100'005];
+
+void solve(int root, vector<int> arr) {
+	if (root >= N) return;
+	vector<int> l_ele; vector<int> r_ele;
+	h[root] = arr[arr.size() - 1];
+
+	int idx = arr.size() - 2;
+	int left = root; int right = root;
+
+	while (left <= N) {
+		left *= 2;
+		right = right * 2 + 1;
+	}
+	left /= 2;
+	right /= 2;
+
+	while (idx >= 0) {
+		int mid = (left + right) / 2;
+		for (int n = mid + 1; n <= min(right, N-1); n++) {
+			r_ele.push_back(arr[idx--]);
+		}
+		for (int n = left; n <= min(mid, N-1); n++) {
+			l_ele.push_back(arr[idx--]);
+		}
+		left /= 2;
+		right /= 2;
+	}
+	vector<int> l_next;
+	for (int i = l_ele.size()-1; i >=0; i--) {
+		l_next.push_back(l_ele[i]);
+	}
+	vector<int> r_next;
+	for (int i = r_ele.size()-1; i >= 0; i--) {
+		r_next.push_back(r_ele[i]);
+	}
+	solve(root * 2, l_next);
+	solve(root * 2+1, r_next);
+}
+
+int main() {
+	cin >> N;
+	vector<int> t;
+	for (int n = 2; n <= N; n++) {
+		t.push_back(n);
+	}
+	solve(1, t);
+	h[N] = 1;
+	for (int i = 1; i <= N; i++) {
+		cout << h[i] << " ";
+	}
+}
