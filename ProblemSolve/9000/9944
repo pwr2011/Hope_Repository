@@ -1,0 +1,83 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int N, M;
+char map[35][35];
+int min_move = 9'999'999;
+bool visit[35][35];
+
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+
+void solve(int y, int x,int left,int move) {
+	if (left == 0) {
+		min_move = min(min_move, move);
+		return;
+	}
+
+	for (int i = 0; i < 4; i++) {
+		int ny = y; int nx = x;
+		while (1) {
+			ny += dy[i];
+			nx += dx[i];
+			if (ny < 0 || nx < 0 || ny >= N || nx >= M ||
+				map[ny][nx] == '*' || visit[ny][nx]) {
+				ny -= dy[i];
+				nx -= dx[i];
+				if (ny != y || nx != x) {
+					solve(ny, nx, left,move+1);
+				}
+				break;
+			}
+			visit[ny][nx] = true;
+			left--;
+		}
+		while (1) {
+			if (ny == y && nx == x) break;
+			visit[ny][nx] = false;
+			ny -= dy[i];
+			nx -= dx[i];
+			left++;
+		}
+	}
+}
+
+int main() {
+	int T = 1;
+	while (1) {
+		cin >> N >> M;
+		if (cin.eof() == true) {
+			break;
+		}
+		
+		int cnt = 0;
+
+		for (int n = 0; n < N; n++) {
+			for (int m = 0; m < M; m++) {
+				cin >> map[n][m];
+				if (map[n][m] == '.') {
+					cnt++;
+				}
+			}
+		}
+		for (int n = 0; n < N; n++) {
+			for (int m = 0; m < M; m++) {
+				if (map[n][m] == '.') {
+					visit[n][m] = true;
+					solve(n, m, cnt-1,0);
+					visit[n][m] = false;
+				}
+			}
+		}
+		cout << "Case " << T << ": ";
+		if (min_move == 9'999'999) {
+			cout<<"-1\n";
+		}
+		else {
+			cout << min_move << "\n";
+		}
+		min_move = 9'999'999;
+		T++;
+	}
+}
