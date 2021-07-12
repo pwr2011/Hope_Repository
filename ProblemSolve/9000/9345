@@ -1,0 +1,90 @@
+#include<iostream>
+#include<cmath>
+#include<algorithm>
+using namespace std;
+
+int N, K;
+int arr1[500'005];
+int arr2[500'005];
+int start;
+
+int find1(int L, int R, int node=1, int nodeL=0, int nodeR=start-1) {
+	if (nodeR < L || R < nodeL) {
+		return 0;
+	}
+	if (L <= nodeL && nodeR <=R) return arr1[node];
+	int mid = (nodeL + nodeR) / 2;
+	return max(find1(L, R, node * 2, nodeL, mid), find1(L, R, node * 2 + 1, mid + 1, nodeR));
+}
+
+int find2(int L, int R, int node=1, int nodeL=0, int nodeR=start-1) {
+	if (nodeR < L || R < nodeL) {
+		return 999'999;
+	}
+	if (L <= nodeL && nodeR <= R) return arr2[node];
+	int mid = (nodeL + nodeR) / 2;
+	return min(find2(L, R, node * 2, nodeL, mid), find2(L, R, node * 2 + 1, mid + 1, nodeR));
+}
+
+void update1(int i) {
+	int idx = i + start;
+	idx /= 2;
+	while (idx > 0) {
+		arr1[idx] = max(arr1[idx * 2], arr1[idx * 2 + 1]);
+		idx /= 2;
+	}
+}
+
+void update2(int i) {
+	int idx = i + start;
+	idx /= 2;
+	while (idx > 0) {
+		arr2[idx] = min(arr2[idx * 2], arr2[idx * 2 + 1]);
+		idx /= 2;
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+	while (T--) {
+		cin >> N >> K;
+		start = pow(2, ceil(log2(N)));
+		for (int i = 0; i < N; i++) {
+			arr1[i+start] = i;
+			arr2[i+start] = i;
+		}
+		for (int i = start - 1; i > 0; i--) {
+			arr1[i] = max(arr1[i * 2], arr1[i * 2 + 1]);
+			arr2[i] = max(arr2[i * 2], arr2[i * 2 + 1]);
+		}
+
+		for (int k = 0; k < K; k++) {
+			int Q, A, B; cin >> Q >> A >> B;
+			if (Q == 0) {
+				int tmp1 = arr1[A + start];
+				int tmp2 = arr2[A + start];
+				arr1[A + start] = arr1[B + start];
+				arr2[A + start] = arr2[B + start];
+				arr1[B + start] = tmp1;
+				arr2[B + start] = tmp2;
+				update1(A);
+				update1(B);
+				update2(A);
+				update2(B);
+			}
+			else {
+				int idx_max = find1(A, B);
+				int idx_min = find2(A, B);
+				if (idx_max <= B && idx_min >= A) {
+					cout << "YES\n";
+				}
+				else {
+					cout << "NO\n";
+				}
+			}
+		}
+	}
+}
