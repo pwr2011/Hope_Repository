@@ -1,0 +1,48 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace std;
+
+int p[1'005];
+int P, W;
+int C, V;
+vector < pair<int, pair<int, int>>> arr;
+//width, s,e
+
+int parent(int a) {
+	if (p[a] == -1) return a;
+	return p[a] = parent(p[a]);
+}
+
+void merge(int a, int b) {
+	int p_a = parent(a);
+	int p_b = parent(b);
+
+	if (p_a != p_b) {
+		if (p_a > p_b) {
+			swap(p_a, p_b);
+		}
+		p[p_b] = p_a;
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	for (int i = 0; i < 1'005; i++) p[i] = -1;
+	cin >> P >> W;
+	cin >> C >> V;
+	for (int w = 0; w < W; w++) {
+		int s, e, width;
+		cin >> s >> e >> width;
+		arr.push_back({ width,{s,e} });
+	}
+	sort(arr.rbegin(), arr.rend());
+
+	for (auto c : arr) {
+		merge(c.second.first, c.second.second);
+		if (parent(C) == parent(V)) {
+			cout << c.first;
+			break;
+		}
+	}
+}
