@@ -1,0 +1,44 @@
+#include<iostream>
+#include<cmath>
+#include<vector>
+#define ll long long
+using namespace std;
+
+ll N, M;
+ll arr[10'006];
+
+int main() {
+	cin.tie(NULL);
+	cin >> N >> M;
+	for (ll m = 0; m < M; m++) {
+		cin >> arr[m];
+	}
+
+	ll l = 1;
+	ll r = 600'000'000'005;
+
+	while (l < r) {
+		ll mid = (l + r) / 2;
+		
+		ll cnt = 0;
+		for (ll m = 0; m < M; m++) {
+			cnt += ceil(1.0 * mid / arr[m]);
+		}
+		if (cnt >= N) {
+			r = mid;
+		}
+		else {
+			l = mid + 1;
+		}  
+	}
+	ll cnt = 0;
+	vector<ll> temp;
+	for (ll m = 0; m < M; m++) {
+		cnt += ceil(1.0 * l / arr[m]);
+		if (l % arr[m] == 1 || arr[m] == 1) { 
+			cnt--;
+			temp.push_back(m);
+		}
+	}
+	cout << temp[N-cnt-1] + 1;
+}
