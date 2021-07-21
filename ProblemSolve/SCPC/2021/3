@@ -1,0 +1,123 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <bitset>
+using namespace std;
+typedef pair<int, int> P;
+
+vector<int> g[505];
+vector<P> k_edge;
+string answer;
+bitset<505> visit[505];
+int N, M, K;
+
+bool solve(int idx) {
+	if (idx == K) return true;
+	P c = k_edge[idx];
+	
+	for (int t = 0; t < 2; t++) {
+		int s, e;
+		if (t == 0) { // 
+			s = c.first; e = c.second;
+			answer.push_back('0');
+		}
+		else {
+			s = c.second; e = c.first;
+			answer.push_back('1');
+		}
+		g[s].push_back(e);
+		if(!visit[s][e]){
+			vector<pair<int,bitset<505>>> temp;
+			bool v[505] = { false, };
+			v[s] = true;
+
+			queue<int> q;
+			q.push(s);
+			while (!q.empty()) {
+				int cur = q.front(); q.pop();
+				for (int n : g[cur]) {
+					if (v[n]) continue;
+					v[n] = true;
+					temp.push_back({ n,visit[n] });
+					visit[n] |= visit[s];
+					q.push(n);
+				}
+			}
+
+			if (solve(idx + 1)) {
+				return true;
+			}
+			//return to ori
+			for (auto ori : temp) {
+				int number = ori.first;
+				visit[number] = ori.second;
+			}
+		}
+		g[s].pop_back();
+		answer.pop_back();
+	}
+
+	return false;
+}
+
+int main(int argc, char** argv)
+{
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T, test_case;
+
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		int ind[505] = { 0, };
+		cin >> N >> M >> K;
+		for (int m = 0; m < M; m++) { // 방향있는 간선
+			int a, b; cin >> a >> b;
+			g[a].push_back(b);
+			ind[b]++;
+		}
+
+		for (int k = 0; k < K; k++) {
+			int a, b; cin >> a >> b;
+			k_edge.push_back({ a,b });
+		}
+
+		queue<int> q;
+		for (int n = 1; n <= N; n++) {
+			visit[n][n] = true;
+			if (ind[n] == 0) {
+				q.push(n);
+			}
+		}
+
+		while (!q.empty()) {
+			int c = q.front(); q.pop();
+			for (int n : g[c]) {
+				for (int idx = 1; idx <= N; idx++) {
+					if (visit[c][idx]) visit[n][idx] = true;
+				}
+				ind[n]--;
+				if (ind[n] == 0) {
+					q.push(n);
+				}
+			}
+		}
+
+		solve(0);
+		
+		cout << "Case #" << test_case + 1 << endl;
+		cout << answer<<"\n";
+		k_edge.clear();
+		for (int i = 1; i <= N; i++) {
+			g[i].clear();
+			for (int j = 1; j <= N; j++) {
+				visit[i].reset();
+			}
+		}
+		answer.clear();
+	}
+
+	return 0;
+}
