@@ -1,0 +1,107 @@
+#include<iostream>
+#include<queue>
+#include<algorithm>
+#include<vector>
+#define to_num(r,c) r*C+c 
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+int R, C;
+bool visit[1502][1502];
+bool melt[1502][1502];
+char map[1502][1502];
+int p[2'250'005];
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,1,0,-1 };
+
+int parent(int a) {
+	if (p[a] == -1)return a;
+	return p[a] = parent(p[a]);
+}
+
+void merge(int a, int b) {
+	int p_a = parent(a);
+	int p_b = parent(b);
+	if (p_a != p_b) {
+		if (p_a > p_b) swap(p_a, p_b);
+		p[p_b] = p_a;
+	}
+}
+
+vector<int> L;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	fill(p, p + 2'250'005, -1);
+	cin >> R >> C;
+	for (int r = 0; r < R; r++) {
+		for (int c = 0; c < C; c++) {
+			cin >> map[r][c];
+			if (map[r][c] == 'L') {
+				L.push_back(to_num(r, c));
+				map[r][c] = '.';
+			}
+		}
+	}
+
+	queue <P> q;
+	for (int r = 0; r < R; r++) {
+		for (int c = 0; c < C; c++) {
+			if (map[r][c] == '.') {
+				int cur = to_num(r, c);
+				for (int i = 0; i < 4; i++) {
+					P n; n.y = r + dy[i]; n.x = c + dx[i];
+					if (n.y < 0 || n.x < 0 || n.y >= R || n.x >= C) continue;
+					if (map[n.y][n.x] == '.') {
+						merge(cur, to_num(n.y, n.x));
+					}
+					else {
+						q.push({ n.y,n.x });
+						visit[n.y][n.x] = true;
+					}
+				}
+			}
+		}
+	}
+
+	int time = 0; 
+	if (parent(L[0]) == parent(L[1])) {
+		cout << time; return 0;
+	}
+	time++;
+
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int t = 0; t < qsize; t++) {
+			P cur = q.front(); q.pop();
+			int cur_num = to_num(cur.y, cur.x);
+			melt[cur.y][cur.x] = true;
+			for (int i = 0; i < 4; i++) {
+				P n; n.y = cur.y + dy[i]; n.x = cur.x + dx[i];
+				if (n.y < 0 || n.x < 0 || n.y >= R || n.x >= C) continue;
+				if (map[n.y][n.x] == '.') {
+					merge(cur_num, to_num(n.y, n.x));
+				}
+				else {
+					if (visit[n.y][n.x]) {
+						if (melt[n.y][n.x]) {
+							merge(cur_num, to_num(n.y, n.x));
+						}
+					}
+					else {
+						q.push(n);
+						visit[n.y][n.x] = true;
+					}
+				}
+			}
+		}
+		if (parent(L[0]) == parent(L[1])) {
+			break;
+		}
+		time++;
+	}
+	cout << time;
+}
