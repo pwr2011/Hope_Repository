@@ -1,0 +1,56 @@
+#include <iostream>
+#include<algorithm>
+using namespace std;
+
+int Answer;
+int p[100'005];
+
+int parent(int i) {
+	if (p[i] == -1) return i;
+	return p[i] = parent(p[i]);
+}
+
+void merge(int a, int b) {
+	int p_a = parent(a);
+	int p_b = parent(b);
+
+	if (p_a != p_b) {
+		if (p_a > p_b) swap(p_a, p_b);
+		p[p_b] = p_a;
+	}
+}
+
+int main(int argc, char** argv)
+{
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T, test_case;
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		Answer = 0;
+		int N; cin >> N;
+		for (int i = 0; i <= N; i++) {
+			p[i] = -1;
+		}
+
+		for (int idx = 1; idx <= N; idx++) {
+			int n; cin >> n;
+			if (idx + n <= N) {
+				merge(idx, idx + n);
+			}
+		}
+
+		for (int idx = 1; idx <= N; idx++) {
+			if (parent(idx) == idx) {
+				Answer++;
+			}
+		}
+		
+		cout << "Case #" << test_case + 1 << endl;
+		cout << Answer << endl;
+	}
+
+	return 0;
+}
