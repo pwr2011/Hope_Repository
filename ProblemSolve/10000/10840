@@ -1,0 +1,48 @@
+#include<iostream>
+#include<vector>
+#include<string>
+#include<set>
+using namespace std;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	set<vector<int>> m;
+
+	string A, B; cin >> A >> B;
+	for (int len = 0; len < A.size(); len++) {
+		int s = 0;
+		int e = s + len;
+		vector<int> arr; arr.resize(26);
+		for (int i = s; i <= e; i++) {
+			arr[A[i] - 'a']++;
+		}
+		while (e < A.size()) {
+			m.insert(arr);
+			if (++e < A.size()) {
+				arr[A[s++] - 'a']--;
+				arr[A[e] - 'a']++;
+			}
+		}
+	}
+
+	int ans = 0;
+	for (int len = 0; len < B.size(); len++) {
+		int s = 0;
+		int e = s+len;
+		vector<int> arr; arr.resize(26);
+		for (int i = s; i <= e; i++) {
+			arr[B[i] - 'a']++;
+		}
+		while (e < B.size()) {
+			if (m.find(arr) != m.end()) {
+				ans = len + 1; break;
+			}
+			if (++e < B.size()) {
+				arr[B[e] - 'a']++;
+				arr[B[s++] - 'a']--;
+			}
+		}
+	}
+	cout << ans;
+}
