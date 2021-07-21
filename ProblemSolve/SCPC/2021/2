@@ -1,0 +1,48 @@
+#include <iostream>
+#include<string>
+using namespace std;
+
+int main(int argc, char** argv)
+{
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T, test_case;
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		int N, T; cin >> N >> T;
+		string A, B; cin >> B;
+		for (int a = 0; a < N; a++) {
+			A.push_back('0');
+		}
+		
+		for (int b = 0; b < B.size(); b++) {
+			if (B[b] == '0') continue;
+			if (b - T >= 0) {
+				if (A[b - T] == '1') continue;
+			}
+			if (b + T < N) {
+				if (b + 2 * T < N) {
+					if (B[b + 2 * T] == '1') {
+						A[b + T] = '1';
+					}
+					else {
+						A[b - T] = '1';
+					}
+				}
+				else {
+					A[b + T] = '1';
+				}
+			}
+			else {
+				A[b - T] = '1';
+			}
+		}
+
+		cout << "Case #" << test_case + 1 << endl;
+		cout << A << endl;
+	}
+
+	return 0;
+}
