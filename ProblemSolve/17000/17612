@@ -1,0 +1,46 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define ll long long
+using namespace std;
+typedef pair<int, int> P;
+
+ll ans = 0;
+vector<P> time[2'000'100];
+vector<P> ord;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N, K; cin >> N >> K;
+	for (int n = 0; n < N; n++) {
+		int id, w; cin >> id >> w;
+		ord.push_back({ id,w });
+	}
+	for (int n = 0; n < min(N,K); n++) {
+		time[ord[n].second].push_back({ n,ord[n].first });
+	}
+	
+	int cnt = 0;
+	ll mul = 1;
+	int idx = K;
+	for (int t = 0;; t++) {
+		if (time[t].size() != 0) {
+			sort(time[t].rbegin(), time[t].rend());
+			vector<int> seat;
+			for (P c : time[t]) {
+				cnt++;
+				ans += (ll)c.second * (mul++);
+				seat.push_back(c.first);
+			}
+			for (int i = seat.size() - 1; i >= 0; i--) {
+				if (idx < N) {
+					time[t + ord[idx].second].push_back({seat[i],ord[idx].first });
+					idx++;
+				}
+			}
+		}
+		if (cnt == N)break;
+	}
+	cout << ans;
+}
