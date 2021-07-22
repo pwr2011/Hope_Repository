@@ -1,0 +1,65 @@
+#include<iostream>
+#include<queue>
+#include<vector>
+#define MAX 1'000'000'000
+using namespace std;
+typedef pair<int, int> P;
+
+vector<P> g[1'005];
+int N, K;
+
+bool solve(int cut) {
+	bool visit[1'005] = { false, };
+	int dist[1'005];
+	for (int i = 0; i < N; i++) dist[i] = MAX;
+
+	priority_queue<P> pq;
+	pq.push({ 0,0 });
+	dist[0] = 0;
+	while (!pq.empty()) {
+		auto c = pq.top(); pq.pop();
+		int cur = c.second; int d = -c.first;
+		if (dist[cur] != d) continue;
+		visit[cur] = true;
+		if (cur == N - 1) {
+			if (dist[cur] <= K) return true;
+			else return false;
+		}
+		for (P n : g[cur]) {
+			int next = n.first; int cost = n.second <= cut ? 0 : 1;
+			
+			if (visit[next])continue;
+			if (d + cost < dist[next]) {
+				dist[next] = (d + cost);
+				pq.push({ -dist[next],next });
+			}
+		}
+	}
+	return false;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int P;
+	cin >> N >> P >> K;
+	for (int p = 0; p < P; p++) {
+		int a, b, w; cin >> a >> b >> w;
+		g[a-1].push_back({ b-1,w });
+		g[b-1].push_back({ a-1,w });
+	}
+
+	int ans = -1;
+	int l = 0; int r = 1'000'000;
+	while (l < r) {
+		int mid = (l + r) / 2;
+		if (solve(mid)) {
+			ans = mid;
+			r = mid;
+		}
+		else {
+			l = mid+1;
+		}
+	}
+	cout << ans;
+}
