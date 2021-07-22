@@ -1,0 +1,47 @@
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<set>
+using namespace std;
+typedef pair<int, int> P;
+
+vector<int> chick;
+vector<P> cow;
+multiset<int> s;
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int C, N; cin >> C >> N;
+	for (int c = 0; c < C; c++) {
+		int T; cin >> T;
+		chick.push_back(T);
+	}
+
+	for (int n = 0; n < N; n++) {
+		int a, b; cin >> a >> b;
+		cow.push_back({ a,b });
+	}
+
+	sort(cow.begin(), cow.end());
+	sort(chick.begin(), chick.end());
+
+	int cow_idx = 0;
+
+	int ans = 0;
+	for (int c = 0; c < C; c++) {
+		int time = chick[c];
+		if (cow_idx < cow.size()) {
+			while (cow[cow_idx].first <= time) {
+				s.insert(cow[cow_idx++].second);
+				if (cow_idx == cow.size())break;
+			}
+		}
+		auto iter = s.lower_bound(time);
+		if (iter != s.end()) {
+			ans++;
+			s.erase(iter);
+		}
+	}
+	cout << ans;
+}
