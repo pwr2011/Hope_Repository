@@ -1,0 +1,81 @@
+#include<iostream>
+#include<map>
+#include<vector>
+#include<queue>
+#include<string>
+#include<stack>
+using namespace std;
+
+vector<string> code;
+vector<int> g[100'005];
+int prv[100'005];
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	for (int i = 0; i < 100'005; i++) {
+		prv[i] = -1;
+	}
+
+	map<string, int> s;
+	int N, K; cin >> N >> K;
+	for (int n = 0; n < N; n++) {
+		string t; cin >> t;
+		code.push_back(t);
+		s.insert({t,n });
+	}
+	for (int i = 0; i < code.size(); i++) {
+		string c = code[i];
+		s.erase(c);
+		for (int k = 0; k < K; k++) {
+			string temp = c;
+			if (temp[k] == '0') {
+				temp[k] = '1';
+			}
+			else {
+				temp[k] = '0';
+			}
+			auto iter = s.find(temp);
+			if (iter != s.end()) {
+				g[i].push_back(iter->second);
+				g[iter->second].push_back(i);
+			}
+		}
+	}
+
+	bool visit[100'005] = { false, };
+	queue<int> q;
+	q.push(0);
+	visit[0] = true;
+	while (!q.empty()) {
+		int qsize = q.size();
+		int c = q.front(); q.pop();
+		for (int n : g[c]) {
+			if (visit[n])continue;
+			prv[n] = c;
+			q.push(n);
+			visit[n] = true;
+		}
+
+	}
+
+	int M; cin >> M;
+	for (int m = 0; m < M; m++) {
+		int num; cin >> num; num--;
+		if (prv[num] == -1) cout << -1 << "\n";
+		else {
+			stack<int> s;
+			int cur = num;
+			s.push(cur);
+			while (cur != 0) {
+				s.push(prv[cur]);
+				cur = prv[cur];
+			}
+			while (!s.empty()) {
+				cout << s.top()+1<<" "; s.pop();
+			}
+			cout << "\n";
+		}
+	}
+}
