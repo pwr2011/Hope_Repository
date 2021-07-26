@@ -1,0 +1,100 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int arr[100'005];
+int sum[4][100'005];
+int cnt[4];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N;
+	for (int n = 0; n < N; n++) {
+		cin >> arr[n];
+	}
+	sum[arr[0]][0]++;
+	cnt[arr[0]]++;
+	for (int n = 1; n < N; n++) {
+		sum[arr[n]][n]++;
+		cnt[arr[n]]++;
+		for (int i = 1; i <= 3; i++) {
+			sum[i][n] = sum[i][n] + sum[i][n - 1];
+		}
+	}
+
+	int ans = 9'999'999;
+	int idx[4] = { 0, };
+	for (int a = 1; a <= 3; a++) {
+		idx[a] = 0;
+		for (int b = 1; b <= 3; b++) {
+			if (a == b) continue;
+			idx[b] = cnt[a];
+			for (int c = 1; c <= 3; c++) {
+				if (a == c || b == c) continue;
+				idx[c] = cnt[a] + cnt[b];
+
+				int tmp_ans = 0;
+
+				int a_b_cnt = sum[b][idx[b] - 1];
+				int a_c_cnt = sum[c][idx[b] - 1];
+
+				int b_a_cnt = sum[a][idx[c] - 1] - sum[a][idx[b] - 1];
+				int b_c_cnt = sum[c][idx[c] - 1] - sum[c][idx[b] - 1];
+
+				int c_a_cnt = sum[a][N - 1] - sum[a][idx[c] - 1];
+				int c_b_cnt = sum[b][N - 1] - sum[b][idx[c] - 1];
+
+				if (a_b_cnt == b_a_cnt) {
+					tmp_ans += a_b_cnt;
+					a_b_cnt = 0;
+					b_a_cnt = 0;
+				}
+				else if (a_b_cnt > b_a_cnt) {
+					tmp_ans += b_a_cnt;
+					a_b_cnt = a_b_cnt - b_a_cnt;
+					b_a_cnt = 0;
+				}
+				else {
+					tmp_ans += a_b_cnt;
+					b_a_cnt = b_a_cnt - a_b_cnt;
+					a_b_cnt = 0;
+				}
+
+				if (a_c_cnt == c_a_cnt) {
+					tmp_ans += a_c_cnt;
+					a_c_cnt = 0;
+					c_a_cnt = 0;
+				}
+				else if (a_c_cnt > c_a_cnt) {
+					tmp_ans += c_a_cnt;
+					a_c_cnt = a_c_cnt - c_a_cnt;
+					c_a_cnt = 0;
+				}
+				else {
+					tmp_ans += a_c_cnt;
+					c_a_cnt = c_a_cnt - a_c_cnt;
+					a_c_cnt = 0;
+				}
+
+				if (a_b_cnt != 0) {
+					tmp_ans += (a_b_cnt*2);
+					b_c_cnt -=a_b_cnt;
+					c_a_cnt-=a_b_cnt;
+					a_b_cnt = 0;
+				}
+				if (a_c_cnt != 0) {
+					tmp_ans += (a_c_cnt * 2);
+					b_a_cnt -= a_c_cnt;
+					c_b_cnt -= a_c_cnt;
+					a_c_cnt = 0;
+				}
+
+				tmp_ans += b_c_cnt;
+				ans = min(tmp_ans, ans);
+				int tt = 2;
+			}
+		}
+	}
+	cout << ans;
+}
