@@ -1,0 +1,53 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+using namespace std;
+
+string cur, want;
+
+int dp[10'005][10];
+int N;
+
+int solve(int idx, int add) {
+	if (dp[idx][add] != -1)return dp[idx][add];
+
+	if (idx == N) return 0;
+
+	int cur_num = (cur[idx] - '0' + add) % 10;
+	int want_num = want[idx] - '0';
+
+	int ans = 9'999'999;
+	int rot;
+	if (want_num >= cur_num) {
+		rot = want_num - cur_num;
+	}
+	else {
+		rot = 10 + want_num - cur_num;
+	}
+	ans = min(ans, solve(idx + 1, (add + rot) % 10) + rot);
+
+	if (want_num <= cur_num) {
+		rot = cur_num - want_num;
+	}
+	else {
+		rot = 10 + cur_num - want_num;
+	}
+
+	ans = min(ans, solve(idx + 1, add) + rot);
+	return dp[idx][add] = ans;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	for (int i = 0; i < 10'005; i++) {
+		for (int j = 0; j < 10; j++) {
+			dp[i][j] = -1;
+		}
+	}
+
+	cin >> N;
+	cin >> cur >> want;
+
+	cout<<solve(0, 0);
+}
