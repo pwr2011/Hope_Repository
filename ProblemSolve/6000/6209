@@ -1,0 +1,41 @@
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+int dist[50'005];
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int D, N, M; cin >> D >> N >> M;
+
+	for (int n = 0; n < N; n++) {
+		cin >> dist[n];
+	}
+	dist[N] = D;
+
+	sort(dist, dist + N);
+
+	int lo = 0; int hi = 1'000'000'000;
+
+	while (lo < hi) {
+		int cnt = 0;
+		int prev = 0;
+		int mid = (lo + hi+1) / 2;
+		for (int n = 0; n <= N; n++) {
+			if (prev + mid > dist[n]) {
+				cnt++;
+			}
+			else {
+				prev = dist[n];
+			}
+		}
+		if (cnt > M) {
+			hi = mid - 1;
+		}
+		else {
+			lo = mid;
+		}
+	}
+	cout << lo;
+}
