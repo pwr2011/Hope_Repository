@@ -1,0 +1,73 @@
+#include<iostream>
+using namespace std;
+
+int N, K;
+int dp[45][2][2][2];
+
+
+int solve(int idx, bool prev, bool cur, bool free) {
+	if (dp[idx][prev][cur][free] != -1)
+		return dp[idx][prev][cur][free];
+
+	if (idx == N) return 1;
+	bool next = false;
+	if (idx + 1 < N && !((idx + 1 == K) && !free)) {
+		next = true;
+	}
+
+	if (idx == K) {
+		return dp[idx][prev][cur][free]
+			= solve(idx + 1, cur, next, free);
+	}
+
+	int ans = 0;
+	if (next) {
+		bool temp_free = free;
+		if (idx + 1 < N) {
+			if (idx + 1 == K) {
+				temp_free = false;
+			}
+			ans += 
+				solve(idx + 1, cur, false, temp_free);
+		}
+	}
+
+	if (cur ) {
+		bool temp_free = free;
+		if (idx == K) temp_free = false;
+		ans += solve(idx + 1, false, next, temp_free);
+	}
+
+	if (prev) {
+		bool temp_free = free;
+		if (idx - 1 == K) temp_free = false;
+		ans += solve(idx + 1, cur, next, temp_free);
+	}
+
+	if (free && !(idx-1 == K || idx == K || idx+1==K)) {
+		if (K == idx) {
+			cur = false;
+		}
+		else if (K == idx + 1) {
+			next = false;
+		}
+		ans += solve(idx + 1, cur, next, false);
+	}
+
+	return dp[idx][prev][cur][free] =
+		ans;
+}
+
+int main() {
+	for (int i = 0; i < 45; i++) {
+		for (int j = 0; j < 2; j++) {
+			for (int k = 0; k < 2; k++) {
+				dp[i][j][k][0] = -1;
+				dp[i][j][k][1] = -1;
+			}
+		}
+	}
+	cin >> N >> K;
+	K--;
+	cout << solve(0, false, true, true);
+}
