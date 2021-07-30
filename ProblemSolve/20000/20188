@@ -1,0 +1,66 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+
+#define ll long long
+#define MAX_SIZE 300'005
+using namespace std;
+
+ll depth[MAX_SIZE];
+vector<ll> g[MAX_SIZE]; 
+ll ans = 0;
+
+void dfs(ll c, ll prev, ll d) {
+	depth[c] = d;
+	for (ll n : g[c]) {
+		if (prev == n) continue;
+		dfs(n, c, d + 1);
+	}
+	return;
+}
+
+ll dfs2(ll c, ll prev) {
+	vector<ll> count;
+	ll add = 0;
+	ll mul = 1;
+	for (ll n : g[c]) {
+		if (n == prev) continue;
+		ll val = dfs2(n, c);
+		count.push_back(val);
+		add += val;
+		mul *= val;
+	}
+	if (count.size() > 1) {
+		ll temp_add = add;
+		for (ll t : count) {
+			ans -= (temp_add - t) * t * depth[c];
+			temp_add -= t;
+		}
+		ans -= add * depth[c];
+	}
+	else {
+		ans -= (add)*depth[c];
+	}
+	return add + 1;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+
+	ll N; cin >> N;
+	for (ll n = 0; n < N - 1; n++) {
+		ll a, b; cin >> a >> b;
+		g[a - 1].push_back(b - 1);
+		g[b - 1].push_back(a - 1);
+	}
+
+	dfs(0, -1, 0);
+
+	for (ll i = 0; i < N; i++) {
+		ans += (depth[i]) * (N - 1);
+	}
+
+	dfs2(0, -1);
+	cout << ans;
+}
