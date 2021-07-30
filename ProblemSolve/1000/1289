@@ -1,0 +1,36 @@
+#include<iostream>
+#include<vector>
+#define MOD 1'000'000'007
+#define ll long long
+using namespace std;
+typedef pair<ll, ll> P;
+
+vector<P> g[100'005];
+ll ans = 0;
+
+ll dfs(ll c, ll p) {
+	ll add = 0;
+	for (P n : g[c]) {
+		if (n.first == p) continue;
+		ll ret = (((dfs(n.first, c) *  n.second) % MOD) + n.second) % MOD;
+		ans += ret; ans %= MOD;
+
+		ans += (add * ret) % MOD; ans %= MOD;
+		add += ret; add %= MOD;
+	}
+
+	return add;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	int N; cin >> N;
+	for (int n = 0; n < N - 1; n++) {
+		ll a, b, w; cin >> a >> b >> w;
+		g[a - 1].push_back({ b - 1,w });
+		g[b - 1].push_back({ a - 1,w });
+	}
+	dfs(0, -1);
+	cout << ans;
+}
