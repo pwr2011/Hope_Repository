@@ -1,0 +1,63 @@
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+int map[1'000][1'000];
+int sum[1'000][1'000];
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int times = 1;
+	while (1) {
+		int N; cin >> N;
+		int x_start = 500;
+		if (N == 0) break;
+		for (int n = 0; n < N; n++) {
+			int total = 0;
+			for (int cnt = 0; cnt < 1 + 2 * n; cnt++) {
+				cin >> map[n][x_start + cnt];
+				total += map[n][x_start + cnt];
+				sum[n][x_start + cnt] = total;
+			}
+			x_start--;
+		}
+
+		int ans = -99'999'999;
+		for (int n = 0; n < N; n++) {
+			int x_start = 500 - n;
+			for (int cnt = 0; cnt < n+1; cnt++) {
+				int total = 0;
+				for (int len = 0; len < N - n; len++) {
+					total += sum[n + len][x_start + len] - sum[n + len][x_start - len - 1];
+					ans = max(total, ans);
+				}
+				x_start += 2;
+			}
+		}
+
+		for (int n = 1; n < N; n++) {
+			int x_start = 500 - (n - 1);
+			for (int cnt = 0; cnt < n; cnt++) {
+				int total = 0;
+				for (int len = 0;; len++) {
+					//cur_n = n-len  and n's area is 500-n~500+n
+					if (x_start + len > 500 + (n - len) || x_start - len < 500 - (n - len) )break;
+					total += sum[n - len][x_start + len] - sum[n - len][x_start - len - 1];
+					ans = max(total, ans);
+				}
+				x_start += 2;
+			}
+
+		}
+
+		cout << times << ". " << ans<<"\n";
+		times++;
+
+		for (int i = 0; i < 1'000; i++) {
+			for (int j = 0; j < 1'000; j++)sum[i][j] = 0;
+		}
+	}
+}
