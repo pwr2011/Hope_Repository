@@ -1,0 +1,36 @@
+#include<iostream>
+#define MOD 1'000'000'000
+using namespace std;
+
+int dp[1100][105][10];
+
+int main() {
+	int N; cin >> N;
+
+	for (int num = 0; num < 10; num++) {
+		dp[1023][0][num] = 1;
+	}
+
+	for (int n = 1; n < N; n++) {
+		for (int num = 0; num < 10; num++) {
+			for (int i = 0; i < 1024; i++) {
+				if (num + 1 < 10) {
+					dp[i][n][num] +=
+						dp[i | (1 << (num + 1))][n - 1][num + 1];
+				}
+				dp[i][n][num] %= MOD;
+				if (num - 1 >= 0) {
+					dp[i][n][num] +=
+						dp[i | (1 << (num - 1))][n - 1][num - 1];
+				}
+				dp[i][n][num] %= MOD;
+			}
+		}
+	}
+	int ans = 0;
+	for (int num = 1; num < 10; num++) {
+		ans += dp[(1 << num)][N - 1][num];
+		ans %= MOD;
+	}
+	cout << ans;
+}
