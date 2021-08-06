@@ -1,0 +1,43 @@
+#include<iostream>
+#include<string>
+#include<algorithm>
+#define SIZE 2505
+using namespace std;
+
+bool isPalin[SIZE][SIZE];
+int dp[SIZE]; string s;
+
+int solve(int st) {
+	if (dp[st] != SIZE) return dp[st];
+	if (st >= s.size()) return 0;
+	for (int e = st; e < s.size(); e++) {
+		if (isPalin[st][e]) {
+			dp[st] = min(dp[st], solve(e + 1) + 1);
+		}
+	}
+	return dp[st];
+}
+
+int main() {
+	for (int i = 0; i < SIZE; i++)dp[i] = SIZE;
+
+	cin >> s;
+	for (int i = 0; i < s.size(); i++) {
+		isPalin[i][i] = true;
+	}
+	for (int i = 0; i < s.size()-1; i++) {
+		if (s[i] == s[i + 1]) {
+			isPalin[i][i + 1] = true;
+		}
+	}
+
+	for (int len = 3; len <= s.size(); len++) {
+		for (int start = 0; start + len -1 < s.size(); start++) {
+			int end = start + len - 1;
+			if (!isPalin[start + 1][end - 1]) continue;
+			if (s[start] == s[end]) isPalin[start][end] = true;
+		}
+	}
+
+	cout<<solve(0);
+}
