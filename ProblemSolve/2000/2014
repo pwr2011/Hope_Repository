@@ -1,0 +1,43 @@
+#include<iostream>
+#include<queue>
+#include<algorithm>
+#include<cmath>
+#define ll long long
+#define MAX_VAL (ll)1<<31
+using namespace std;
+
+int K, N;
+vector<ll> input;
+priority_queue<ll> ans;
+
+void solve(ll idx, ll total) {
+	if (total >= MAX_VAL) return;
+	if (idx == input.size()) {
+		if(ans.size() == N+1)
+			ans.pop();
+		ans.push(total);
+		return;
+	}
+	for (ll i = 0;; i++) {
+		ll next_total = total * pow(input[idx],i);
+		if (ans.size() == N+1) {
+			if (ans.top() < next_total) break;
+		}
+		if (next_total >= MAX_VAL) break; 
+		solve(idx + 1, next_total);
+	}
+	return;
+}
+
+int main() {
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> K >> N;
+	for (int k = 0; k < K; k++) {
+		ll t; cin >> t;
+		input.push_back(t);
+	}
+
+	solve(0, 1);
+	cout << ans.top();
+}
