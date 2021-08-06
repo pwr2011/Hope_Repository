@@ -1,0 +1,77 @@
+#include<iostream>
+#include<vector>
+#define ll long long
+#define MOD 9'999'991
+using namespace std;
+
+ll combi[22][22]; 
+ll children[22][2];
+ll total_count[22];
+
+ll solve(ll c) {
+	ll left_count = 0, right_count = 0;
+	ll left = children[c][0];
+	ll right = children[c][1];
+	if (left != 0) {
+		left_count = solve(left);
+	}
+	if (right != 0) {
+		right_count = solve(right);
+	}
+
+	total_count[c] =
+		((combi[left_count + right_count][left_count]
+			* total_count[left]) % MOD * total_count[right] % MOD);
+
+	return left_count + right_count + 1;
+}
+
+int main() {
+	cout.tie(NULL);
+	cin.tie(NULL);
+	ios::sync_with_stdio(false);
+	for (ll n = 0; n <= 20; n++) {
+		combi[n][0] = 1;
+		for (ll m = 1; m <= n; m++) {
+			combi[n][m] = combi[n][m - 1] * (n - m + 1) / m;
+		}
+	}
+
+	ll T; cin >> T;
+	while (T--) {
+		for (ll i = 0; i < 22; i++) { 
+			total_count[i] = 1;
+			children[i][0] = 0; 
+			children[i][1] = 0;
+		}
+		ll N; cin >> N;
+		ll root = 0;
+		
+		cin >> root;
+		for (ll n = 1; n < N; n++) {
+			ll input; cin >> input;
+			ll cur = root;
+			ll last = 0;
+			while (cur != 0) {
+				if (cur > input) {
+					last = cur;
+					cur = children[cur][0];
+				}
+				else {
+					last = cur;
+					cur = children[cur][1];
+				}
+			}
+			if (input > last) {
+				children[last][1] = input;
+			}
+			else {
+				children[last][0] = input;
+			}
+		}
+		//tree complete
+
+		solve(root);
+		cout << total_count[root] << "\n";
+	}
+}
