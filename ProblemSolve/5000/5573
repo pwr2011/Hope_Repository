@@ -1,0 +1,66 @@
+#include<iostream>
+#include<algorithm>
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+bool dir[1005][1005];
+int times[1005][1005];
+int dx[] = { 1,0 };
+int dy[] = { 0,1 };
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int H, W, N; cin >> H >> W >> N;
+	for (int h = 0; h < H; h++) {
+		for (int w = 0; w < W; w++) {
+			cin >> dir[h][w];
+		}
+	}
+	N--;
+	times[0][0] = N;
+
+	for (int len = 0; len < H + W - 1; len++) {
+		P c;
+		for (c.y = 0; c.y <= min(H-1,len); c.y++) {
+			c.x = len - c.y;
+			if (c.x >= W) continue;
+			int down = 0, right = 0; 
+			if (times[c.y][c.x] % 2) {
+				if (dir[c.y][c.x]) { //1
+					right = times[c.y][c.x] / 2 + 1;
+					down = times[c.y][c.x] / 2;
+				}
+				else {
+					right = times[c.y][c.x] / 2;
+					down = times[c.y][c.x] / 2 + 1;
+				}
+				dir[c.y][c.x] = !dir[c.y][c.x];
+			}
+			else {
+				right = times[c.y][c.x] / 2;
+				down = times[c.y][c.x] / 2;
+			}
+			for (int i = 0; i < 2; i++) { //i == 0 -> right
+				P n; n.x = c.x + dx[i]; n.y = c.y + dy[i];
+				if (n.y >= H || n.x >= W) continue;
+				times[n.y][n.x] += (i == 0 ? right : down);
+			}
+		}
+	}
+
+	P c = { 0,0 };
+	while (1) {
+		if (dir[c.y][c.x]) {
+			c.x += 1;
+		}
+		else {
+			c.y += 1;
+		}
+		if (c.y == H || c.x == W) break;
+	}
+	cout << c.y + 1 << " " << c.x + 1;
+}
