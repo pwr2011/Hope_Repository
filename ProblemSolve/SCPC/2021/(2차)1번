@@ -1,0 +1,36 @@
+#include <iostream>
+#include<cmath>
+#define ll long long
+using namespace std;
+
+ll Answer;
+
+int main(int argc, char** argv)
+{
+	int T, test_case;
+	
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		int R; cin >> R;
+		Answer = 0;
+		ll x = R;
+
+		for (int y = 1; y < R; y++) {
+			while (1) {
+				if (sqrt(pow(x, 2) + pow(y, 2)) >= R) {
+					x--;
+				}
+				else {
+					break;
+				}
+			}
+			Answer += (x + 1);
+		}
+	
+		cout << "Case #" << test_case + 1 << endl;
+		cout << Answer*4 +1<< endl;
+	}
+
+	return 0;
+}
