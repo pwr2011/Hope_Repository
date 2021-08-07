@@ -1,0 +1,171 @@
+#include <iostream>
+#include <algorithm>
+#define ll long long
+#define MAX_SIZE 3'265
+#define y_start 1'250
+#define x_start 1'250
+using namespace std;
+
+ll Answer;
+int score[MAX_SIZE][MAX_SIZE];
+ll diag[MAX_SIZE][MAX_SIZE][2]; //0 is 오른 아래 1은 왼쪽 아래
+ll triangle[MAX_SIZE][MAX_SIZE][2]; //0은 위로 뾰족 1은 아래로 뾰족
+ll line[MAX_SIZE][MAX_SIZE];
+int N, K;
+
+//범위, 2*N의 끝부분이 걸릴수도 있음 확인해보자 틀리면
+
+int main(int argc, char** argv)
+{
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+
+	int T, test_case;
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		Answer = 0;
+		cin >> N >> K;
+		for (int y = 0; y < N; y++) {
+			for (int x = 0; x < N; x++) {
+				cin >> score[y + y_start][x + x_start];
+			}
+		}
+
+		for (int y = y_start; y < N + y_start; y++) {
+			int x = x_start;
+			diag[y][x][0] = score[y][x];
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x + len][0] = diag[y + len - 1][x + len - 1][0] + score[y + len][x + len];
+			}
+		} //오른쪽 아래 대각선 일부분 완성
+
+		for (int x = x_start + 1; x < N + x_start; x++) {
+			int y = y_start;
+			diag[y][x][0] = score[y][x];
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x + len][0] = diag[y + len - 1][x + len - 1][0] + score[y + len][x + len];
+			}
+		} //오른쪽 아래 대각선 완성
+
+
+		for (int y = y_start; y < N + y_start; y++) {
+			int x = x_start + N - 1;
+			diag[y][x][1] = score[y][x];
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x - len][1] = diag[y + len - 1][x - len + 1][1] + score[y + len][x - len];
+			}
+		} //왼쪽 아래 대각선 일부분 완성
+
+		for (int x = x_start; x < N + x_start - 1; x++) {
+			int y = y_start;
+			diag[y][x][1] = score[y][x];
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x - len][1] = diag[y + len - 1][x - len + 1][1] + score[y + len][x - len];
+			}
+		} //왼쪽 아래 대각선 완성
+
+
+		for (int y = y_start; y < y_start + N; y++) {
+			for (int x = x_start; x <= x_start + 3 * N; x++) {
+				line[y][x] = line[y][x - 1] + score[y][x];
+			}
+		}//line 완성
+
+		for (int x = x_start; x <= x_start + 3 * N; x++) { //더 길게 해야함 //<= 를 추가했더니 문제생김
+			ll area = 0;
+			for (int y = y_start; y <= y_start + 2*N; y++) {
+				area += (line[y][x] - line[y][x - (2 * K - 1)]);
+				area -= (diag[y - 1][x][0] - diag[y - K][x - K + 1][0]);
+				area -= (diag[y - 1][x - (2 * (K - 1))][1] - diag[y - K][x - K + 1][1]); //problem
+				area -= score[y - K][x - K + 1];
+				triangle[y][x][0] = area;
+			}
+		}//upper triangle
+
+		for (int x = x_start; x <= x_start + 3 * N; x++) { // 더 길게 해야함 여기도
+			ll area = 0;
+			for (int y = y_start + N - 1; y >= y_start-N; y--) {
+				area += (line[y][x] - line[y][x - (2 * K - 1)]);
+				area -= (diag[y + K][x - K + 1][0] - diag[y][x - (2 * K - 1)][0]);
+				area -= (diag[y + K][x - K + 1][1] - diag[y][x + 1][1]);
+				area += score[y + K][x - K + 1];
+				triangle[y][x][1] = area;
+			}
+		}//lower triangle
+
+
+		//정답 구하기
+		for (int x = x_start; x <= x_start + 3 * N; x++) {
+			ll area = 0;
+			for (int y = y_start - N; y <= y_start + 2*N; y++) {
+				area += (triangle[y][x][1] - triangle[y - 1][x][0]);
+				Answer = max(Answer, area);
+			}
+		}
+		//정답 완료
+
+
+		//초기화 코드
+
+		for (int y = y_start; y < N + y_start; y++) {
+			int x = x_start;
+			diag[y][x][0] = 0;
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x + len][0] = 0;
+			}
+		} //오른쪽 아래 대각선 일부분 완성
+
+		for (int x = x_start + 1; x < N + x_start; x++) {
+			int y = y_start;
+			diag[y][x][0] = 0;
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x + len][0] = 0;
+			}
+		} //오른쪽 아래 대각선 완성
+
+
+		for (int y = y_start; y < N + y_start; y++) {
+			int x = x_start + N - 1;
+			diag[y][x][1] = 0;
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x - len][1] = 0;
+			}
+		} //왼쪽 아래 대각선 일부분 완성
+
+		for (int x = x_start; x < N + x_start - 1; x++) {
+			int y = y_start;
+			diag[y][x][1] = 0;
+			for (int len = 1; len <= 2 * N; len++) {
+				diag[y + len][x - len][1] = 0;
+			}
+		} //왼쪽 아래 대각선 완성
+
+
+		for (int y = y_start; y < y_start + N; y++) {
+			for (int x = x_start; x <= x_start + 3 * N; x++) {
+				line[y][x] = 0;
+			}
+		}//line 완성
+
+		//triangle 
+		for (int x = x_start; x <= x_start + 3 * N; x++) { //더 길게 해야함
+			for (int y = y_start; y <= y_start + 2 * N; y++) {
+				triangle[y][x][0] = 0;
+			}
+		}//upper triangle
+
+		for (int x = x_start; x <= x_start + 3 * N; x++) { // 더 길게 해야함
+			for (int y = y_start + N - 1; y >= y_start - N; y--) {
+				triangle[y][x][1] = 0;
+			}
+		}//lower triangle
+
+
+		cout << "Case #" << test_case + 1 << endl;
+		cout << Answer << endl;
+	}
+
+	return 0;
+}
