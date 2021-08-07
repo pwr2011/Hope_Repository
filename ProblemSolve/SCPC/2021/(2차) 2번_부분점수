@@ -1,0 +1,79 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#define INF 4'600'000'005
+#define y first
+#define x second
+#define ll long long
+using namespace std;
+typedef pair<ll, ll> P;
+
+ll Answer;
+ll K;
+P c, cur;
+bool used[8];
+vector<ll> dx;
+vector<ll> dy;
+vector<P> points;
+
+ll dist(P a, P b) {
+	return abs(abs(a.y - b.y) + abs(a.x - b.x));
+}
+
+ll solve(ll k,ll j) {
+	if (k == 8) return 0;
+	if (j == k) return solve(k+1,j);
+	P nxt; nxt.y = cur.y + dy[k]; nxt.x = cur.x + dx[k];
+	ll min_dis = INF;
+	for (int idx = 0; idx < 8; idx++) { 
+		if (used[idx]) continue;
+		used[idx] = true;
+		ll temp = dist(points[idx], nxt) + solve(k + 1, j);
+		if (temp < min_dis) {
+			min_dis = temp;
+		}
+		used[idx] = false;
+	}
+	return min_dis;
+}
+
+int main(int argc, char** argv)
+{
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T, test_case;
+	cin >> T;
+	for (test_case = 0; test_case < T; test_case++)
+	{
+		points.clear();
+		Answer = INF;
+		cin >> K;
+		dx = { 0,K,2 * K,3 * K,3 * K,2 * K,K,0 };
+		dy = { 0,-K,-K,0,K,2 * K,2 * K,K };
+		
+		for (int i = 0; i < 8; i++) {
+			ll x, y; cin >> x >> y;
+			points.push_back({ x,y });
+		}
+
+		for (int i = 0; i < 8; i++) {
+			c = points[i];
+			for (int j = 0; j < 8; j++) {
+				//j의 위치에 c point가 위치함. cur은 c가 원점조정 된 점
+				cur.y = c.y - dy[j]; cur.x = c.x - dx[j];
+				for (int t = 0; t < 8; t++)used[t] = false;
+				used[i] = true;
+				ll temp = solve(0,j);
+				Answer = min(Answer, temp);
+			}
+		}
+		
+
+		cout << "Case #" << test_case + 1 << endl;
+		cout << Answer << endl;
+	}
+
+	return 0;
+}
