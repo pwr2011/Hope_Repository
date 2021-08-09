@@ -1,0 +1,181 @@
+//
+// 다익스트라와 DP를 이용한 최단거리와 최단거리 개수 찾기
+//
+
+#include<iostream>
+#include<fstream>
+#include<string>
+#include<algorithm>
+#include<queue>
+#include<vector>
+#define y first
+#define x second
+#define INF 100'000
+#define ll long long
+#define MAX_MAP_SIZE 260
+using namespace std;
+typedef pair<int, int> p;
+
+// 각각 S와 G의 위치를 저장한다
+p s, e;
+int map_y_size;
+int map_x_size;
+int cnt;
+int min_dist = 0;
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+
+// DP기법을 이용하기 위한 배열
+ll dp[MAX_MAP_SIZE][MAX_MAP_SIZE];
+
+char map[MAX_MAP_SIZE][MAX_MAP_SIZE];
+
+// 다익스트라를 이용하기 위한 배열들
+int dist[MAX_MAP_SIZE][MAX_MAP_SIZE];
+bool visit[MAX_MAP_SIZE][MAX_MAP_SIZE];
+
+// 파일 입력을 위한 함수
+void input_file() {
+	ifstream file_in("maze.txt");
+	if (file_in.fail()) {
+		cerr << "파일을 찾을 수 없습니다" << "\n";
+		exit(100);
+	}
+
+	int y = 0;
+	while (!file_in.eof()) {
+		string tmp;
+		getline(file_in, tmp);
+
+		for (int x = 0; x < tmp.size(); x++) {
+			map[y][x] = tmp[x];
+			if (map[y][x] == 'S') {
+				s.y = y;
+				s.x = x;
+			}
+			else if (map[y][x] == 'G') {
+				e.y = y;
+				e.x = x;
+			}
+		}
+		y++;
+		map_x_size = max(map_x_size, (int)tmp.size());
+	}
+	map_y_size = y;
+}
+
+// 다익스트라를 이용해서 S부터 미로의 모든 위치까지의 최단거리를 알아낸다.
+void dijkstra() {
+	for (int i = 0; i < MAX_MAP_SIZE; i++) {
+		for (int j = 0; j < MAX_MAP_SIZE; j++) {
+			dist[i][j] = INF;
+			visit[i][j] = false;
+		}
+	}
+
+	priority_queue<pair<int, p>>pq;
+	pq.push({ 0,s });
+	dist[s.y][s.x] = 0;
+
+	while (!pq.empty()) {
+		auto c = pq.top(); pq.pop();
+		p cur = c.second; int d = -c.first;
+		if (dist[cur.y][cur.x] != d) continue;
+		visit[cur.y][cur.x] = true;
+
+		if (cur.y == e.y && cur.x == e.x) {
+			min_dist = dist[e.y][e.x];
+			return;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			p nxt; nxt.x = cur.x + dx[i]; nxt.y = cur.y + dy[i];
+			if (nxt.y < 0 || nxt.x < 0 || nxt.y >= map_y_size || nxt.x >= map_x_size) continue;
+			if (visit[nxt.y][nxt.x]) continue;
+			if (map[nxt.y][nxt.x] == '#') continue;
+			if (dist[nxt.y][nxt.x] > dist[cur.y][cur.x] + 1) {
+				dist[nxt.y][nxt.x] = dist[cur.y][cur.x] + 1;
+				pq.push({ -(d + 1),nxt });
+			}
+		}
+	}
+}
+
+// 최단경로의 개수를 알아내는 함수
+// (x,y)위치까지의 최단경로의 개수는 다음과 같다.  
+//
+// (앞으로 사용하는 최단거리라는 용어는 S에서부터의 최단거리라는 의미이다)
+//
+//              (x,y-1)
+//                 l
+//                 v
+//    (x-1,y) -> (x,y) <- (x+1,y)
+//                 ^
+//                 l           
+//              (x,y+1)
+// //////////////////////////////////////////////////////////////////////////////
+// 세로로 식을 읽으세요
+//
+// (x-1,y)의 최단거리 + 1 == (x,y)의 최단거리 ? (x-1,y)의 최단경로의 개수 : 0
+//                                   +
+// (x+1,y)의 최단거리 + 1 == (x,y)의 최단거리 ? (x+1,y)의 최단경로의 개수 : 0
+//                                   +
+// (x,y-1)의 최단거리 + 1 == (x,y)의 최단거리 ? (x,y-1)의 최단경로의 개수 : 0
+//                                   +
+// (x,y+1)의 최단거리 + 1 == (x,y)의 최단거리 ? (x,y+1)의 최단경로의 개수 : 0
+//                                 ㅣㅣ
+//                          (x,y)의 최단경로의 개수 
+// //////////////////////////////////////////////////////////////////////////////
+// 위 계산과정은 재귀로 진행 시 중복 계산이 많다.
+// 따라서 Memorization을 사용하여 빠르게 계산한다. (DP)          
+
+ll count_min_dist(p cur) {
+	//이미 계산이 된 위치라면 값을 반환
+	if (dp[cur.y][cur.x] != -1) return dp[cur.y][cur.x];
+
+	if (cur.y == s.y && cur.x == s.x) {
+		return 1;
+	}
+
+	// 4방향을 다 보면서 최단경로라면 해당 방향의 최단경로 개수를 더해준다
+	ll ret = 0;
+	for (int i = 0; i < 4; i++) {
+		p nxt; nxt.x = cur.x + dx[i]; nxt.y = cur.y + dy[i];
+		if (nxt.y < 0 || nxt.x < 0 || nxt.y >= map_y_size || nxt.x >= map_x_size) continue;
+		if (map[nxt.y][nxt.x] == '#') continue;
+		if (dist[nxt.y][nxt.x] + 1 == dist[cur.y][cur.x]) {
+			ret += count_min_dist(nxt);
+		}
+	}
+
+	// Memorization
+	return dp[cur.y][cur.x] = ret;
+}
+
+// DP를 사용하기 위한 초기화
+void dp_init() {
+	for (int i = 0; i < MAX_MAP_SIZE; i++) {
+		for (int j = 0; j < MAX_MAP_SIZE; j++) {
+			dp[i][j] = -1;
+		}
+	}
+}
+
+// 정답 출력을 하는 함수
+void answer_print() {
+	for (int i = 0; i < 40; i++) cout << "=";
+	cout << " 최단거리 (" << min_dist << ")\n";
+
+	cout << "\n";
+
+	for (int i = 0; i < 40; i++) cout << "=";
+	cout << " 최단경로의 개수 (" << cnt << ")\n";
+}
+
+int main() {
+	input_file();
+	dijkstra();
+	dp_init();
+	cnt = count_min_dist(e);
+	answer_print();
+}
