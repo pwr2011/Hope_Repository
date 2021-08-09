@@ -1,0 +1,123 @@
+#include<iostream>
+#include<string>
+#include<fstream>
+using namespace std;
+
+class node {
+public:
+	string data;
+	int len = 0;
+	int number_of_upper = 0;
+	int number_of_left = 0;
+	node* next = NULL, * prev = NULL;
+};
+
+void insert(node** head, string data, int number_of_upper, int number_of_left) {
+	node* temp = new node();
+	temp->data = data;
+	temp->len = data.length();
+	temp->number_of_upper = number_of_upper;
+	temp->number_of_left = number_of_left;
+
+	if (!(*head)) {
+		(*head) = temp;
+	}
+	else {
+		temp->next = *head;
+		(*head)->prev = temp;
+		(*head) = temp;
+	}
+}
+
+node* merge(node* first, node* second) {
+	if (!first)
+		return second;
+	if (!second)
+		return first;
+
+	if (first->data < second->data) {
+		first->next = merge(first->next, second);
+		first->next->prev = first;
+		first->prev = NULL;
+		return first;
+	}
+	else {
+		second->next = merge(first, second->next);
+		second->next->prev = second;
+		second->prev = NULL;
+		return second;
+	}
+}
+
+node* split(node* head) {
+	node* jump_two = head;
+	node* jump_one = head;
+	while (!jump_two->next && !jump_two->next->next) {
+		jump_one = jump_one->next;
+		jump_two = jump_two->next->next;
+	}
+	node* ret = jump_one->next;
+	jump_one->next = NULL;
+	return ret;
+}
+
+node* merge_sort(node* head) {
+	if (!head || !head->next)
+		return head;
+	node* second = split(head);
+
+	head = merge_sort(head);
+	second = merge_sort(second);
+
+	return merge(head, second);
+}
+
+void print_node_info(node* cur) {
+	cout << cur->len << "," << cur->number_of_upper << "," << cur->number_of_left << " ";
+	cout << cur->data << "\n";
+}
+
+void print(node* head) {
+	node* cur = head;
+	while (cur != NULL) {
+		print_node_info(cur);
+		cur = cur->next;
+	}
+}
+
+node* input_file() {
+	node* head = NULL;
+	ifstream file_in("python.txt");
+	if (file_in.fail()) {
+		cerr << "파일을 찾을 수 없습니다" << "\n";
+		exit(100);
+	}
+	while (!file_in.eof()) {
+		string tmp;
+		int number_of_upper = 0, number_of_left = 0;
+
+		getline(file_in, tmp);
+		for (int i = 0; i < tmp.size(); i++) {
+			if ('A' <= tmp[i] && tmp[i] <= 'Z') {
+				number_of_upper++;
+				continue;
+			}
+			if (!('a' <= tmp[i] && tmp[i] <= 'z') &&
+				!('0' <= tmp[i] && tmp[i] <= '9')) {
+				number_of_left++;
+			}
+		}
+		insert(&head, tmp, number_of_upper, number_of_left);
+	}
+	return head;
+}
+
+
+int main() {
+
+	node* head = input_file();
+	head = merge_sort(head);
+	print(head);
+
+	return 0;
+}
