@@ -1,0 +1,82 @@
+#include <string>
+#include <vector>
+#include <map>
+
+using namespace std;
+typedef pair<int, int> P;
+
+map<string, int> m;
+int idx = 0;
+vector<string> idx_to_name;
+
+vector<string> solution(vector<string> record) {
+    vector<string> answer;
+    vector<P> temp;
+
+    for (string c : record) {
+        string query, id, name;
+        int i = 0;
+        for (; c[i] != ' '; i++) {
+            query.push_back(c[i]);
+        }
+        
+        if (query != "Leave") {
+            i++;
+            for (; c[i] != ' '; i++) {
+                id.push_back(c[i]);
+            }
+            i++;
+            for (; i < c.size(); i++) {
+                name.push_back(c[i]);
+            }
+        }
+        else {
+            i++;
+            for (; i < c.size(); i++) {
+                id.push_back(c[i]);
+            }
+        }
+
+        int cur_idx = 0;
+        auto iter = m.find(id);
+        if (iter == m.end()) {
+            m.insert({ id,idx});
+            idx_to_name.push_back(name);
+            cur_idx = idx++;
+        }
+        else {
+            cur_idx = iter->second;
+            if (query != "Leave") {
+                idx_to_name[cur_idx].clear();
+                idx_to_name[cur_idx] = name;
+            }
+        }
+
+        if (query == "Enter") {
+            temp.push_back({ 1,cur_idx });
+        }
+        else if (query == "Leave") {
+            temp.push_back({ 2,cur_idx });
+        }
+        else { //change
+            idx_to_name[cur_idx].clear();
+            idx_to_name[cur_idx] = name;
+        }
+    }
+
+    for (P t : temp) {
+        if (t.first == 1) {
+            answer.push_back(idx_to_name[t.second] + "님이 들어왔습니다.");
+        }
+        else {
+            answer.push_back(idx_to_name[t.second] + "님이 나갔습니다.");
+        }
+    }
+    return answer;
+}
+
+int main() {
+    vector<string> t = { "Enter uid1234 Muzi", "Enter uid4567 Prodo", "Leave uid1234", "Enter uid1234 Prodo", "Change uid4567 Ryan" };
+    vector<string> res = solution(t);
+
+}
