@@ -1,0 +1,62 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+ll K;
+vector<int> f_times;
+
+bool cal(ll times) {
+    ll sum = 0;
+    ll i = 0;
+    for (; i < f_times.size(); i++) {
+        if (f_times[i] < times) {
+            sum += f_times[i];
+        }
+        else break;
+    }
+    sum += (times * ((ll)f_times.size() - i));
+    if (K <= sum) return false;
+    else return true;
+}
+
+ll solution(vector<int> food_times, ll k) {
+    f_times = food_times;
+    K = k+1;
+    sort(f_times.begin(), f_times.end());
+
+    ll answer = 0;
+    ll lo = 0;
+    ll hi = 100'000'000;
+    while (lo < hi) {
+        ll mid = (lo + hi+1) / 2;
+        if (cal(mid)) {
+            lo = mid;
+        }
+        else {
+            hi = mid - 1;
+        }
+    }
+    ll sum = 0;
+    for (ll i = 0; i < food_times.size(); i++) {
+        sum += min(lo, (ll)food_times[i]);
+    }
+    ll i = 0;
+    for (; i < food_times.size(); i++) {
+        if (food_times[i] > lo) {
+            sum++;
+            if (sum == K) break;
+        }
+    }
+    if (sum != K) {
+        return -1;
+    }
+    answer = i+1;
+    return answer;
+}
+
+ll main() {
+    vector<ll> t = { 3,1,2 };
+    solution(t, 5);
+}
