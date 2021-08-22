@@ -1,0 +1,95 @@
+#include <string>
+#include <vector>
+#include<set>
+#include<algorithm>
+#include<cmath>
+using namespace std;
+
+int col_cnt = 0;
+int answer = 0;
+vector<vector<string>> relation;
+bool isunique[1 << 8];
+
+bool from_unique(vector<int> status) {
+	vector<int> candi;
+	int idx = 0;
+	for (int c : status) {
+		if (c == 1) {
+			candi.push_back(idx);
+		}
+		idx++;
+	}
+
+	for (int s = 1; s <= (1 << candi.size()) - 1; s++) {
+		int sum = 0;
+		for (int i = 0; i < candi.size(); i++) {
+			if ((s & (1 << i)) != 0) {
+				sum += pow(2, candi[i]);
+			}
+		}
+		if (isunique[sum]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool solve(vector<int> status) {
+	if (from_unique(status)) {
+		return false;
+	}
+	set<string> s;
+	vector<int> candi;
+	for (int i = 0; i < col_cnt; i++) {
+		if (status[i] != 0) {
+			candi.push_back(i);
+		}
+	}
+	for (vector<string> t : relation) {
+		string extracted_string;
+		for (int c : candi) {
+			extracted_string += t[c];
+		}
+		auto iter = s.find(extracted_string);
+		if (iter == s.end()) {
+			s.insert(extracted_string);
+		}
+		else {
+			return false;
+		}
+	}
+	int sum = 0;
+	for (int i = 0; i < status.size(); i++) {
+		if (status[i] == 1) {
+			sum += pow(2, i);
+		}
+	}
+	isunique[sum] = true;
+	return true;
+}
+
+int solution(vector<vector<string>> R) {
+	relation = R;
+	col_cnt = relation[0].size();
+
+	for (int one_cnt = 1; one_cnt <= col_cnt; one_cnt++) {
+		vector<int> temp;
+		int i = 0;
+		for (; i < one_cnt; i++) {
+			temp.push_back(1);
+		}
+		for (; i < col_cnt; i++) {
+			temp.push_back(0);
+		}
+		do {
+			if (solve(temp)) {
+				answer++;
+			}
+		} while (prev_permutation(temp.begin(), temp.end()));
+	}
+	return answer;
+}
+
+int main() {
+	solution({ {{"100","ryan","music","2"},{"200","apeach","math","2"},{"300","tube","computer","3"},{"400","con","computer","4"},{"500","muzi","music","3"},{"600","apeach","music","2"}} });
+}
