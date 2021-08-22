@@ -1,0 +1,31 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+using namespace std;
+typedef pair<double, int> P;
+
+vector<int> solution(int N, vector<int> stages) {
+    vector<int> answer;
+    vector<P> arr;
+
+    int number[505] = { 0, };
+    for (int c : stages) {
+        number[c]++;
+    }
+    int total_people = number[N + 1];
+
+    for (int n = N; n > 0; n--) {
+        total_people += number[n];
+        double fail = -1.0 * number[n] / total_people;
+        arr.push_back({ fail,n });
+    }
+    sort(arr.begin(), arr.end());
+    for (P c : arr) {
+        answer.push_back(c.second);
+    }
+    return answer;
+}
+
+int main() {
+    solution(5, { 2, 1, 2, 6, 2, 4, 3, 3 });
+}
