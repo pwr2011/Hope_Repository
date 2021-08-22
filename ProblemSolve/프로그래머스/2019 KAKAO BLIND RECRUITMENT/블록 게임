@@ -1,0 +1,115 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+struct block {
+	bool deleted = false;
+	P min_point = { 50,50 }, max_point = { 0,0 };
+	vector<P> available;
+	vector<P> occupied;
+};
+
+block arr[255];
+int col, row = 0;
+bool can_reach[65][65];
+int block_cnt = 0;
+vector<int> block_nums;
+
+bool already_exist(P point, block t) {
+	for (int i = 0; i < 4; i++) {
+		if (t.occupied[i] == point) {
+			return true;
+		}
+	}
+	return false;
+}
+
+int solution(vector<vector<int>> board) {
+	int answer = 0;
+	col = board[0].size();
+	row = board.size();
+
+	for (int r = 0; r < row; r++) {
+		for (int c = 0; c < col; c++) {
+			if (board[r][c] != 0) {
+				int num = board[r][c];
+				arr[num].occupied.push_back({ r,c });
+				arr[num].min_point.y = min(arr[num].min_point.y, r);
+				arr[num].min_point.x = min(arr[num].min_point.x, c);
+				arr[num].max_point.y = max(arr[num].max_point.y, r);
+				arr[num].max_point.x = max(arr[num].max_point.x, c);
+				block_nums.push_back(num);
+			}
+		}
+	}
+	sort(block_nums.begin(), block_nums.end());
+	block_nums.erase(unique(block_nums.begin(), block_nums.end()),block_nums.end());
+
+	for (int i : block_nums) {
+		for (int r = arr[i].min_point.y; r <= arr[i].max_point.y; r++) {
+			for (int c = arr[i].min_point.x; c <= arr[i].max_point.x; c++) {
+				if (already_exist({ r,c }, arr[i])) {
+					continue;
+				}
+				arr[i].available.push_back({ r,c });
+			}
+		}
+	}
+
+	for (int c = 0; c < col; c++) {
+		for (int r = 0; r < row; r++) {
+			if (board[r][c] == 0) {
+				can_reach[r][c] = true;
+			}
+			else {
+				break;
+			}
+		}
+	}
+
+	bool flag = true;
+
+	while (flag) {
+		flag = false;
+		for (int i : block_nums) {
+			if (arr[i].deleted) continue;
+			bool can_delete = true;
+			for (int idx = 0; idx < 2; idx++) {
+				if (!can_reach[arr[i].available[idx].y][arr[i].available[idx].x]) {
+					can_delete = false; break;
+				}
+			}
+			if (can_delete) {
+				arr[i].deleted = true;
+				for (int c = arr[i].min_point.x; c <= arr[i].max_point.x; c++) {
+					for (int r = 0; r < row; r++) {
+						if (can_reach[r][c]) continue;
+						if (board[r][c] == 0) {
+							can_reach[r][c] = true;
+							continue;
+						}
+						if (arr[board[r][c]].deleted) {
+							can_reach[r][c] = true;
+						}
+						else {
+							break;
+						}
+					}
+				}
+				answer++;
+				flag = true;
+			}
+		}
+	}
+
+	return answer;
+}
+
+int main() {
+	int num = solution({ {2,2,0,0},{1,2,0,4},{1,2,0,4},{1,1,4,4} });
+	int t = 2;
+}
