@@ -1,0 +1,53 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+using namespace std;
+
+int solution(string s) {
+    int answer = 1000;
+
+    for (int len = 1; len <= s.size(); len++) {
+        int total_len = 0;
+        int cur_cnt = 1;
+        string cur;
+        for (int i = 0; i < len; i++)cur += s[i];
+
+        for (int idx = len; idx < (s.size() / len) * len; idx += len) {
+            string nxt;
+            for (int i = idx; i < idx + len; i++)nxt += s[i];
+            if (cur == nxt) {
+                cur_cnt++;
+            }
+            else {
+                if (cur_cnt == 1) {
+                    total_len += len;
+                }
+                else if(cur_cnt<10)
+                    total_len += (len + 1);
+                else if(cur_cnt<100)
+                    total_len += (len + 2);
+                else {
+                    total_len += (len + 3);
+                }
+                cur = nxt;
+                cur_cnt = 1;
+            }
+        }
+        if (cur_cnt == 1) {
+            total_len += cur.size();
+        }
+        else if (cur_cnt < 10) {
+            total_len += (len + 1);
+        }
+        else {
+            total_len += cur.size() + 2;
+        }
+        total_len += (s.size() - ((s.size() / len) * len));
+        answer = min(answer, total_len);
+    }
+    return answer;
+}
+
+int main() {
+    printf("%d",solution("aaaaaaaaaaaaaaabbbbbbbbbbc"));
+}
