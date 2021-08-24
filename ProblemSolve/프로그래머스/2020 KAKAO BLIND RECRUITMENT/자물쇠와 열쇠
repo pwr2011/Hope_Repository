@@ -1,0 +1,78 @@
+#include <string>
+#include <vector>
+#define lock_start_idx 20
+using namespace std;
+
+typedef pair<int, int > P;
+int N;
+int lock_size = 0;
+int void_cnt = 0;
+vector<vector<int>> key;
+int map[100][100];
+
+void rotate() {
+	vector<vector<int>> copy_key = key;
+	for (int r = 0; r < key.size(); r++) {
+		for (int c = 0; c < key.size(); c++) {
+			key[c][key.size() - 1 - r] = copy_key[r][c];
+		}
+	}
+	return;
+}
+
+bool check(P key_p) {
+	bool ret = true;
+	int cnt = 0;
+	for (int r = key_p.first; r < key_p.first + key.size(); r++) {
+		for (int c = key_p.second; c < key_p.second + key.size(); c++) {
+			if ((r >= lock_start_idx && r < lock_start_idx + lock_size) && (c >= lock_start_idx && c < lock_start_idx + lock_size)) {
+				if (map[r][c] == 0 && key[r - key_p.first][c - key_p.second] == 1)cnt++;
+			}
+			map[r][c] += key[r - key_p.first][c - key_p.second];
+		}
+	}
+
+	for (int r = lock_start_idx; r < lock_start_idx + lock_size; r++) {
+		for (int c = lock_start_idx; c < lock_start_idx + lock_size; c++) {
+			if (map[r][c] != 1) {
+				ret = false; break;
+			}
+		}
+		if (!ret) break;
+	}
+	if (cnt != void_cnt) {
+		ret = false;
+	}
+
+	for (int r = key_p.first; r < key_p.first + key.size(); r++) {
+		for (int c = key_p.second; c < key_p.second + key.size(); c++) {
+			map[r][c] -= key[r - key_p.first][c - key_p.second];
+		}
+	}
+	return ret;
+}
+
+bool solution(vector<vector<int>> k, vector<vector<int>> lock) {
+	key = k;
+	lock_size = lock.size();
+
+	for (int r = 0; r < lock.size(); r++) {
+		for (int c = 0; c < lock.size(); c++) {
+			map[lock_start_idx + r][lock_start_idx + c] = lock[r][c];
+			if (lock[r][c] == 0) void_cnt++;
+		}
+	}
+
+	for (int r = 0; r < 50; r++) {//범위 조심
+		for (int c = 0; c < 50; c++) {
+			for (int i = 0; i < 4; i++) {
+				if (check({ r,c })) {
+					return true;
+				}
+				rotate();
+			}
+		}
+	}
+
+	return false;
+}
