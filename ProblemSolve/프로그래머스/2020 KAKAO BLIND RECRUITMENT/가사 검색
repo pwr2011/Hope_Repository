@@ -1,0 +1,99 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+using namespace std;
+
+vector<string> arr[10'005];
+vector<string> arr_rev[10'005];
+
+int max_len=0;
+
+vector<int> solution(vector<string> words, vector<string> queries) {
+    vector<int> answer;
+
+    for (string c : words) {
+        arr[c.size()].push_back(c);
+        string rev_str;
+        for (int i = 0; i < c.size(); i++) rev_str.push_back(c[c.size() - 1 - i]);
+        arr_rev[c.size()].push_back(rev_str);
+        max_len = max(max_len, (int)c.size());
+    }
+
+    for (int i = 1; i <= max_len; i++) {
+        sort(arr[i].begin(), arr[i].end());
+        sort(arr_rev[i].begin(), arr_rev[i].end());
+    }
+
+    for (string c : queries) {
+        int len = 0; // ?'s length
+        if (c[0] == '?') { //prefix
+            for (; len < c.size(); len++) {
+                if (c[len] != '?') break;
+            }
+            string c_rev;
+            for (int i = 0; i < c.size(); i++) c_rev.push_back(c[c.size() - 1 - i]);
+            string start,end;
+            for (int i = 0; i < c.size() - len; i++) start.push_back(c_rev[i]);
+            for (int i = 0; i < c.size() - len; i++) end.push_back(c_rev[i]);
+
+            for (int i = c.size() - len; i < c.size(); i++)start.push_back('a');
+            for (int i = c.size() - len; i < c.size(); i++)end.push_back('z');
+
+            int idx1 =lower_bound(arr_rev[c.size()].begin(), arr_rev[c.size()].end(),start)-arr_rev[c.size()].begin();
+            if (idx1 == arr_rev[c.size()].size()) {
+                answer.push_back(0);
+            }
+            else {
+                string start_idx_string = arr_rev[c.size()][idx1];
+                bool same = true;
+                for (int i = 0; i < c.size() - len; i++) {
+                    if (start_idx_string[i] != start[i]) {
+                        same = false; break;
+                    }
+                }
+                if (same) {
+                    int idx2 = lower_bound(arr_rev[c.size()].begin(), arr_rev[c.size()].end(), end) - arr_rev[c.size()].begin();
+                    answer.push_back(idx2 - idx1);
+                }
+                else {
+                    answer.push_back(0);
+                }
+            }
+        }
+        else { //suffix
+            for (; len < c.size(); len++) {
+                if (c[c.size()-1-len] != '?') break;
+            }
+
+            string start, end;
+            for (int i = 0; i < c.size() - len; i++) start.push_back(c[i]);
+            for (int i = 0; i < c.size() - len; i++) end.push_back(c[i]);
+
+            for (int i = c.size() - len; i < c.size(); i++)start.push_back('a');
+            for (int i = c.size() - len; i < c.size(); i++)end.push_back('z');
+
+            int idx1 = lower_bound(arr[c.size()].begin(), arr[c.size()].end(), start) - arr[c.size()].begin();
+            if (idx1 == arr_rev[c.size()].size()) {
+                answer.push_back(0);
+            }
+            else {
+                string start_idx_string = arr[c.size()][idx1];
+                bool same = true;
+                for (int i = 0; i < c.size() - len; i++) {
+                    if (start_idx_string[i] != start[i]) {
+                        same = false; break;
+                    }
+                }
+                if (same) {
+                    int idx2 = lower_bound(arr[c.size()].begin(), arr[c.size()].end(), end) - arr[c.size()].begin();
+                    answer.push_back(idx2 - idx1);
+                }
+                else {
+                    answer.push_back(0);
+                }
+            }
+        }
+    }
+
+    return answer;
+}
