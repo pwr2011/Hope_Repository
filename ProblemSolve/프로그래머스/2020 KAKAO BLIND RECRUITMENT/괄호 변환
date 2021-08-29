@@ -1,0 +1,60 @@
+#include <string>
+#include <vector>
+#include <stack>
+using namespace std;
+
+string solution(string p) {
+	if (p == "") return "";
+	string answer = "";
+
+	int left = 0, right = 0;
+	int idx = 0;
+	for (; idx < p.size(); idx++) {
+		if (p[idx] == '(') {
+			left++;
+		}
+		else {
+			right++;
+		}
+		if (left == right)
+			break;
+	}
+
+	stack<char> s;
+	bool res = true;
+
+	for (int i = 0; i <= idx; i++) {
+		if (p[i] == '(') {
+			s.push('(');
+		}
+		else {
+			if (s.size() == 0) {
+				res = false; break;
+			}
+			s.pop();
+		}
+	}
+
+	string u;
+	for (int i = 0; i <= idx; i++) {
+		u.push_back(p[i]);
+	}
+	string tmp;
+	for (int i = idx + 1; i < p.size(); i++) {
+		tmp.push_back(p[i]);
+	}
+
+	if (res) { // u is balanced and correct
+		
+		string ret = solution(tmp);
+		answer = u + ret;
+	}
+	else { //u is balanced but not correct
+		answer = '(' + solution(tmp) + ')';
+		for (int i = 1; i < u.size() - 1; i++) {
+			if (u[i] == ')') answer += '(';
+			else answer += ')';
+		}
+	}
+	return answer;
+}
