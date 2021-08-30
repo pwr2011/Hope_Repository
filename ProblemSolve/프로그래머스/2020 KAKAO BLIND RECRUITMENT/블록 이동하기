@@ -1,0 +1,198 @@
+#include <string>
+#include <vector>
+#include<queue>
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+// 0은 가로 1은 세로
+bool visit[105][105][2];
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,1,0,-1 };
+int N;
+bool direction;
+vector<vector<int>> board;
+
+struct drone {
+	P arr[2];
+};
+
+bool end_check(drone t) {
+	if ((t.arr[0].y == N - 1) && (t.arr[0].x == N - 1)) return true;
+	if ((t.arr[1].y == N - 1) && (t.arr[1].x == N - 1)) return true;
+	return false;
+}
+
+bool rotate_check(drone c, drone n) {
+	P min_p = { N - 1,N - 1 }, max_p;
+	for (int i = 0; i < 2; i++) {
+		min_p.y = min(min_p.y, c.arr[i].y);
+		min_p.x = min(min_p.x, c.arr[i].x);
+		min_p.y = min(min_p.y, n.arr[i].y);
+		min_p.x = min(min_p.x, n.arr[i].x);
+
+		max_p.y = max(max_p.y, c.arr[i].y);
+		max_p.x = max(max_p.x, c.arr[i].x);
+		max_p.y = max(max_p.y, n.arr[i].y);
+		max_p.x = max(max_p.x, n.arr[i].x);
+	}
+	min_p.y = max(min_p.y, 0);
+	min_p.x = max(min_p.x, 0);
+	max_p.y = min(max_p.y, N - 1);
+	max_p.x = min(max_p.x, N - 1);
+	bool ret = true;
+	if (board[min_p.y][min_p.x] == 1) {
+		ret = false;
+	}
+	if (board[max_p.y][min_p.x] == 1) {
+		ret = false;
+	}
+	if (board[min_p.y][max_p.x] == 1) {
+		ret = false;
+	}
+	if (board[max_p.y][max_p.x] == 1) {
+		ret = false;
+	}
+
+	return ret;
+}
+
+P ret_point(drone t) {
+	if (t.arr[0].x != t.arr[1].x) {
+		direction = 0;
+		if (t.arr[0].x > t.arr[1].x) {
+			return t.arr[1];
+		}
+		else {
+			return t.arr[0];
+		}
+	}
+	else {
+		direction = 1;
+		if (t.arr[0].y > t.arr[1].y) {
+			return t.arr[1];
+		}
+		else {
+			return t.arr[0];
+		}
+	}
+}
+
+bool line_check(drone t) {
+	if (t.arr[0].y < 0 || t.arr[0].x < 0 || t.arr[0].y >= N || t.arr[0].x >= N ||
+		t.arr[1].y < 0 || t.arr[1].x < 0 || t.arr[1].y >= N || t.arr[1].x >= N) {
+		return false;
+	}
+	return true;
+}
+
+// crash is true
+bool crash_check(drone t) {
+	if (board[t.arr[0].y][t.arr[0].x] == 1 || board[t.arr[1].y][t.arr[1].x] == 1) {
+		return true;
+	}
+	return false;
+}
+
+//ori_pos : 원점, ch_dir 은 0이면 시계, 1이면 반시계
+drone rotate(drone c, int ori_pos, int ch_dir) {
+	P ori = c.arr[ori_pos];
+	int mov_pos = ori_pos == 0 ? 1 : 0;
+
+	drone ret;
+	ret.arr[0].y = ori.y; ret.arr[0].x = ori.x;
+
+	if (ch_dir) {
+		for (int i = 0; i < 4; i++) {
+			P mov = ori;
+			mov.y += dy[i]; mov.x += dx[i];
+			if (mov == c.arr[mov_pos]) {
+				ret.arr[1].y = ori.y + dy[(i + 1) % 4];
+				ret.arr[1].x = ori.x + dx[(i + 1) % 4];
+				return ret;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < 4; i++) {
+			P mov = ori;
+			mov.y += dy[i]; mov.x += dx[i];
+			if (mov == c.arr[mov_pos]) {
+				ret.arr[1].y = ori.y + dy[(i - 1 + 4) % 4];
+				ret.arr[1].x = ori.x + dx[(i - 1 + 4) % 4];
+				return ret;
+			}
+		}
+	}
+}
+
+int solution(vector<vector<int>> b) {
+	N = b.size();
+	board = b;
+	queue<drone> q;
+	drone t;
+	t.arr[0] = { 0,0 }; t.arr[1] = { 0,1 };
+	q.push(t);
+	visit[0][0][0] = true;
+
+	bool end_flag = false;
+	int len = 1;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int t = 0; t < qsize; t++) {
+			drone c = q.front(); q.pop();
+			for (int i = 0; i < 4; i++) {
+				drone n;
+				n.arr[0].y = c.arr[0].y + dy[i];
+				n.arr[0].x = c.arr[0].x + dx[i];
+				n.arr[1].y = c.arr[1].y + dy[i];
+				n.arr[1].x = c.arr[1].x + dx[i];
+				if (!line_check(n)) continue;
+				if (crash_check(n))continue;
+				P ori = ret_point(n);
+				if (visit[ori.y][ori.x][direction]) continue;
+				visit[ori.y][ori.x][direction] = true;
+
+				if (end_check(n)) {
+					end_flag = true;
+					break;
+				}
+				q.push(n);
+			}
+			if (end_flag) {
+				break;
+			}
+			//rotate
+			for (int p = 0; p < 2; p++) {
+				for (int d = 0; d < 2; d++) {
+					drone n = rotate(c, p, d);
+					if (!rotate_check(c, n)) {
+						continue;
+					}
+					if (!line_check(n)) continue;
+					if (crash_check(n))continue;
+					P ori = ret_point(n);
+					if (visit[ori.y][ori.x][direction]) continue;
+					visit[ori.y][ori.x][direction] = true;
+
+					if (end_check(n)) {
+						end_flag = true;
+						break;
+					}
+					q.push(n);
+				}
+				if (end_flag) break;
+			}
+
+		}
+		if (end_flag) break;
+		len++;
+	}
+
+	return len;
+}
+
+int main() {
+	solution({ {0, 0, 0, 1, 1}, {0, 0, 0, 1, 0}, {0, 1, 0, 1, 1}, {1, 1, 0, 0, 1}, {0, 0, 0, 0, 0} });
+}
