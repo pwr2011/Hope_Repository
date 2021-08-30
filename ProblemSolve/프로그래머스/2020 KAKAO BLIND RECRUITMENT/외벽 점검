@@ -1,0 +1,76 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+using namespace std;
+
+int end_status;
+int answer = 10;
+vector<int> dist;
+vector<int> weak;
+int N;
+bool dp[12][1 << 15];
+
+void solve(int idx, int status) {
+    if (dp[idx][status]) return;
+    dp[idx][status] = true;
+    if (status == end_status) {
+        answer = min(answer, idx);
+        return;
+    }
+    if (idx == dist.size()) {
+        return;
+    }
+
+    for (int i = 0; i < weak.size(); i++) {
+        if ((status & (1 << i)) == 0) {
+            //to left
+            int left = (weak[i] - dist[idx] + N) % N;
+            int right = weak[i];
+            int copy_status = status;
+            for (int t = 0; t < weak.size(); t++) {
+                if (left > right) {
+                    if (weak[t] >= left || weak[t] <= right) {
+                        copy_status |= (1 << t);
+                    }
+                }
+                else {
+                    if (weak[t] >= left && weak[t] <= right) {
+                        copy_status |= (1 << t);
+                    }
+                }
+            }
+            solve(idx + 1, copy_status);
+
+            //to right
+            right = (weak[i] + dist[idx]) % N;
+            left = weak[i];
+            copy_status = status;
+            for (int t = 0; t < weak.size(); t++) {
+                if (left > right) {
+                    if (weak[t] >= left || weak[t] <= right) {
+                        copy_status |= (1 << t);
+                    }
+                }
+                else {
+                    if (weak[t] >= left && weak[t] <= right) {
+                        copy_status |= (1 << t);
+                    }
+                }
+            }
+            solve(idx + 1, copy_status);
+        }
+    }
+}
+
+int solution(int n, vector<int> w, vector<int> d) {
+    N = n;
+    dist = d;
+    weak = w;
+    end_status = (1 << weak.size()) - 1;
+
+    sort(dist.rbegin(), dist.rend());
+    solve(0, 0);
+    
+    if (answer == 10) return -1;
+    else return answer;
+}
