@@ -1,0 +1,118 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+#include<queue>
+using namespace std;
+using namespace std;
+typedef pair<int, int>P;
+
+int trap_count = 0;
+int is_trap[1'005];
+int rec_dist[1 << 10][1'005];
+vector<int> direction[1'005][1'005];
+bool visit[1 << 10][1'005];
+vector<P> g[1'005];
+
+int solution(int n, int start, int end, vector<vector<int>> roads, vector<int> traps) {
+	int answer = 19'999'999;
+	for (int i = 0; i < 1'005; i++) is_trap[i] = -1;
+
+	for (int i = 0; i < (1 << 10); i++) {
+		for (int j = 0; j < 1'005; j++) {
+			rec_dist[i][j] = 19'999'999;
+		}
+	}
+
+	for (int c = 0; c < traps.size(); c++) {
+		is_trap[traps[c]] = trap_count++;
+	}
+
+	for (int r = 0; r < roads.size(); r++) {
+		int s, e, d;
+		s = roads[r][0]; e = roads[r][1]; d = roads[r][2];
+		direction[s][e].push_back(d);
+
+		if (is_trap[s] != -1 || is_trap[e] != -1) {
+			g[s].push_back({ e,d });
+			g[e].push_back({ s,d });
+		}
+		else {
+			g[s].push_back({ e,d });
+		}
+	}
+
+	//dist, node, status
+	priority_queue<pair<int, pair<int, int>>>pq;
+	pq.push({ 0,{start,0 } });
+	rec_dist[0][start] = 0;
+
+	while (!pq.empty()) {
+		auto c = pq.top(); pq.pop();
+		int cur = c.second.first;
+		int dist = -c.first;
+		int status = c.second.second;
+		if (cur == end) continue;
+		if (rec_dist[status][cur] != dist) continue;
+
+		visit[status][cur] = true;
+		int total_rev = 0;
+		if (is_trap[cur] != -1) {
+			if ((status & (1 << is_trap[cur])) != 0) {
+				total_rev++;
+			}
+		}
+		for (P n : g[cur]) {
+			int nxt = n.first; int cost = n.second;
+			int next_status = status;
+			if (is_trap[nxt] != -1) {
+				if ((status & (1 << is_trap[nxt])) != 0) {
+					total_rev++;
+				}
+			}
+			if (total_rev % 2 == 0) { //정방향 direction
+				if (find(direction[cur][nxt].begin(),direction[cur][nxt].end(), cost) != direction[cur][nxt].end()) {
+					if (is_trap[nxt] != -1) {
+						next_status ^= (1 << is_trap[nxt]);
+					}
+					if (visit[next_status][nxt]) {
+						goto out;
+					}
+					if (dist + cost < rec_dist[next_status][nxt]) {
+						rec_dist[next_status][nxt] = dist + cost;
+						pq.push({ -(dist + cost),{nxt,next_status} });
+					}
+				}
+			}
+			else {
+				if (find(direction[nxt][cur].begin(), direction[nxt][cur].end(), cost) != direction[nxt][cur].end()) {
+					if (is_trap[nxt] != -1) {
+						next_status ^= (1 << is_trap[nxt]);
+					}
+					if (visit[next_status][nxt]) {
+						goto out;
+					}
+					if (dist + cost < rec_dist[next_status][nxt]) {
+						rec_dist[next_status][nxt] = dist + cost;
+						pq.push({ -(dist + cost),{nxt,next_status} });
+					}
+				}
+			}
+		out:
+			if (is_trap[nxt] != -1) {
+				if ((status & (1 << is_trap[nxt])) != 0) {
+					total_rev--;
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < (1 << trap_count); i++) {
+		answer = min(answer, rec_dist[i][end]);
+	}
+
+	return answer;
+}
+
+int main() {
+	solution(4, 1, 4, { {1, 2, 1}, {3, 2, 1}, {2, 4, 1} }, { 2, 3 });
+}
