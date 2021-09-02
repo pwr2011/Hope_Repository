@@ -1,0 +1,90 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+#define ll long long
+using namespace std;
+
+ll K;
+ll child[10'005][2];
+ll parent[10'005];
+vector<int> person;
+ll root;
+ll counter = 0;
+ll N;
+
+ll solve(ll cur, ll max_num) {
+
+    ll left_cnt = 0, right_cnt = 0;
+    if (child[cur][0] != -1) {
+        left_cnt = solve(child[cur][0], max_num);
+    }
+    if (child[cur][1] != -1) {
+        right_cnt = solve(child[cur][1], max_num);
+    }
+    if (left_cnt + right_cnt + person[cur] <= max_num) {
+        return left_cnt + right_cnt + person[cur];
+    }
+    else {
+        ll max_cnt = max(left_cnt, right_cnt);
+        ll min_cnt = min(left_cnt, right_cnt);
+        if (person[cur] + min_cnt <= max_num) {
+            if(max_cnt!=0) counter++;
+            return person[cur] + min_cnt;
+        }
+        else if (person[cur] <= max_num) {
+            if (min_cnt != 0) counter++;
+            if (max_cnt != 0) counter++;
+            return person[cur];
+        }
+        else {
+            counter += 10003;
+            return 0;
+        }
+    }
+}
+
+int solution(int k, vector<int> num, vector<vector<int>> links) {
+    person = num;
+    K = k;
+    ll answer = 0;
+    N = num.size();
+    ll s = 1, e = 200'000'002;
+
+    for (ll i = 0; i < N; i++) {
+        parent[i] = -1;
+    }
+
+    for (ll i = 0; i < links.size(); i++) {
+        vector<int> temp = links[i];
+        child[i][0] = temp[0];
+        child[i][1] = temp[1];
+        if (child[i][0] != -1) {
+            parent[child[i][0]] = i;
+        }
+        if (child[i][1] != -1) {
+            parent[child[i][1]] = i;
+        }
+    }
+
+    for (ll i = 0; i < N; i++) {
+        if (parent[i] == -1) {
+            root = i; break;
+        }
+    }
+
+
+    while (s < e) {
+        ll m = (s + e) / 2;
+        counter = 1;
+        solve(root, m);
+        if (counter <= K) {
+            e = m;
+        }
+        else {
+            s = m + 1;
+        }
+    }
+
+    answer = s;
+    return answer;
+}
