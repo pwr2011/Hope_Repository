@@ -1,0 +1,64 @@
+#include <string>
+#include <vector>
+
+using namespace std;
+
+string solution(string new_id) {
+    string answer = "";
+    
+    for(int i=0;i<new_id.size();i++){
+        if(new_id[i]>='A' && new_id[i]<='Z'){
+            new_id[i] = new_id[i]-'A'+'a';
+        }
+    }
+    
+    string filtered_id="";
+    for(int i=0;i<new_id.size();i++){
+        if((new_id[i]>='a' && new_id[i]<='z') ||
+          (new_id[i]>='0' && new_id[i]<='9') ||
+          (new_id[i] == '-') || (new_id[i] == '_') || (new_id[i] == '.')){
+            filtered_id.push_back(new_id[i]);
+        }
+    }
+    
+    bool delete_char[1'005]={false,};
+    string point_delete_string="";
+    int cnt =0;
+    for(int i=0;i<filtered_id.size();i++){
+        if(filtered_id[i] == '.'){
+            cnt++;
+            if(cnt > 1){
+                delete_char[i] = true;
+            }
+        }
+        else{
+            cnt =0;
+        }
+    }
+    
+    for(int i=0;i<filtered_id.size();i++){
+        if(i ==0 && filtered_id[i] == '.') continue;
+        if(!delete_char[i]) point_delete_string.push_back(filtered_id[i]);
+    }
+    if(point_delete_string.size()!=0){
+        if(point_delete_string[point_delete_string.size()-1] == '.') point_delete_string.pop_back();
+    }
+     if(point_delete_string.size()==0){
+         point_delete_string.push_back('a');
+     }
+    
+    while(point_delete_string.size()>=16){
+        point_delete_string.pop_back();
+    }
+    
+    if(point_delete_string.size() == 15){
+        if(point_delete_string[point_delete_string.size()-1] == '.') point_delete_string.pop_back();
+    }
+    
+    char last_char = point_delete_string[point_delete_string.size()-1];
+    while(point_delete_string.size()<3){
+        point_delete_string.push_back(last_char);
+    }
+    
+    return point_delete_string;
+}
