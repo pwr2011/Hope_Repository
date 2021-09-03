@@ -1,0 +1,75 @@
+#include <string>
+#include <vector>
+#include<algorithm>
+#include<map>
+using namespace std;
+
+map<string,int> m;
+vector<string> len[13];
+
+vector<string> solution(vector<string> orders, vector<int> course) {
+    vector<string> answer;
+    
+    for(string t : orders){
+        bool exist[26]={false,};
+        string c;
+        for(int i=0;i<t.size();i++) exist[t[i]-'A']=true;
+        for(int i=0;i<26;i++){
+            if(exist[i]) c.push_back('A'+i);
+        }
+        
+        for(int l=2;l<=c.size();l++){
+            vector<int> temp;
+            for(int i=0;i<l;i++) temp.push_back(1);
+            for(int i=l;i<c.size();i++) temp.push_back(0);
+            while(1){
+                string cur ;
+                for(int idx=0;idx<temp.size();idx++){
+                    if(temp[idx]==1){
+                        cur +=c[idx];
+                    }
+                }
+                len[cur.size()].push_back(cur);
+                auto iter = m.find(cur);
+                if(iter == m.end()){
+                    m.insert({cur,1});
+                }
+                else{
+                    iter->second++;
+                }
+                if(!prev_permutation(temp.begin(),temp.end()))break;
+            }
+        }
+    }
+    
+    for(int i=2;i<11;i++){
+        sort(len[i].begin(),len[i].end());
+        len[i].erase(unique(len[i].begin(),len[i].end()),len[i].end());
+    }
+    
+    
+    for(int n : course){
+        int max_cnt=0;
+        vector<string> temp_ans;
+        for(string key : len[n]){
+            auto iter = m.find(key);
+            if(iter != m.end()){
+                if(max_cnt<iter->second){
+                    max_cnt = iter->second;
+                    temp_ans.clear();
+                    temp_ans.push_back(key);
+                }
+                else if(max_cnt == iter->second){
+                    temp_ans.push_back(key);
+                }
+            }
+        }
+        if(max_cnt >1){
+            for(string c : temp_ans){
+                answer.push_back(c);
+            }
+        }
+    }
+    sort(answer.begin(),answer.end());
+    return answer;
+}
