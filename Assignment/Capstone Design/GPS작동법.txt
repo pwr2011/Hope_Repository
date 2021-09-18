@@ -1,0 +1,13 @@
+GPS 작동 시키는 방법
+1. 전원을 연결시키고 전원 LED가 들어온 것을 확인한다
+2. 보드의 추가적인 버튼을 작동시켜 GPS LED가 들어온 것을 확인한다
+3. picocom --baud 115200 /dev/ttyS0 실행한다
+4. 다음의 명령어들을 실행시켜 GPS가 준비되도록 한다
+  1)AT+CGPSPWR=1
+  2)AT+CGPSRST=0
+  3)AT+CGPSINF=0
+  4)AT+CGPSINF=32
+  5)AT+CGPSSTATUS?  
+    (이 명령어로 결과가 Location 3D fix가 나오면 준비된 것임, 
+     시간이 좀 걸림, fix되면 새로운 불이 깜빡임)
+5. AT+CGPSOUT=32을 실행하면 GPS결과가 계속 갱신된다
