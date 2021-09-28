@@ -1,0 +1,128 @@
+#include<iostream>
+#include<string>
+#include<map>
+#include<algorithm>
+#include<vector>
+#define MAX_CLASS 505
+#define MAX_TIME 1'440
+using namespace std;
+typedef pair<int, int>P;
+
+map<string, int >mapp;
+int dp[1'445][MAX_CLASS];
+int N, M;
+int start_time[MAX_CLASS];
+int end_time[MAX_CLASS];
+int max_calculated_time[MAX_CLASS];
+vector<P> g[MAX_CLASS];
+
+int time_to_minute(string time) {
+	int ret = 0;
+	string h,m;
+	for (int i = 0; i < 2; i++)
+		h.push_back(time[i]);
+	ret = stoi(h) * 60;
+	for (int i = 3; i < 5; i++)
+		m.push_back(time[i]);
+	ret += stoi(m);
+	return ret;
+}
+
+void print_time(int t) {
+	string h = to_string(t / 60);
+	string m = to_string(t % 60);
+	if (h.size() == 1) {
+		cout << "0" << h << ":";
+	}
+	else {
+		cout << h << ":";
+	}
+	if (m.size() == 1) {
+		cout << "0" << m;
+	}
+	else {
+		cout << m;
+	}
+}
+
+int main() {
+	cin.tie(NULL);
+	ios_base::sync_with_stdio(false);
+	cin >> N >> M;
+	int min_start_time = 9999;
+	int min_idx = 0;
+	string min_name;
+	for (int n = 0; n < N; n++) {
+		string name, X, Y;
+		cin >> name >> X >> Y;
+		mapp.insert({ name, n });
+		start_time[n] = time_to_minute(X);
+		end_time[n] = time_to_minute(Y);
+		if (min_start_time > start_time[n]) {
+			min_start_time = start_time[n];
+			min_idx = n;
+			min_name = name;
+		}
+		else if (min_start_time == start_time[n]) {
+			if (min_name > name) {
+				min_start_time = start_time[n];
+				min_idx = n;
+				min_name = name;
+			}
+		}
+	}
+	for (int m = 0; m < M; m++) {
+		string A, B, Z;
+		cin >> A >> B >> Z;
+		int time = time_to_minute(Z);
+		int a = mapp.find(A)->second;
+		int b = mapp.find(B)->second;
+		g[a].push_back({ b,time });
+		g[b].push_back({ a,time });
+	}
+
+	//init
+	for (int i = 0; i <= MAX_TIME; i++) {
+		for (int c = 0; c < N; c++) {
+			dp[i][c] = -1;
+		}
+	}
+	for (int c = 0; c < N; c++) {
+		max_calculated_time[c] = -1;
+	}
+
+	dp[min_start_time][min_idx] = 0;
+
+	// build
+	for (int i = 0; i < MAX_TIME; i++) {
+		for (int c = 0; c < N; c++) {
+			if (dp[i][c] == -1) continue;
+			if (dp[i][c] <= max_calculated_time[c]) continue;
+			//가만히 수업 다 듣는 경우
+			int cur = dp[i][c];
+			max_calculated_time[c] = cur;
+			//cout << "cur idx : " << c <<" cur time : "<<i<< "\n";
+			//print_time(cur);
+			//cout << "\n";
+			if (end_time[c] > max(i,start_time[c])) {
+				dp[end_time[c]][c] = max(dp[end_time[c]][c],cur + end_time[c] - max(i,start_time[c]));
+			}
+			for (P n : g[c]) {
+				//움직이는 경우
+				int next = n.first;
+				int d = i + n.second;
+				if (d >= MAX_TIME)continue;
+				if (max_calculated_time[next] >= cur) continue;
+				dp[d][next] = max(dp[d][next],cur);
+			}
+		}
+	}
+
+	int max_time = 0;
+	for (int c = 0; c < N; c++) {
+		max_time = max(max_time, max_calculated_time[c]);
+	}
+
+	//0자리수확인
+	print_time(max_time);
+}
