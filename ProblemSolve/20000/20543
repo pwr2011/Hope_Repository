@@ -1,0 +1,43 @@
+#include<iostream>
+#define ll long long
+#define MAP_START 1'100
+#define MAX_SIZE 4'405
+using namespace std;
+
+ll input[MAX_SIZE][MAX_SIZE];
+ll cnt[MAX_SIZE][MAX_SIZE];
+ll ans[MAX_SIZE][MAX_SIZE];
+ll N, M;
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	cin >> N >> M;
+	for (ll r = 0; r < N; r++) {
+		for (ll c = 0; c < N; c++) {
+			cin >> input[MAP_START + r][MAP_START + c];
+			input[MAP_START + r][MAP_START + c] *= -1;
+		}
+	}
+
+	for (ll r = MAP_START + (M / 2); r < MAP_START + (N - (M / 2)); r++) {
+		for (ll c = MAP_START + (M / 2); c < MAP_START + (N - (M / 2)); c++) {
+			ll total_sum = (cnt[r][c - 1] - cnt[r][c - M] - cnt[r - M][c - 1] + cnt[r - M][c - M])
+				+ (cnt[r - 1][c] - cnt[r - M][c] - cnt[r - 1][c - M] + cnt[r - M][c - M])
+				- (cnt[r - 1][c - 1] - cnt[r - 1][c - M] - cnt[r - M][c - 1] + cnt[r - M][c - M]);
+
+			ll total_bomb = input[r - (M / 2)][c - (M / 2)];
+			ll here_bomb_cnt = total_bomb - total_sum;
+			ans[r][c] = here_bomb_cnt;
+			cnt[r][c] = here_bomb_cnt + cnt[r - 1][c] + cnt[r][c - 1] - cnt[r - 1][c - 1];
+		}
+	}
+
+	for (ll r = MAP_START; r < MAP_START + N; r++) {
+		for (ll c = MAP_START; c < MAP_START + N; c++) {
+			cout << ans[r][c]<<" ";
+		}
+		cout << "\n";
+	}
+}
