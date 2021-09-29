@@ -1,3 +1,5 @@
+#왠지 모르겠지만 sleep(0.0001)이렇게 낮은 타임으로 빠르게 동작시킨 후,
+#해당 코드를 작동시키면 부드럽게 동작한다
 import time
 import RPi.GPIO as GPIO
 
