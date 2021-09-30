@@ -1,0 +1,111 @@
+#include<iostream>
+#include<algorithm>
+#include<queue>
+#define INF 9'999'999
+#define y first 
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+int dx[] = { 1,2,2,1,-1,-2,-2,-1 };
+int dy[] = { -2,-1,1,2,2,1,-1,-2 };
+int rx[] = { 1,0,-1,0 };
+int ry[] = { 0,-1,0,1 };
+int by[] = { 1,1,-1,-1 };
+int bx[] = { 1,-1,1,-1 };
+
+int dist[52][52][(1 << 4)];
+bool visit[52][52][(1 << 4)];
+int N, M, A, B, C;
+P s;
+P d[4];
+int is_d[52][52];
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	for (int i = 0; i < 52; i++) {
+		for (int j = 0; j < 52; j++) {
+			for (int k = 0; k <= (1 << 4) - 1; k++) {
+				dist[i][j][k] = INF;
+			}
+		}
+	}
+	cin >> N >> A >> B >> C;
+	cin >> s.y >> s.x;
+	cin >> M;
+
+	for (int m = 0; m < M; m++) {
+		cin >> d[m].y >> d[m].x;
+		is_d[d[m].y][d[m].x] = m + 1;
+	}
+
+	// 과부하, 찾은거, 위치
+	priority_queue<pair<int, pair<int, P>>> pq;
+	dist[s.y][s.x][0] = 0;
+
+	pq.push({ 0,{0,s} });
+	while (!pq.empty()) {
+		auto c = pq.top(); pq.pop();
+		P cur = c.second.second;
+		int find = c.second.first;
+		int deg = -c.first;
+		if (dist[cur.y][cur.x][find] < deg) continue;
+		visit[cur.y][cur.x][find] = true;
+
+		if (find == ((1 << M) - 1)) {
+			cout << deg;
+			break;
+		}
+		//knight
+		for (int i = 0; i < 8; i++) {
+			int nxt_find = find;
+			P nxt; nxt.y = cur.y + dy[i]; nxt.x = cur.x + dx[i];
+			if (nxt.y < 0 || nxt.x < 0 || nxt.y >= N || nxt.x >= N) continue;
+			if (is_d[nxt.y][nxt.x]) {
+				nxt_find |= (1 << (is_d[nxt.y][nxt.x] - 1));
+			}
+			if (visit[nxt.y][nxt.x][nxt_find])continue;
+			if (dist[nxt.y][nxt.x][nxt_find] > deg + A) {
+				dist[nxt.y][nxt.x][nxt_find] = deg + A;
+				pq.push({ -(deg + A),{nxt_find,nxt} });
+			}
+		}
+
+		//rook
+		for (int j = 0; j < 4; j++) {
+			for (int i = 1;; i++) {
+				int nxt_find = find;
+				P nxt; nxt.y = cur.y + ry[j] * i; nxt.x = cur.x + rx[j] * i;
+				if (nxt.y < 0 || nxt.x < 0 || nxt.y >= N || nxt.x >= N) break;
+				if (is_d[nxt.y][nxt.x]) {
+					nxt_find |= (1 << (is_d[nxt.y][nxt.x] - 1));
+				}
+				if (visit[nxt.y][nxt.x][nxt_find])continue;
+				if (dist[nxt.y][nxt.x][nxt_find] > deg + C) {
+					dist[nxt.y][nxt.x][nxt_find] = deg + C;
+					pq.push({ -(deg + C),{nxt_find,nxt} });
+				}
+			}
+		}
+
+		//비숍
+		for (int j = 0; j < 4; j++) {
+			for (int i = 1;; i++) {
+				int nxt_find = find;
+				P nxt; nxt.y = cur.y + by[j] * i; nxt.x = cur.x + bx[j] * i;
+				if (nxt.y < 0 || nxt.x < 0 || nxt.y >= N || nxt.x >= N) break;
+				if (is_d[nxt.y][nxt.x]) {
+					nxt_find |= (1 << (is_d[nxt.y][nxt.x] - 1));
+				}
+				if (visit[nxt.y][nxt.x][nxt_find])continue;
+				if (dist[nxt.y][nxt.x][nxt_find] > deg + B) {
+					dist[nxt.y][nxt.x][nxt_find] = deg + B;
+					pq.push({ -(deg + B),{nxt_find,nxt} });
+				}
+			}
+		}
+
+	}
+}
