@@ -40,16 +40,16 @@ def setStepper(in1, in2, in3, in4):
     GPIO.output(P_B2, in4)
     time.sleep(delay)
 
-GPIO.cleanup()
+#GPIO.cleanup()
 setup()
 # 16 steps for 90 degrees, adapt to your motor
 try:
     while True:
-        print "forward"
+        print ("forward")
         for i in range(step):
             forwardStep() 
         time.sleep(2)
-        print "backward"
+        print ("backward")
         for i in range(step):
             backwardStep() 
         time.sleep(2)
