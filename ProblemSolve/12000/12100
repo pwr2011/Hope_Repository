@@ -1,0 +1,305 @@
+#include<iostream>
+#include<queue>
+#include<vector>
+#include<string>
+#include<algorithm>
+using namespace std;
+int N;
+
+vector<int> map_to_string(int map[22][22]) {
+	vector<int>  ret;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			ret.push_back(map[i][j]);
+		}
+	}
+	return ret;
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	vector<int> start;
+	cin >> N;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			int tmp; cin >> tmp;
+			start.push_back(tmp);
+		}
+	}
+
+	int max_val = 0;
+	queue<vector<int>> q;
+	q.push(start);
+	int times = 0;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int i = 0; i < qsize; i++) {
+			vector<int> c=q.front();
+			q.pop();
+			int map[22][22] = { 0, };
+			int ori_map[22][22] = { 0, };
+			for (int row = 0; row < N; row++) {
+				for (int col = 0; col < N; col++) {
+					map[row][col] = c[row * N + col];
+					max_val = max(max_val, map[row][col]);
+					ori_map[row][col] = map[row][col];
+				}
+			}
+
+			if (times == 5) {
+				continue;
+			}
+
+			//to left
+			for (int row = 0; row < N; row++) {
+				int val_idx = 0;
+				bool can_sum = false;
+				int col = 0;
+				//초기 val 찾기
+				for (col; col < N; col++) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					map[row][0] = map[row][col];
+					if(col != 0)
+					map[row][col] = 0;
+					val_idx = 0;
+					can_sum = true;
+					col++;
+					break;
+				}
+
+				//반복
+				for ( col; col < N; col++) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					if (can_sum) {
+						if (map[row][val_idx] == map[row][col]) {
+							map[row][val_idx] *= 2;
+							map[row][col] = 0;
+							can_sum = false;
+						}
+						else {
+							if (val_idx != col - 1) {
+								map[row][val_idx + 1] = map[row][col];
+								map[row][col] = 0;
+								can_sum = true;
+							}
+							else {
+								can_sum = true;
+							}
+							val_idx++;
+						}
+					}
+					else {
+						if (val_idx != col - 1) {
+							map[row][val_idx + 1] = map[row][col];
+							map[row][col] = 0;
+							can_sum = true;
+						}
+						else {
+							can_sum = true;
+						}
+						val_idx++;
+					}
+				}
+			}
+			q.push(map_to_string(map));
+			for (int row = 0; row < N; row++) {
+				for (int col = 0; col < N; col++) {
+					map[row][col] = ori_map[row][col];
+				}
+			}
+
+			//to up
+			for (int col = 0; col < N; col++) {
+				int val_idx = 0;
+				bool can_sum = false;
+				int row = 0;
+				//초기 val 찾기
+				for (row; row <N; row++) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					map[0][col] = map[row][col];
+					if(row != 0) map[row][col] = 0;
+					val_idx = 0;
+					can_sum = true;
+					row++;
+					break;
+				}
+
+				//반복
+				for (row; row <N; row++) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					if (can_sum) {
+						if (map[val_idx][col] == map[row][col]) {
+							map[val_idx][col] *= 2;
+							map[row][col] = 0;
+							can_sum = false;
+						}
+						else {
+							if (val_idx != row - 1) {
+								map[val_idx+1][col] = map[row][col];
+								map[row][col] = 0;
+								can_sum = true;
+							}
+							else {
+								can_sum = true;
+							}
+							val_idx++;
+						}
+					}
+					else {
+						if (val_idx != row -1) {
+							map[val_idx+1][col] = map[row][col];
+							map[row][col] = 0;
+							can_sum = true;
+						}
+						else {
+							can_sum = true;
+						}
+						val_idx++;
+					}
+				}
+			}
+			q.push(map_to_string(map));
+			for (int row = 0; row < N; row++) {
+				for (int col = 0; col < N; col++) {
+					map[row][col] = ori_map[row][col];
+				}
+			}
+
+			//to right
+			for (int row = 0; row < N; row++) {
+				int val_idx = 0;
+				bool can_sum = false;
+				int col = N-1;
+				//초기 val 찾기
+				for (col; col >=0; col--) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					map[row][N-1] = map[row][col];
+					if (col != N-1)
+					map[row][col] = 0;
+					val_idx = N-1;
+					can_sum = true;
+					col--;
+					break;
+				}
+
+				//반복
+				for (col; col >= 0; col--) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					if (can_sum) {
+						if (map[row][val_idx] == map[row][col]) {
+							map[row][val_idx] *= 2;
+							map[row][col] = 0;
+							can_sum = false;
+						}
+						else {
+							if (val_idx != col + 1) {
+								map[row][val_idx - 1] = map[row][col];
+								map[row][col] = 0;
+								can_sum = true;
+							}
+							else {
+								can_sum = true;
+							}
+							val_idx--;
+						}
+					}
+					else {
+						if (val_idx != col + 1) {
+							map[row][val_idx - 1] = map[row][col];
+							map[row][col] = 0;
+							can_sum = true;
+						}
+						else {
+							can_sum = true;
+						}
+						val_idx--;
+					}
+				}
+			}
+			q.push(map_to_string(map));
+			for (int row = 0; row < N; row++) {
+				for (int col = 0; col < N; col++) {
+					map[row][col] = ori_map[row][col];
+				}
+			}
+
+			//to down
+			for (int col = 0; col < N; col++) {
+				int val_idx = 0;
+				bool can_sum = false;
+				int row = N-1;
+				//초기 val 찾기
+				for (row; row >= 0; row--) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					map[N-1][col] = map[row][col];
+					if (row != N-1) map[row][col] = 0;
+					val_idx = N-1;
+					can_sum = true;
+					row--;
+					break;
+				}
+
+				//반복
+				for (row; row >=0; row--) {
+					if (map[row][col] == 0) {
+						continue;
+					}
+					if (can_sum) {
+						if (map[val_idx][col] == map[row][col]) {
+							map[val_idx][col] *= 2;
+							map[row][col] = 0;
+							can_sum = false;
+						}
+						else {
+							if (val_idx != row + 1) {
+								map[val_idx - 1][col] = map[row][col];
+								map[row][col] = 0;
+								can_sum = true;
+							}
+							else {
+								can_sum = true;
+							}
+							val_idx--;
+						}
+					}
+					else {
+						if (val_idx != row + 1) {
+							map[val_idx - 1][col] = map[row][col];
+							map[row][col] = 0;
+							can_sum = true;
+						}
+						else {
+							can_sum = true;
+						}
+						val_idx--;
+					}
+				}
+			}
+			q.push(map_to_string(map));
+			for (int row = 0; row < N; row++) {
+				for (int col = 0; col < N; col++) {
+					map[row][col] = ori_map[row][col];
+				}
+			}
+
+		}
+		times++;
+	}
+	cout << max_val;
+}
