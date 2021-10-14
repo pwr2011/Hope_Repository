@@ -1,0 +1,104 @@
+#include<iostream>
+#include<queue>
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+int dx[] = { -1,0,1,0 };
+int dy[] = { 0,-1,0,1 };
+P r, b,hole;
+char map[12][12];
+bool visit[12][12][12][12];
+
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	//세로, 가로
+	int N, M; cin >> N >> M;
+
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < M; m++) {
+			cin >> map[n][m];
+			if (map[n][m] == 'R') {
+				r.y = n; r.x = m;
+			}
+			if (map[n][m] == 'B') {
+				b.y = n; b.x = m;
+			}
+			if (map[n][m] == 'O') {
+				hole.y = n; hole.x = m;
+			}
+		}
+	}
+
+	queue<pair<P, P>>q;
+	q.push({ r,b });
+	visit[r.y][r.x][b.y][b.x] = true;
+
+	int times = 1;
+	bool end_flag = false;
+	while (!q.empty()) {
+		int qsize = q.size();
+		for (int i = 0; i < qsize; i++) {
+			auto temp = q.front(); q.pop();
+			P red = temp.first; P blue = temp.second;
+			for (int j = 0; j < 4; j++) {
+				P n_red = red;
+				P n_blue = blue;
+				while (1) {
+					P rec_red = n_red; P rec_blue = n_blue;
+					if (!end_flag) {
+						n_red.y += dy[j]; n_red.x += dx[j];
+					}
+					n_blue.y += dy[j]; n_blue.x += dx[j];
+
+					if (map[n_red.y][n_red.x] == '#') {
+						n_red.y -= dy[j]; n_red.x -= dx[j];
+					}
+					if (map[n_blue.y][n_blue.x] == '#') {
+						n_blue.y -= dy[j]; n_blue.x -= dx[j];
+					}
+					if (n_red == n_blue) {
+						if (hole == n_red) {
+							end_flag = false;
+							n_blue = blue; n_red = red;
+							break;
+						}
+						n_red = rec_red; n_blue = rec_blue;
+						break;
+					}
+					if (n_red == hole) {
+						end_flag = true;
+					}
+					if (n_blue == hole) {
+						n_red = red; n_blue = blue;
+						break;
+					}
+					if ((n_red == rec_red) && (n_blue == rec_blue)) {
+						break;
+					}
+				}
+				if (!((red == n_red) && (blue == n_blue))) {
+					if (!visit[n_red.y][n_red.x][n_blue.y][n_blue.x]) {
+						visit[n_red.y][n_red.x][n_blue.y][n_blue.x] = true;
+						q.push({ n_red,n_blue });
+					}
+				}
+			}
+		}
+		if (end_flag) break;
+		times++;
+		if (times > 10) {
+			break;
+		}
+	}
+	if (end_flag) {
+		cout << times;
+	}
+	else {
+		cout << -1;
+	}
+}
