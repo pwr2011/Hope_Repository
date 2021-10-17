@@ -1,0 +1,86 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+int dx[] = { 0,1,1,1,0,-1,-1,-1 };
+int dy[] = { -1,-1,0,1,1,1,0,-1 };
+
+struct ball {
+	int m = 0;
+	int d = 0;
+	int s = 0;
+};
+vector<ball> map[52][52];
+
+int main() {
+	int N, M, K; cin >> N >> M >> K;
+	for (int m = 0; m < M; m++) {
+		int r, c, w, s, d;
+		cin >> r >> c >> w >> s >> d;
+		map[r - 1][c - 1].push_back( { w,d,s });
+	}
+
+	int min_to_plus = (1050 / N) * N;
+
+	for (int k = 0; k < K; k++) {
+		vector<ball> moved[52][52];
+		for (int r = 0; r < N; r++) {
+			for (int c = 0; c < N; c++) {
+				for (ball t: map[r][c]) {
+					int dir = t.d;
+					int speed = t.s;
+					int n_r = (r + (dy[dir] * speed) + min_to_plus) % N;
+					int n_c = (c + (dx[dir] * speed) + min_to_plus) % N;
+					moved[n_r][n_c].push_back(t);
+				}
+				map[r][c].clear();
+			}
+		}
+		for (int r = 0; r < N; r++) {
+			for (int c = 0; c < N; c++) {
+				if (moved[r][c].size() == 1) {
+					map[r][c].push_back(moved[r][c][0]);
+				}
+				else if(moved[r][c].size() > 1){
+					int total_m = 0; int total_s = 0;
+					bool flag = true;
+					int prev_dir = 0;
+					for (int i = 0; i < moved[r][c].size();i++) {
+						ball t = moved[r][c][i];
+						total_m += t.m;
+						total_s += t.s;
+						if (i == 0) {
+							prev_dir = t.d % 2;
+							continue;
+						}
+						else {
+							if (prev_dir != (t.d % 2)) {
+								flag = false;
+							}
+						}
+					}
+					if (total_m / 5 == 0) {
+						continue;
+					}
+					int nxt_dir = flag ? 0 : 1;
+					for (int i = 0; i < 4; i++) {
+						map[r][c].push_back({ total_m / 5,nxt_dir,total_s / (int)moved[r][c].size() });
+						nxt_dir += 2;
+					}
+					
+				}
+				moved[r][c].clear();
+			}
+		}
+	}
+
+	int ans = 0;
+	for (int r = 0; r < N; r++) {
+		for (int c = 0; c < N; c++) {
+			for (ball t : map[r][c]) {
+				ans += t.m;
+			}
+		}
+	}
+	cout << ans;
+}
