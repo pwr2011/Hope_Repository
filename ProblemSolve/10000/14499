@@ -1,0 +1,91 @@
+#include<iostream>
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+int map[25][25];
+int dice[4][3];
+
+void move_south() {
+	int temp = dice[3][1];
+	for (int i = 3; i >= 1; i--) {
+		dice[i][1] = dice[i - 1][1];
+	}
+	dice[0][1] = temp;
+}
+
+void move_north() {
+	int temp = dice[0][1];
+	for (int i = 1; i < 4; i++) {
+		dice[i-1][1] = dice[i][1];
+	}
+	dice[3][1] = temp;
+}
+
+void move_east() {
+	int temp = dice[3][1];
+	dice[3][1] = dice[1][2];
+	dice[1][2] = dice[1][1];
+	dice[1][1] = dice[1][0];
+	dice[1][0] = temp;
+}
+
+void move_west() {
+	int temp = dice[3][1];
+	dice[3][1] = dice[1][0];
+	dice[1][0] = dice[1][1];
+	dice[1][1] = dice[1][2];
+	dice[1][2] = temp;
+}
+
+int main() {
+	int N, M; cin >> N >> M;
+	P pos; cin >> pos.y >> pos.x;
+	int K; cin >> K;
+	for (int n = 0; n < N; n++) {
+		for (int m = 0; m < M; m++) {
+			cin >> map[n][m];
+		}
+	}
+
+	for (int k = 0; k < K; k++) {
+		int command; cin >> command;
+		if (command == 1) {
+			pos.x += 1;
+			if (pos.y < 0 || pos.x < 0 || pos.y >= N || pos.x >= M) {
+				pos.x -= 1; continue;
+			}
+			move_east();
+		}
+		else if (command == 2) {
+			pos.x -= 1;
+			if (pos.y < 0 || pos.x < 0 || pos.y >= N || pos.x >= M) {
+				pos.x += 1; continue;
+			}
+			move_west();
+		}
+		else if (command == 3) {
+			pos.y -= 1;
+			if (pos.y < 0 || pos.x < 0 || pos.y >= N || pos.x >= M) {
+				pos.y += 1; continue;
+			}
+			move_north();
+		}
+		else {
+			pos.y += 1;
+			if (pos.y < 0 || pos.x < 0 || pos.y >= N || pos.x >= M) {
+				pos.y -= 1; continue;
+			}
+			move_south();
+		}
+		if (map[pos.y][pos.x] == 0) {
+			map[pos.y][pos.x] = dice[3][1];
+		}
+		else {
+			dice[3][1] = map[pos.y][pos.x];
+			map[pos.y][pos.x] = 0;
+		}
+		cout << dice[1][1]<<"\n";
+	}
+}
