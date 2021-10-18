@@ -1,0 +1,65 @@
+#include<iostream>
+#include<queue>
+using namespace std;
+
+int durable[105];
+
+int main() {
+	int N, K; cin >> N >> K;
+	N *= 2;
+	for (int n = 0; n < N; n++) {
+		cin >> durable[n];
+	}
+
+	int insert = 0;
+	int out = N/2 - 1;
+	queue<int> q;
+	int step = 1;
+	while (1) {
+		insert = (insert - 1 + N) % N;
+		out = (out - 1 + N) % N;
+		int qsize = q.size();
+		int prev = -1;
+
+		for (int i = 0; i < qsize; i++) {
+			int t = q.front(); q.pop();
+			if (t == out) {
+				continue;
+			}
+			int nxt_idx = (t + 1) % N;
+			if (prev == nxt_idx) {
+				prev = t;
+				q.push(t);
+			}
+			else {
+				if (durable[nxt_idx] > 0) {
+					durable[nxt_idx]--;
+
+					if (durable[nxt_idx] == 0) {
+						K--;
+					}
+					if (nxt_idx != out) {
+						q.push(nxt_idx);
+						prev = nxt_idx;
+					}
+				}
+				else {
+					q.push(t);
+					prev = t;
+				}
+			}
+		}
+		if (durable[insert] > 0) {
+			q.push(insert);
+			durable[insert]--;
+			if (durable[insert] == 0) {
+				K--;
+			}
+		}
+		if (K <= 0) {
+			break;
+		}
+		step++;
+	}
+	cout << step;
+}
