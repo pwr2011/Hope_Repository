@@ -1,0 +1,114 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+#define y first
+#define x second
+using namespace std;
+typedef pair<int, int> P;
+
+int dy[] = { -1,0,1,0 };
+int dx[] = { 0,1,0,-1 };
+int map[52][52];
+P purifier[2];
+
+int main() {
+	int R, C, T; cin >> R >> C >> T;
+	int p_cnt = 0;
+	for (int r = 0; r < R; r++) {
+		for (int c = 0; c < C; c++) {
+			cin >> map[r][c];
+			if (map[r][c] == -1) {
+				purifier[p_cnt].y = r;
+				purifier[p_cnt++].x = c;
+			}
+		}
+	}
+	if (purifier[0] > purifier[1]) {
+		swap(purifier[0], purifier[1]);
+	}
+
+	for (int t = 0; t < T; t++) {
+		int moved[52][52] = { 0, };
+		for (int r = 0; r < R; r++) {
+			for (int c = 0; c < C; c++) {
+				if (map[r][c] == -1) {
+					moved[r][c] = -1;
+					continue;
+				}
+				if (map[r][c] == 0) {
+					continue;
+				}
+				//dir check
+				int dir_cnt = 0;
+				for (int i = 0; i < 4; i++) {
+					P nxt; nxt.y = r + dy[i];
+					nxt.x = c + dx[i];
+					if (nxt.y < 0 || nxt.x < 0 || nxt.y >= R || nxt.x >= C)
+						continue;
+					if (map[nxt.y][nxt.x] == -1) continue;
+					dir_cnt++;
+				}
+
+				//spread
+				for (int i = 0; i < 4; i++) {
+					P nxt; nxt.y = r + dy[i];
+					nxt.x = c + dx[i];
+					if (nxt.y < 0 || nxt.x < 0 || nxt.y >= R || nxt.x >= C)
+						continue;
+					if (map[nxt.y][nxt.x] == -1) continue;
+					moved[nxt.y][nxt.x] += map[r][c] / 5;
+				}
+				moved[r][c] += map[r][c] - (map[r][c] / 5 * dir_cnt);
+
+			}
+		}
+		//circulate
+		for (int idx = 0; idx < 2; idx++) {
+			P cur = purifier[idx];
+			if (idx == 0) {
+				for (int r = cur.y - 2; r >= 0; r--) {
+					moved[r + 1][0] = moved[r][0];
+				}
+				for (int c = 1; c < C; c++) {
+					moved[0][c - 1] = moved[0][c];
+				}
+				for (int r = 1; r <= cur.y; r++) {
+					moved[r - 1][C - 1] = moved[r][C - 1];
+				}
+				for (int c = C - 1; c > 1; c--) {
+					moved[cur.y][c] = moved[cur.y][c - 1];
+				}
+				moved[cur.y][1] = 0;
+			}
+			else {
+				for (int r = cur.y + 2; r < R; r++) {
+					moved[r - 1][0] = moved[r][0];
+				}
+				for (int c = 1; c < C; c++) {
+					moved[R - 1][c - 1] = moved[R - 1][c];
+				}
+				for (int r = R - 2; r >= cur.y; r--) {
+					moved[r + 1][C - 1] = moved[r][C - 1];
+				}
+				for (int c = C - 2; c >= 1; c--) {
+					moved[cur.y][c + 1] = moved[cur.y][c];
+				}
+				moved[cur.y][1] = 0;
+			}
+		}
+
+		for (int r = 0; r < R; r++) {
+			for (int c = 0; c < C; c++) {
+				map[r][c] = moved[r][c];
+			}
+		}
+	}
+
+	int ans = 0;
+	for (int r = 0; r < R; r++) {
+		for (int c = 0; c < C; c++) {
+			ans += map[r][c];
+		}
+	}
+	cout << ans+2;
+}
