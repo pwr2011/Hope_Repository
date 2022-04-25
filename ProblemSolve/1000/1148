@@ -1,0 +1,78 @@
+#include<iostream>
+#include<string>
+#include<vector>
+using namespace std;
+
+string input[200'005];
+int input_size = 0;
+
+int main() {
+	ios::sync_with_stdio(false);
+	cout.tie(NULL);
+	cin.tie(NULL);
+	for (input_size = 0;; input_size++) {
+		cin >> input[input_size];
+		if (input[input_size] == "-") {
+			break;
+		}
+	}
+
+	for (int i = 0;; i++) {
+		string in; cin >> in;
+		if (in == "#")break;
+
+		//들어온 퍼즐판의 알파벳 카운터
+		int cnt[26] = { 0, };
+		//정답 알파벳 카운터
+		int alpha_cnt[26] = { 0, };
+
+		for (int idx = 0; idx < in.size(); idx++) {
+			cnt[in[idx] - 'A']++;
+		}
+		for (int j = 0; j < input_size; j++) {
+			int cur_alpha_cnt[26] = { 0, };
+			bool ok_flag = true;
+			for (int c = 0; c < input[j].size(); c++) {
+				int idx = input[j][c] - 'A';
+				cur_alpha_cnt[idx]++;
+				if (cur_alpha_cnt[idx] > cnt[idx]) {
+					ok_flag = false;
+					break;
+				}
+			}
+			if (ok_flag) {
+				bool used[26] = { false, };
+				for (int c = 0; c < input[j].size(); c++) {
+					int idx = input[j][c] - 'A';
+					if (used[idx] == false) {
+						used[idx] = true;
+						alpha_cnt[idx] ++;
+					}
+				}
+			}
+		}
+
+		int max_cnt = 0;
+		int min_cnt = 999'999;
+		for (int i = 0; i < 26; i++) {
+			if (max_cnt < alpha_cnt[i] && cnt[i]>0) {
+				max_cnt = alpha_cnt[i];
+			}
+			if (min_cnt > alpha_cnt[i] && cnt[i]>0) {
+				min_cnt = alpha_cnt[i];
+			}
+		}
+		for (int i = 0; i < 26; i++) {
+			if ((alpha_cnt[i] == min_cnt )&& cnt[i]>0) {
+				cout << char(i + 'A');
+			}
+		}
+		cout << " " << min_cnt<<" ";
+		for (int i = 0; i < 26; i++) {
+			if ((alpha_cnt[i] == max_cnt )&& cnt[i] > 0) {
+				cout << char(i + 'A');
+			}
+		}
+		cout <<" "<< max_cnt << "\n";
+	}
+}
