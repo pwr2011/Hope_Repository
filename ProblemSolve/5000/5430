@@ -1,0 +1,76 @@
+#include<iostream>
+#include<string>
+#include<stdlib.h>
+using namespace std;
+
+int number[100'005] = { 0, };
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int T; cin >> T;
+	while (T--) {
+		string p; cin >> p;
+		int N; cin >> N;
+		string input;
+		cin >> input;
+		string num;
+		int number_cnt = 0;
+		for (int i = 0; i < input.size(); i++) {
+			if (input[i] == '[') continue;
+			if (input[i] == ',' || input[i] == ']') {
+				number[number_cnt++] = atoi(num.c_str());
+				num.clear();
+			}
+			else {
+				num.push_back(input[i]);
+			}
+		}
+
+		int s = 0, e = N - 1;
+		bool dir = 0;
+		bool error = false;
+
+		for (int idx = 0; idx < p.size(); idx++) {
+			if (p[idx] == 'R') {
+				if (dir == 0) dir = 1;
+				else dir = 0;
+			}
+			else { //D
+				if (dir == 0) {
+					s++;
+				}
+				else {
+					e--;
+				}
+				if (s > e+1) {
+					error = true; break;
+				}
+			}
+		}
+		if (error == true) {
+			cout << "error\n";
+		}
+		else if (dir == 0) {
+			cout << "[";
+			for (int idx = s; idx <= e; idx++) {
+				cout << number[idx];
+				if (idx < e) {
+					cout << ",";
+				}
+			}
+			cout << "]\n";
+		}
+		else {
+			cout << "[";
+			for (int idx = e; idx >=s; idx--) {
+				cout << number[idx];
+				if (idx > s) {
+					cout << ",";
+				}
+			}
+			cout << "]\n";
+		}
+	}
+}
