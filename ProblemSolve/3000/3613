@@ -1,0 +1,94 @@
+#include<iostream>
+#include<string>
+using namespace std;
+
+int status = 0;
+//0 : all 
+//1 : c
+//2 : java
+//3 : error
+int main() {
+	string input;
+	cin >> input;
+
+	int p = 0;
+	bool prev_space = false;
+	//check process
+	for (p=0; p < input.size(); p++) {
+		if (input[p] >= 'A' && input[p] <= 'Z') {
+			status = 2;
+			break;
+		}
+		else if (input[p] == '_') {
+			prev_space = true;
+			status = 1; break;
+		}
+	}
+
+	// status 0 is broken
+	p++;
+	for (; p < input.size(); p++) {
+		if (status == 1) {
+			if (input[p] == '_') {
+				if (prev_space == true) {
+					status = 3; break;
+				}
+				prev_space = true;
+			}
+			else {
+				prev_space = false;
+			}
+		}
+
+		if (input[p] >= 'A' && input[p] <= 'Z') {
+			if (status != 2) {
+				status = 3; break;
+			}
+		}
+		else if (input[p] == '_') {
+			if (status != 1) {
+				status = 3; break;
+			}
+		}
+	}
+	if (input[0] == '_' || input[input.size() - 1] == '_') {
+		status = 3;
+	}
+	if (input[0] >= 'A' && input[0] <= 'Z') {
+		status = 3;
+	}
+	if (status == 0) {
+		cout << input;
+		return 0;
+	}
+	if (status == 3) {
+		cout << "Error!";
+		return 0;
+	}
+	string output;
+	if (status == 1) {
+		for (int i = 0; i < input.size(); i++) {
+			if (input[i] == '_') {
+				if (i < input.size() - 1) {
+					output.push_back(input[i+1] - 'a' + 'A');
+					i++;
+				}
+			}
+			else {
+				output.push_back(input[i]);
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < input.size(); i++) {
+			if (input[i] >= 'A' && input[i] <= 'Z') {
+				output.push_back('_');
+				output.push_back(input[i] - 'A' + 'a');
+			}
+			else {
+				output.push_back(input[i]);
+			}
+		}
+	}
+	cout << output;
+}
