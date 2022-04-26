@@ -1,0 +1,75 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<string>
+#include<cmath>
+using namespace std;
+
+bool check[10'005];
+bool isPrime[10'005];
+
+int main() {
+	cin.tie(NULL); cout.tie(NULL); ios::sync_with_stdio(false);
+	for (int i = 2; i < sqrt(10'000); i++) {
+		if (!check[i]) {
+			for (int j = i+i; j < 10'000; j+=i) {
+				check[j] = true;
+			}
+		}
+	}
+	for (int i = 2; i < 10'000; i++) {
+		if (!check[i]) isPrime[i] = true;
+	}
+
+	int T; cin >> T;
+	for (int t = 0; t < T; t++) {
+		int n1, n2; cin >> n1 >> n2;
+		bool visit[10'005] = { false, };
+		queue<int>q;
+		q.push(n1);
+		visit[n1] = true;
+
+		if (n1 == n2) {
+			cout << 0 << "\n";
+			continue;
+		}
+		int cnt = 1;
+		bool end_flag = false;
+		while (!q.empty()) {
+			int qsize = q.size();
+			for (int time = 0; time < qsize; time++) {
+				int cur = q.front(); q.pop();
+				for (int idx = 0; idx < 4; idx++) {
+					int tmp1 = (cur % ((int)pow(10, idx+1))) / (int)pow(10,idx);
+					tmp1 *= pow(10, idx);
+					int tmp2 = cur - tmp1;
+
+					for (int num = 0; num < 10; num++) {
+						int tmp3 = tmp2 + pow(10, idx) * num;
+						if (tmp3 < 1000) {
+							continue;
+						}
+						if (isPrime[tmp3] && !visit[tmp3]) {
+							visit[tmp3] = true;
+							q.push(tmp3);
+							if (n2 == tmp3) {
+								end_flag = true; break;
+							}
+						}
+					}
+					if (end_flag) break;
+				}
+				if (end_flag) break;
+			}
+			if (end_flag) break;
+			cnt++;
+		}
+
+		if (end_flag) {
+			cout << cnt << "\n";
+		}
+		else {
+			cout << "Impossible\n";
+		}
+	}
+}
