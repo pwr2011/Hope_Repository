@@ -1,0 +1,59 @@
+#include<iostream>
+#include<vector>
+#include<stack>
+using namespace std;
+
+struct node {
+	int left = -1, right = -1;
+};
+
+node node_arr[1'000'005];
+
+void print_ans(int cur) {
+	if (node_arr[cur].left != -1) {
+		print_ans(node_arr[cur].left);
+	}
+	if (node_arr[cur].right != -1) {
+		print_ans(node_arr[cur].right);
+	}
+	cout << cur<<"\n";
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+	int n;
+	vector<int> arr;
+	while (cin >> n) arr.push_back(n);
+
+	stack<int> st;
+	int node_val = arr[0];
+
+	for (int i = 1; i < arr.size(); i++) {
+		if (node_val > arr[i]) {
+			st.push(node_val);
+			node_arr[node_val].left = arr[i];
+			node_val = arr[i];
+		}
+		else { // node_val < arr[i]
+			if (!st.empty()) {
+				if (st.top() > arr[i]) {
+					node_arr[node_val].right = arr[i];
+					node_val = arr[i];
+				}
+				else {
+					node_val = st.top();
+					st.pop();
+					i--; continue;
+				}
+			}
+			else {
+				node_arr[node_val].right = arr[i];
+				node_val = arr[i];
+			}
+		}
+	}
+
+	print_ans(arr[0]);
+}
