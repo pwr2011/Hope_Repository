@@ -1,0 +1,98 @@
+#include<iostream>
+#include<string>
+using namespace std;
+
+string arr[82];
+int c_idx, r_idx = 0;
+
+bool check_row(char c) {
+	bool ok = true;
+	for (int i = 0; i < 9; i++) {
+		if (arr[r_idx][i] == c) {
+			ok = false; break;
+		}
+	}
+	return ok;
+}
+bool check_col(char c) {
+	bool ok = true;
+	for (int i = 0; i < 9; i++) {
+		if (arr[i][c_idx] == c) {
+			ok = false; break;
+		}
+	}
+	return ok;
+}
+bool check_box(char c) {
+	bool ok = true;
+	int r_start = (r_idx / 3) * 3;
+	int c_start = (c_idx / 3) * 3;
+
+	for (int row = r_start; row < r_start + 3; row++) {
+		for (int col = c_start; col < c_start + 3; col++) {
+			if (arr[row][col] == c) {
+				ok = false; break;
+			}
+		}
+		if (!ok)break;
+	}
+	return ok;
+}
+bool find_next_blank() {
+	for (int r = r_idx; r < 9; r++) {
+
+		for (int c = r==r_idx ? c_idx : 0; c < 9; c++) {
+			if (arr[r][c] == '0') {
+				r_idx = r;
+				c_idx = c;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool solve() {
+	int cur_row = r_idx;
+	int cur_col = c_idx;
+	for (int i = 1; i < 10; i++) {
+		char cur = i + '0';
+		if (check_row(cur) && check_col(cur) && check_box(cur)) {
+			arr[r_idx][c_idx] = cur;
+
+			if (!find_next_blank()) {
+				return true;
+			}
+
+			if (solve())return true;
+			r_idx = cur_row;
+			c_idx = cur_col;
+			arr[r_idx][c_idx] = '0';
+		}
+	}
+
+	return false;
+}
+
+int main() {
+	for (int i = 0; i < 9; i++) {
+		cin >> arr[i];
+	}
+	bool find_flag = false;
+	for (int i = 0; i < 9; i++) {
+		for (int j = 0; j < 9; j++) {
+			if (arr[i][j] == '0') {
+				c_idx = j;
+				r_idx = i;
+				find_flag = true;
+				break;
+			}
+		}
+		if (find_flag)break;
+	}
+	solve();
+
+	for (int i = 0; i < 9; i++) {
+		cout << arr[i]<<"\n";
+	}
+}
