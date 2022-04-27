@@ -1,0 +1,57 @@
+#include<iostream>
+#include<set>
+#include<vector>
+using namespace std;
+
+int main() {
+	cin.tie(NULL); cout.tie(NULL); ios::sync_with_stdio(false);
+
+	int T; cin >> T;
+	while (T--) {
+		multiset<int> s1, s2;
+		vector<int> input;
+		int M; cin >> M;
+		for (int m = 0; m < M; m++) {
+			int tmp; cin >> tmp;
+			input.push_back(tmp);
+		}
+		cout << (M + 1) / 2 << "\n";
+
+		s1.insert(input[0]);
+		cout << input[0] << " ";
+		int cnt = 1;
+		for (int m = 1; m < M; m++) {
+			int mid = *s1.rbegin();
+			if (input[m] >= mid) {
+				s2.insert(input[m]);
+			}
+			else {
+				s1.insert(input[m]);
+			}
+			if (m % 2 == 0) {
+				if (cnt % 10 == 0) cout << "\n";
+				cnt++;
+
+				if (s1.size() == s2.size() +1 ) {
+					cout << mid << " ";
+				}
+				else if (s1.size() == s2.size()+3) {
+					int val = *s1.rbegin();
+					auto iter1 = s1.find(val);
+					s1.erase(iter1);
+					s2.insert(val);
+					mid = *s1.rbegin();
+					cout << mid << " ";
+				}
+				else {
+					int mid = *s2.begin();
+					auto iter2 = s2.find(mid);
+					s2.erase(iter2);
+					s1.insert(mid);
+					cout << mid << " ";
+				}
+			}
+		}
+		cout << "\n";
+	}
+}
