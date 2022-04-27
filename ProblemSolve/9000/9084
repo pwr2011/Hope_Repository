@@ -1,0 +1,42 @@
+#include<iostream>
+using namespace std;
+
+int coin[22];
+int dp[22][10'005];
+int N, target;
+
+int solve(int idx, int left) {
+	if (dp[idx][left] != -1) return dp[idx][left];
+	if (idx == N) {
+		if (left == 0) {
+			return dp[idx][left] = 1;
+		}
+		else {
+			return dp[idx][left] = 0;
+		}
+	}
+	int ans = 0;
+	for (int cnt = 0;; cnt++) {
+		if (cnt * coin[idx] > left) {
+			break;
+		}
+		ans += solve(idx + 1, left - cnt * coin[idx]);
+	}
+	return dp[idx][left] = ans;
+}
+
+int main() {
+	int T; cin >> T;
+	while (T--) {
+		for (int i = 0; i < 22; i++) {
+			for (int j = 0; j < 10'005; j++) dp[i][j] = -1;
+		}
+		 cin >> N;
+		for (int n = 0; n < N; n++) {
+			cin >> coin[n];
+		}
+		cin >> target;
+
+		cout<<solve(0, target)<<"\n";
+	}
+}
