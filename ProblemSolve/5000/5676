@@ -1,0 +1,81 @@
+#include<iostream>
+#include<cmath>
+#include<vector>
+using namespace std;
+
+int arr[400'000];
+int start;
+int N, K;
+
+void construct_segtree() {
+	start = pow(2, ceil(log2(N)));
+	for (int n = 0; n < N; n++) {
+		cin>>arr[start + n];
+		if (arr[start + n] > 0) {
+			arr[start + n] = 1;
+		}
+		else if (arr[start + n] < 0) {
+			arr[start + n] = -1;
+		}
+	}
+	for (int n = N; n < start; n++) {
+		arr[start + n] = 1;
+	}
+
+	for (int i = start - 1; i > 0; i--) {
+		arr[i] = arr[i * 2] * arr[i * 2 + 1];
+	}
+}
+
+void fix_segtree(int idx, int val) {
+	arr[idx] = val;
+	idx /= 2;
+	while (idx > 0) {
+		arr[idx] = arr[idx * 2] * arr[idx * 2 + 1];
+		idx /= 2;
+	}
+}
+
+int find(int L, int R, int nodeL=0, int nodeR=start-1, int nodenum = 1) {
+	if (nodeR < L || R < nodeL) return 1;
+	else if (L <= nodeL && nodeR <= R) return arr[nodenum];
+	else {
+		int mid = (nodeL + nodeR) / 2;
+		return find(L, R, nodeL, mid, nodenum * 2)* find(L, R, mid + 1, nodeR, nodenum * 2 + 1);
+	}
+}
+
+int main() {
+	cin.tie(NULL); cout.tie(NULL); ios::sync_with_stdio(false);
+	while (cin >> N >> K) {
+		construct_segtree();
+		vector<char> ans;
+		for (int k = 0; k < K; k++) {
+			char command;
+			cin >> command;
+			if (command == 'C') {
+				int idx, val; cin >> idx >> val;
+				if (val > 0) val = 1;
+				else if (val == 0) val = 0;
+				else val = -1;
+				fix_segtree(start + idx - 1, val);
+			}
+			else {
+				int i, j; cin >> i >> j;
+				if (find(i-1, j-1) > 0) {
+					ans.push_back('+');
+				}
+				else if (find(i-1, j-1) < 0) {
+					ans.push_back('-');
+				}
+				else {
+					ans.push_back('0');
+				}
+			}
+		}
+		for (char c : ans) {
+			cout << c;
+		}
+		cout << "\n";
+	}
+}
