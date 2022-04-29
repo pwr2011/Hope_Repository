@@ -1,0 +1,48 @@
+#include<iostream>
+#define ll long long
+using namespace std;
+
+ll cnt[10];
+
+void calc(ll num,ll idx) {
+	while (num > 0) {
+		cnt[num % 10]+= idx;
+		num /= 10;
+	}
+}
+
+int main() {
+	int T; cin >> T;
+	while (T--) {
+		//a~b
+		for (int i = 0; i < 10; i++) cnt[i] = 0;
+		ll a = 0, b = 0;
+		ll ans = 0;
+		cin >> a >> b;
+
+		ll idx = 1;
+		while (a <= b) {
+			while (b % 10 != 9 && a <= b) {
+				calc(b, idx);
+				b--;
+			}
+			if (a > b) { break; }
+			while (a % 10 != 0 && a <= b) {
+				calc(a, idx);
+				a++;
+			}
+			//if (a > b) break;
+			a /= 10; b /= 10;
+
+			for(int i=0;i<10;i++)
+				cnt[i] += (b - a + 1) * idx;
+
+			idx *= 10;
+		}
+
+		for (ll i = 0; i < 10; i++) {
+			ans += cnt[i] * i;
+		}
+		cout << ans << "\n";
+	}
+}
