@@ -1,0 +1,88 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<algorithm>
+#include<string>
+#include<vector>
+#define ll long long
+using namespace std;
+const int p = 29;
+const int MOD = 10007;
+string s;
+
+int my_pow[200'005];
+vector<int> hashTable[10'007];
+
+bool check(int a, int b, int len) {
+	bool ret = true;
+	for (int i = 0; i < len; i++) {
+		if (s[a + i] != s[b + i]) {
+			ret = false; break;
+		}
+	}
+	return ret;
+}
+
+bool solve(int len) {
+	for (int i = 0; i < 10'007; i++) {
+		hashTable[i].clear();
+	}
+	int val = 0;
+
+	for (int i = 0; i < len; i++) {
+		val *= p;
+		val += s[i] - 'a';
+		val %= MOD;
+	}
+	hashTable[val].push_back(0);
+
+	for (int i = len; i < s.size(); i++) {
+		val -= (s[i - len]-'a') * my_pow[len - 1] % MOD;
+		val = (val + MOD) % MOD;
+		val *= p;
+		val += s[i]-'a';
+		val %= MOD;
+
+		if (hashTable[val].size()) {
+			for (int idx : hashTable[val]) {
+				if (check(idx, i - len + 1, len)) {
+					return true;
+				}
+			}
+		}
+
+		hashTable[val].push_back(i - len + 1);
+	}
+	return false;
+}
+
+int main() {
+	cin.tie(NULL);
+	cout.tie(NULL);
+	ios::sync_with_stdio(false);
+
+	my_pow[0] = 1;
+	for (int i = 1; i <= 200'000; i++) {
+		my_pow[i] = (my_pow[i - 1] * p) % MOD;
+	}
+
+
+	//freopen("sample_input.txt", "r", stdin);
+	//int T; cin >> T;
+	//for (int t = 1; t <= T; t++) {
+		s.clear();
+		int len; cin >> len;
+		cin >> s;
+		int lo = 0; int hi = s.size() - 1;
+		while (lo < hi) {
+			int mid = (lo + hi + 1) / 2;
+			if (solve(mid)) {
+				lo = mid;
+			}
+			else {
+				hi = mid - 1;
+			}
+		}
+		cout << lo;
+		//cout << "#" << t << " " << lo << "\n";
+	//}
+}
